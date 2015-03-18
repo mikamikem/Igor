@@ -38,6 +38,7 @@ namespace Igor
 
 		protected List<string> AvailableModuleNames = new List<string>();
 		protected bool bAvailableModulesExpanded = false;
+		protected bool bModulesChanged = false;
 
 		protected List<IgorPersistentJobConfig> Jobs = new List<IgorPersistentJobConfig>();
 		protected static bool bStaticDevMode = false;
@@ -200,10 +201,14 @@ namespace Igor
 						if(!bWasInstalled && bInstalled)
 						{
 							ConfigInst.EnabledModules.Add(CurrentModule);
+
+							bModulesChanged = true;
 						}
 						else if(bWasInstalled && !bInstalled)
 						{
 							ConfigInst.EnabledModules.Remove(CurrentModule);
+
+							bModulesChanged = true;
 						}
 					}
 
@@ -345,6 +350,11 @@ namespace Igor
 
 			GenerateEditorMenuOptions();
 
+			if(bModulesChanged)
+			{
+				IgorUpdater.CheckForUpdates(false, true);
+			}
+
 			AssetDatabase.Refresh();
 		}
 
@@ -403,6 +413,8 @@ namespace Igor
 			Jobs = NewJobs;
 
 			bDevMode = IgorConfig.GetIsDevMode();
+
+			bModulesChanged = false;
 		}
 
 		protected string JenkinsJobHeader = "python " + Path.Combine(IgorUpdater.BaseIgorDirectory, IgorRunner) + " ";
