@@ -484,7 +484,7 @@ namespace Igor
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string LocalPrefix = "TestDeploy/";
-		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/";
+		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
 		public static string TempLocalDirectory = "IgorTemp/";
 
 		public static string IgorUpdaterFilename = "IgorUpdater.cs";
