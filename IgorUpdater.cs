@@ -589,6 +589,8 @@ namespace Igor
 		{
 			bool bThrewException = false;
 
+			string InstalledFilePath = Path.Combine(BaseIgorDirectory, IgorUpdaterFilename);
+
 			try
 			{
 				string LocalUpdater = IgorUtils.DownloadFileForUpdate(IgorUpdaterFilename);
@@ -599,8 +601,6 @@ namespace Igor
 
 					if(NewVersion > Version || bAlwaysUpdate)
 					{
-						string InstalledFilePath = Path.Combine(BaseIgorDirectory, IgorUpdaterFilename);
-
 						if(File.Exists(InstalledFilePath))
 						{
 							File.Delete(InstalledFilePath);
@@ -614,6 +614,17 @@ namespace Igor
 
 						return true;
 					}
+				}
+			}
+			catch(TimeoutException to)
+			{
+				if(!File.Exists(InstalledFilePath))
+				{
+					Debug.LogError("Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
+
+					bThrewException = true;
+
+					CleanupTemp();
 				}
 			}
 			catch(Exception e)
@@ -640,10 +651,10 @@ namespace Igor
 		{
 			bool bThrewException = false;
 
+			string LocalModulesList = IgorUtils.DownloadFileForUpdate(IgorModulesListFilename);
+
 			try
 			{
-				string LocalModulesList = IgorUtils.DownloadFileForUpdate(IgorModulesListFilename);
-
 				if(File.Exists(LocalModulesList))
 				{
 					if(File.Exists(InstalledModulesListPath))
@@ -663,6 +674,17 @@ namespace Igor
 					AssetDatabase.Refresh();
 
 					return true;
+				}
+			}
+			catch(TimeoutException to)
+			{
+				if(!File.Exists(LocalModulesList))
+				{
+					Debug.LogError("Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
+
+					bThrewException = true;
+
+					CleanupTemp();
 				}
 			}
 			catch(Exception e)
@@ -843,6 +865,17 @@ namespace Igor
 
 						return true;
 					}
+				}
+			}
+			catch(TimeoutException to)
+			{
+				if(false)
+				{
+					Debug.LogError("Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
+
+					bThrewException = true;
+
+					CleanupTemp();
 				}
 			}
 			catch(Exception e)
