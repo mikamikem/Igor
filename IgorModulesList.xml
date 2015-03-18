@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<IgorModuleList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Modules>
+    <Module ModuleName="Core.Core" ModuleDescriptorRelativePath="Core/Core/Core.xml" />
+    <Module ModuleName="Build.Common" ModuleDescriptorRelativePath="Build/Common/Common.xml" />
+    <Module ModuleName="Build.Desktop" ModuleDescriptorRelativePath="Build/Desktop/Desktop.xml" />
+  </Modules>
+</IgorModuleList>
