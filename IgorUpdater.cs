@@ -7,6 +7,7 @@ using System.IO;
 using System;
 using System.Reflection;
 using System.Xml.Serialization;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Igor
 {
@@ -468,11 +469,22 @@ namespace Igor
 	 	}
 	}
 
+	public class DummyValidation : ICertificatePolicy
+	{
+	    public bool CheckValidationResult(ServicePoint sp, X509Certificate cert,
+	       WebRequest request, int problem)
+	    {        
+	        return true; 
+	    }
+	}
+
 	[InitializeOnLoad]
 	public class IgorUpdater
 	{
 		static IgorUpdater()
 		{
+			ServicePointManager.CertificatePolicy = new DummyValidation();
+
 			EditorApplication.update += CheckIfResuming;
 		}
 
