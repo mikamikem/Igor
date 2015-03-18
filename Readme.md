@@ -3,7 +3,7 @@ Igor - The Unity Automation Tool
 
 Igor gives you a framework for automating any task in Unity, both in-editor and through a continuous integration setup.  It's designed around a module architecture to allow you to customize it to your own needs while also allowing us to share and improve modules with the community.
 
-== How do I use it? ==
+## How do I use it?
 
 1. Install Igor by either:
 
