@@ -3,12 +3,12 @@ Igor - The Unity Automation Tool
 
 Igor gives you a framework for automating any task in Unity, both in-editor and through a continuous integration setup.  It's designed around a module architecture to allow you to customize it to your own needs while also allowing us to share and improve modules with the community.
 
-== How do I use it?
+== How do I use it? ==
 
 1. Install Igor by either:
 
-    * Installing the [Unity Package](Igor.unitypackage)
-    * Installing the [Igor Updater Script](IgorUpdater.cs) to Assets\Editor\Igor\
+    * Installing the [Unity Package](https://raw.githubusercontent.com/mikamikem/Igor/master/Igor.unitypackage)
+    * Installing the [Igor Updater Script](https://raw.githubusercontent.com/mikamikem/Igor/master/IgorUpdater.cs) to Assets\Editor\Igor\
 
 2. Once the script has been added to your Unity project, launching Unity will pull down the latest version of all the necessary core files.
 3. Next open the new Igor Project Configuration window by going to Window -> Igor Project Configuration.
