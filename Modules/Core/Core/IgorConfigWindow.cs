@@ -38,6 +38,7 @@ namespace Igor
 
 		protected List<string> AvailableModuleNames = new List<string>();
 		protected bool bAvailableModulesExpanded = false;
+		protected Dictionary<string, bool> ModuleCategoryExpanded = new Dictionary<string, bool>();
 		protected bool bModulesChanged = false;
 
 		protected List<IgorPersistentJobConfig> Jobs = new List<IgorPersistentJobConfig>();
@@ -45,6 +46,7 @@ namespace Igor
 		protected bool bDevMode = false;
 		protected int CurrentJob = -1;
 
+		protected Dictionary<string, bool> ParamsModuleCategoryExpanded = new Dictionary<string, bool>();
 		protected Dictionary<IIgorModule, bool> IsModuleExpanded = new Dictionary<IIgorModule, bool>(); 
 		protected bool bShowParams = true;
 
@@ -124,6 +126,34 @@ namespace Igor
 			}
 		}
 
+		protected virtual Dictionary<string, List<string>> GetModuleCategoriesAndNames(List<string> FullNames)
+		{
+			Dictionary<string, List<string>> ModuleCategoriesToNames = new Dictionary<string, List<string>>();
+
+			foreach(string CurrentName in FullNames)
+			{
+				if(CurrentName.Contains("."))
+				{
+					string[] Parts = CurrentName.Split('.');
+
+					if(ModuleCategoriesToNames.ContainsKey(Parts[0]))
+					{
+						ModuleCategoriesToNames[Parts[0]].Add(Parts[1]);
+					}
+					else
+					{
+						List<string> NewList = new List<string>();
+
+						NewList.Add(Parts[1]);
+
+						ModuleCategoriesToNames.Add(Parts[0], NewList);
+					}
+				}
+			}
+
+			return ModuleCategoriesToNames;
+		}
+
 		protected virtual void OnGUI()
 		{
 			try
@@ -182,33 +212,62 @@ namespace Igor
 				{
 					EditorGUI.indentLevel += 1;
 
-					foreach(string CurrentModule in AvailableModuleNames)
+					Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(AvailableModuleNames);
+
+					foreach(KeyValuePair<string, List<string>> CurrentModules in AvailableModuleGroupsAndNames)
 					{
-						if(CurrentModule == "Core.Core")
+						if(CurrentModules.Key == "Core" && CurrentModules.Value.Count == 1)
 						{
 							continue;
 						}
-						
-						bool bWasInstalled = false;
 
-						if(ConfigInst.EnabledModules.Contains(CurrentModule))
+						bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentModules.Key) && ModuleCategoryExpanded[CurrentModules.Key];
+
+						bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentModules.Key);
+
+						if(!ModuleCategoryExpanded.ContainsKey(CurrentModules.Key))
 						{
-							bWasInstalled = true;
+							ModuleCategoryExpanded.Add(CurrentModules.Key, bCurrentCategoryExpanded);
 						}
 
-						bool bInstalled = EditorGUILayout.Toggle(CurrentModule, bWasInstalled);
+						ModuleCategoryExpanded[CurrentModules.Key] = bCurrentCategoryExpanded;
 
-						if(!bWasInstalled && bInstalled)
+						if(bCurrentCategoryExpanded)
 						{
-							ConfigInst.EnabledModules.Add(CurrentModule);
+							EditorGUI.indentLevel += 1;
 
-							bModulesChanged = true;
-						}
-						else if(bWasInstalled && !bInstalled)
-						{
-							ConfigInst.EnabledModules.Remove(CurrentModule);
+							foreach(string CurrentModuleName in CurrentModules.Value)
+							{
+								if(CurrentModuleName == "Core" && CurrentModules.Key == "Core")
+								{
+									continue;
+								}
+								
+								bool bWasInstalled = false;
+								string MergedName = CurrentModules.Key + "." + CurrentModuleName;
 
-							bModulesChanged = true;
+								if(ConfigInst.EnabledModules.Contains(MergedName))
+								{
+									bWasInstalled = true;
+								}
+
+								bool bInstalled = EditorGUILayout.Toggle(CurrentModuleName, bWasInstalled);
+
+								if(!bWasInstalled && bInstalled)
+								{
+									ConfigInst.EnabledModules.Add(MergedName);
+
+									bModulesChanged = true;
+								}
+								else if(bWasInstalled && !bInstalled)
+								{
+									ConfigInst.EnabledModules.Remove(MergedName);
+
+									bModulesChanged = true;
+								}
+							}
+
+							EditorGUI.indentLevel -= 1;
 						}
 					}
 
@@ -294,31 +353,77 @@ namespace Igor
 
 				EditorGUILayout.Separator();
 
+				Dictionary<string, IIgorModule> ModuleNameToInst = new Dictionary<string, IIgorModule>();
+				List<string> EnabledModuleNames = new List<string>();
+
 				foreach(IIgorModule CurrentModule in IgorCore.EnabledModules)
 				{
-					if(!IsModuleExpanded.ContainsKey(CurrentModule))
+					ModuleNameToInst.Add(CurrentModule.GetModuleName(), CurrentModule);
+					EnabledModuleNames.Add(CurrentModule.GetModuleName());
+				}
+
+				Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(EnabledModuleNames);
+
+				foreach(KeyValuePair<string, List<string>> CurrentModules in AvailableModuleGroupsAndNames)
+				{
+					if(CurrentModules.Key == "Core" && CurrentModules.Value.Count == 1)
 					{
-						IsModuleExpanded.Add(CurrentModule, false);
+						continue;
 					}
 
-					bool bIsExpanded = IsModuleExpanded[CurrentModule];
+					bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentModules.Key) && ModuleCategoryExpanded[CurrentModules.Key];
 
-					EditorGUILayout.BeginVertical("box");
+					bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentModules.Key);
 
-					bIsExpanded = EditorGUILayout.Foldout(bIsExpanded, CurrentModule.GetModuleName());
+					if(!ModuleCategoryExpanded.ContainsKey(CurrentModules.Key))
+					{
+						ModuleCategoryExpanded.Add(CurrentModules.Key, bCurrentCategoryExpanded);
+					}
 
-					IsModuleExpanded[CurrentModule] = bIsExpanded;
+					ModuleCategoryExpanded[CurrentModules.Key] = bCurrentCategoryExpanded;
 
-					if(bIsExpanded)
+					if(bCurrentCategoryExpanded)
 					{
 						EditorGUI.indentLevel += 1;
 
-						CurrentJobInst.JobCommandLineParams = CurrentModule.DrawJobInspectorAndGetEnabledParams(CurrentJobInst.JobCommandLineParams);
+						foreach(string CurrentModuleName in CurrentModules.Value)
+						{
+							string FullModuleName = CurrentModules.Key + "." + CurrentModuleName;
+
+							IIgorModule CurrentModule = ModuleNameToInst.ContainsKey(FullModuleName) ? ModuleNameToInst[FullModuleName] : null;
+
+							if(CurrentModule == null)
+							{
+								continue;
+							}
+
+							if(!IsModuleExpanded.ContainsKey(CurrentModule))
+							{
+								IsModuleExpanded.Add(CurrentModule, false);
+							}
+
+							bool bIsExpanded = IsModuleExpanded[CurrentModule];
+
+							EditorGUILayout.BeginVertical("box");
+
+							bIsExpanded = EditorGUILayout.Foldout(bIsExpanded, CurrentModule.GetModuleName());
+
+							IsModuleExpanded[CurrentModule] = bIsExpanded;
+
+							if(bIsExpanded)
+							{
+								EditorGUI.indentLevel += 1;
+
+								CurrentJobInst.JobCommandLineParams = CurrentModule.DrawJobInspectorAndGetEnabledParams(CurrentJobInst.JobCommandLineParams);
+
+								EditorGUI.indentLevel -= 1;
+							}
+
+							EditorGUILayout.EndVertical();
+						}
 
 						EditorGUI.indentLevel -= 1;
 					}
-
-					EditorGUILayout.EndVertical();
 				}
 			}
 			else
