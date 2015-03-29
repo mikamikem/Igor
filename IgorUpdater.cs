@@ -571,6 +571,11 @@ namespace Igor
 			IgorUtils.DeleteDirectory(TempLocalDirectory);
 		}
 
+		public static int GetCurrentVersion()
+		{
+			return Version;
+		}
+
 		public static int GetVersionFromUpdaterFile(string Filename)
 		{
 			if(File.Exists(Filename))

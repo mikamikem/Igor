@@ -37,6 +37,8 @@ namespace Igor
 		private bool bInitialized = false;
 
 		protected List<string> AvailableModuleNames = new List<string>();
+		protected Dictionary<string, int> ModuleNamesToCurrentVersions = new Dictionary<string, int>();
+		protected Dictionary<string, int> ModuleNamesToAvailableVersions = new Dictionary<string, int>();
 		protected Dictionary<string, List<string>> DependencyToDependentModules = new Dictionary<string, List<string>>(); // This maps from ie. Build Common -> { Build.Desktop, Build.iOS }
 		protected bool bAvailableModulesExpanded = false;
 		protected Dictionary<string, bool> ModuleCategoryExpanded = new Dictionary<string, bool>();
@@ -122,19 +124,35 @@ namespace Igor
 				if(ModuleListInst != null)
 				{
 					AvailableModuleNames.Clear();
+					ModuleNamesToAvailableVersions.Clear();
+					ModuleNamesToCurrentVersions.Clear();
 
 					foreach(IgorModuleList.ModuleItem CurrentModule in ModuleListInst.Modules)
 					{
 						AvailableModuleNames.Add(CurrentModule.ModuleName);
 
 						string ModuleDescriptor = IgorUtils.DownloadFileForUpdate(IgorUpdater.RemoteRelativeModuleRoot + CurrentModule.ModuleDescriptorRelativePath);
+						string CurrentModuleDescriptor = Path.Combine(IgorUpdater.LocalModuleRoot, CurrentModule.ModuleDescriptorRelativePath);
 
 						if(File.Exists(ModuleDescriptor))
 						{
+							IgorModuleDescriptor CurrentModuleDescriptorInst = null;
 							IgorModuleDescriptor NewModuleDescriptorInst = IgorModuleDescriptor.Load(ModuleDescriptor);
+
+							if(File.Exists(CurrentModuleDescriptor))
+							{
+								CurrentModuleDescriptorInst = IgorModuleDescriptor.Load(CurrentModuleDescriptor);
+
+								if(CurrentModuleDescriptorInst != null)
+								{
+									ModuleNamesToCurrentVersions.Add(CurrentModule.ModuleName, CurrentModuleDescriptorInst.ModuleVersion);
+								}
+							}
 
 							if(NewModuleDescriptorInst != null)
 							{
+								ModuleNamesToAvailableVersions.Add(CurrentModule.ModuleName, NewModuleDescriptorInst.ModuleVersion);
+
 								foreach(string Dependency in NewModuleDescriptorInst.ModuleDependencies)
 								{
 									if(!DependencyToDependentModules.ContainsKey(Dependency))
@@ -243,7 +261,7 @@ namespace Igor
 		{
 			EditorGUILayout.BeginVertical("box");
 
-			EditorGUILayout.LabelField("Igor Global Config");
+			EditorGUILayout.LabelField("Igor Global Config (Igor Updater Version - " + IgorUpdater.GetCurrentVersion() + ")");
 
 			IgorConfig ConfigInst = IgorConfig.GetInstance();
 
@@ -263,11 +281,6 @@ namespace Igor
 
 					foreach(KeyValuePair<string, List<string>> CurrentModules in AvailableModuleGroupsAndNames)
 					{
-						if(CurrentModules.Key == "Core" && CurrentModules.Value.Count == 1)
-						{
-							continue;
-						}
-
 						bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentModules.Key) && ModuleCategoryExpanded[CurrentModules.Key];
 
 						bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentModules.Key);
@@ -285,17 +298,12 @@ namespace Igor
 
 							foreach(string CurrentModuleName in CurrentModules.Value)
 							{
-								if(CurrentModuleName == "Core" && CurrentModules.Key == "Core")
-								{
-									continue;
-								}
-								
 								bool bWasInstalled = false;
 								string MergedName = CurrentModules.Key + "." + CurrentModuleName;
-								bool bIsDependency = false;
-								string DependentOf = "";
+								bool bIsDependency = CurrentModuleName == "Core" && CurrentModules.Key == "Core";
+								string DependentOf = bIsDependency ? "Everything" : "";
 
-								if(DependencyToDependentModules.ContainsKey(MergedName))
+								if(!bIsDependency && DependencyToDependentModules.ContainsKey(MergedName))
 								{
 									foreach(string CurrentDependent in DependencyToDependentModules[MergedName])
 									{
@@ -313,6 +321,18 @@ namespace Igor
 									}
 								}
 
+								string VersionString = "";
+
+								if(ModuleNamesToCurrentVersions.ContainsKey(MergedName))
+								{
+									VersionString += " - Inst (" + ModuleNamesToCurrentVersions[MergedName] + ")";
+								}
+
+								if(ModuleNamesToAvailableVersions.ContainsKey(MergedName))
+								{
+									VersionString += " Avail (" + ModuleNamesToAvailableVersions[MergedName] + ")";
+								}
+
 								if(ConfigInst.EnabledModules.Contains(MergedName))
 								{
 									bWasInstalled = true;
@@ -322,7 +342,7 @@ namespace Igor
 
 								EditorGUILayout.BeginHorizontal();
 
-								bool bInstalled = EditorGUILayout.ToggleLeft(CurrentModuleName + (bIsDependency ? " - Required by (" + DependentOf + ")" : ""), bWasInstalled || bIsDependency);
+								bool bInstalled = EditorGUILayout.ToggleLeft(CurrentModuleName + VersionString + (bIsDependency ? " - Required by (" + DependentOf + ")" : ""), bWasInstalled || bIsDependency);
 
 								EditorGUILayout.EndHorizontal();
 
