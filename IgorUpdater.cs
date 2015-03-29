@@ -743,7 +743,7 @@ namespace Igor
 
 							if(File.Exists(CurrentModuleDescriptor))
 							{
-								CurrentModuleDescriptorInst = IgorModuleDescriptor.Load(ModuleDescriptor);
+								CurrentModuleDescriptorInst = IgorModuleDescriptor.Load(CurrentModuleDescriptor);
 							}
 
 							if(NewModuleDescriptorInst != null)
