@@ -30,7 +30,7 @@ namespace Igor
 			IgorCore.RegisterNewModule(this);
 		}
 
-		public override void ProcessArgs()
+		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
 		}
 

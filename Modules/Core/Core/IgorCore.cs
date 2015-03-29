@@ -27,7 +27,7 @@ namespace Igor
 		}
 	}
 
-	public class IgorCore : IIgorCore
+	public class IgorCore : IIgorCore, IIgorStepHandler
 	{
 		public delegate bool JobStepFunc(); // Return true if the function finished
 
@@ -88,11 +88,32 @@ namespace Igor
 
 		public static void ProcessArgs()
 		{
-			ActiveModulesForJob.Clear();
-
-			foreach(IIgorModule CurrentModule in EnabledModules)
+			if(IgorUpdater.Core != null)
 			{
-				CurrentModule.ProcessArgs();
+				IgorUpdater.FindCore();
+			}
+
+			if(IgorUpdater.Core != null)
+			{
+				IgorCore CoreInst = (IgorCore)IgorUpdater.Core;
+
+				if(CoreInst != null)
+				{
+					ActiveModulesForJob.Clear();
+
+					foreach(IIgorModule CurrentModule in EnabledModules)
+					{
+						CurrentModule.ProcessArgs(CoreInst);
+					}
+				}
+				else
+				{
+					CriticalError("Core was found, but couldn't be converted to IgorCore.  Did you create a custom one?  You may need to fix up IgorCore::ProcessArgs()!");
+				}
+			}
+			else
+			{
+				CriticalError("Core not found so we bailed out of processing arguments!");
 			}
 		}
 
@@ -244,7 +265,12 @@ namespace Igor
 			}
 		}
 
-		public static void RegisterJobStep(StepID CurrentStep, IIgorModule Module, JobStepFunc StepFunction)
+		public virtual void RegisterJobStep(StepID CurrentStep, IIgorModule Module, JobStepFunc StepFunction)
+		{
+			StaticRegisterJobStep(CurrentStep, Module, StepFunction);
+		}
+
+		protected static void StaticRegisterJobStep(StepID CurrentStep, IIgorModule Module, JobStepFunc StepFunction)
 		{
 			List<JobStep> NewSteps = new List<JobStep>();
 			StepID Priority = new StepID();

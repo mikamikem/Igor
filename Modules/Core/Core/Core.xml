@@ -10,6 +10,7 @@
     <File>IIgorLogger.cs</File>
     <File>IgorModuleBase.cs</File>
     <File>IgorBuiltinLogger.cs</File>
+    <File>IIgorStepHandler.cs</File>
     <File>../../../IgorRun.py</File>
   </ModuleFiles>
 </IgorModuleDescriptor>

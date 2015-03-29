@@ -6,7 +6,7 @@ namespace Igor
 		string GetModuleName();
 
 		void RegisterModule();
-		void ProcessArgs();
+		void ProcessArgs(IIgorStepHandler StepHandler);
 
 		string DrawJobInspectorAndGetEnabledParams(string CurrentParams);
 	}

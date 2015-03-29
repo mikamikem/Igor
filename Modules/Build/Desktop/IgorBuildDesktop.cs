@@ -24,7 +24,7 @@ namespace Igor
 			BuildOptionsDelegates.Clear();
 		}
 
-		public override void ProcessArgs()
+		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
 			if(IgorJobConfig.IsBoolParamSet(IgorBuildCommon.BuildFlag))
 			{
@@ -63,13 +63,13 @@ namespace Igor
 
 				if(bOSX)
 				{
-					IgorCore.RegisterJobStep(IgorBuildCommon.SwitchPlatformStep, this, SwitchPlatforms);
-					IgorCore.RegisterJobStep(IgorBuildCommon.BuildStep, this, BuildOSX);
+					StepHandler.RegisterJobStep(IgorBuildCommon.SwitchPlatformStep, this, SwitchPlatforms);
+					StepHandler.RegisterJobStep(IgorBuildCommon.BuildStep, this, BuildOSX);
 				}
 				else if(bWindows)
 				{
-					IgorCore.RegisterJobStep(IgorBuildCommon.SwitchPlatformStep, this, SwitchPlatforms);
-					IgorCore.RegisterJobStep(IgorBuildCommon.BuildStep, this, BuildWindows);
+					StepHandler.RegisterJobStep(IgorBuildCommon.SwitchPlatformStep, this, SwitchPlatforms);
+					StepHandler.RegisterJobStep(IgorBuildCommon.BuildStep, this, BuildWindows);
 				}
 			}
 		}

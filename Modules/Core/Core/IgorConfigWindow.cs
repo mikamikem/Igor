@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Igor
 {
-	public class IgorConfigWindow : EditorWindow
+	public class IgorConfigWindow : EditorWindow, IIgorStepHandler
 	{
 		[MenuItem("Window/Igor/Igor Configuration", false, 1)]
 		public static IgorConfigWindow OpenOrGetConfigWindow()
@@ -49,6 +49,10 @@ namespace Igor
 		protected Dictionary<string, bool> ParamsModuleCategoryExpanded = new Dictionary<string, bool>();
 		protected Dictionary<IIgorModule, bool> IsModuleExpanded = new Dictionary<IIgorModule, bool>(); 
 		protected bool bShowParams = true;
+
+		protected bool bJobStepsExpanded = false;
+		protected Dictionary<StepID, List<string>> StepIDToFunctions = new Dictionary<StepID, List<string>>();
+		protected Dictionary<StepID, bool> StepIDExpanded = new Dictionary<StepID, bool>();
 
 		public virtual void Update()
 		{
@@ -152,6 +156,22 @@ namespace Igor
 			}
 
 			return ModuleCategoriesToNames;
+		}
+
+		public virtual void RegisterJobStep(StepID CurrentStep, IIgorModule Module, IgorCore.JobStepFunc StepFunction)
+		{
+			if(StepIDToFunctions.ContainsKey(CurrentStep))
+			{
+				StepIDToFunctions[CurrentStep].Add(Module.GetModuleName() + ":" + StepFunction.Method.Name);
+			}
+			else
+			{
+				List<string> NewList = new List<string>();
+
+				NewList.Add(Module.GetModuleName() + ":" + StepFunction.Method.Name);
+
+				StepIDToFunctions.Add(CurrentStep, NewList);
+			}
 		}
 
 		protected virtual void OnGUI()
@@ -353,6 +373,8 @@ namespace Igor
 
 				EditorGUILayout.Separator();
 
+				EditorGUILayout.BeginVertical("box");
+
 				Dictionary<string, IIgorModule> ModuleNameToInst = new Dictionary<string, IIgorModule>();
 				List<string> EnabledModuleNames = new List<string>();
 
@@ -364,6 +386,68 @@ namespace Igor
 
 				Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(EnabledModuleNames);
 
+				bJobStepsExpanded = EditorGUILayout.Foldout(bJobStepsExpanded, "Enabled Job Steps");
+
+				if(bJobStepsExpanded)
+				{
+					EditorGUI.indentLevel += 1;
+
+					StepIDToFunctions.Clear();
+
+					IgorJobConfig TempConfig = new IgorJobConfig();
+
+					TempConfig.Persistent = CurrentJobInst;
+
+					IgorJobConfig.InternalOverride = TempConfig;
+
+					foreach(IIgorModule CurrentModule in IgorCore.EnabledModules)
+					{
+						CurrentModule.ProcessArgs(this);
+					}
+
+					IgorJobConfig.InternalOverride = null;
+
+					foreach(KeyValuePair<StepID, List<string>> CurrentStep in StepIDToFunctions)
+					{
+						bool bCurrentStepExpanded = StepIDExpanded.ContainsKey(CurrentStep.Key) && StepIDExpanded[CurrentStep.Key];
+
+						EditorGUILayout.BeginVertical("box");
+
+						bCurrentStepExpanded = EditorGUILayout.Foldout(bCurrentStepExpanded, CurrentStep.Key.StepPriority.ToString() + " - " + CurrentStep.Key.StepName);
+
+						if(!StepIDExpanded.ContainsKey(CurrentStep.Key))
+						{
+							StepIDExpanded.Add(CurrentStep.Key, bCurrentStepExpanded);
+						}
+
+						StepIDExpanded[CurrentStep.Key] = bCurrentStepExpanded;
+
+						if(bCurrentStepExpanded)
+						{
+							EditorGUI.indentLevel += 1;
+
+							foreach(string CurrentStepFunctionName in CurrentStep.Value)
+							{
+								EditorGUILayout.LabelField(CurrentStepFunctionName);
+							}
+
+							EditorGUI.indentLevel -= 1;
+						}
+
+						EditorGUILayout.EndVertical();
+					}
+
+					EditorGUI.indentLevel -= 1;
+				}
+
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.Separator();
+
+				EditorGUILayout.BeginVertical("box");
+
+				EditorGUILayout.LabelField("Module Options");
+
 				foreach(KeyValuePair<string, List<string>> CurrentModules in AvailableModuleGroupsAndNames)
 				{
 					if(CurrentModules.Key == "Core" && CurrentModules.Value.Count == 1)
@@ -371,16 +455,16 @@ namespace Igor
 						continue;
 					}
 
-					bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentModules.Key) && ModuleCategoryExpanded[CurrentModules.Key];
+					bool bCurrentCategoryExpanded = ParamsModuleCategoryExpanded.ContainsKey(CurrentModules.Key) && ParamsModuleCategoryExpanded[CurrentModules.Key];
 
 					bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentModules.Key);
 
-					if(!ModuleCategoryExpanded.ContainsKey(CurrentModules.Key))
+					if(!ParamsModuleCategoryExpanded.ContainsKey(CurrentModules.Key))
 					{
-						ModuleCategoryExpanded.Add(CurrentModules.Key, bCurrentCategoryExpanded);
+						ParamsModuleCategoryExpanded.Add(CurrentModules.Key, bCurrentCategoryExpanded);
 					}
 
-					ModuleCategoryExpanded[CurrentModules.Key] = bCurrentCategoryExpanded;
+					ParamsModuleCategoryExpanded[CurrentModules.Key] = bCurrentCategoryExpanded;
 
 					if(bCurrentCategoryExpanded)
 					{
@@ -425,6 +509,8 @@ namespace Igor
 						EditorGUI.indentLevel -= 1;
 					}
 				}
+
+				EditorGUILayout.EndVertical();
 			}
 			else
 			{

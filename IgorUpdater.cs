@@ -273,6 +273,7 @@ namespace Igor
 	public class IgorJobConfig
 	{
 		public static string IgorJobConfigPath = "IgorJob.xml";
+		public static IgorJobConfig InternalOverride = null;
 
 		public IgorPersistentJobConfig Persistent = new IgorPersistentJobConfig();
 
@@ -302,6 +303,11 @@ namespace Igor
 
 	 	public static IgorJobConfig GetConfig()
 	 	{
+	 		if(InternalOverride != null)
+	 		{
+	 			return InternalOverride;
+	 		}
+	 		
 	 		if(File.Exists(IgorJobConfigPath))
 	 		{
 				return IgorJobConfig.Load(IgorJobConfigPath);

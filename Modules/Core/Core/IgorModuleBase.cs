@@ -21,7 +21,7 @@ namespace Igor
 		{
 		}
 
-		public virtual void ProcessArgs()
+		public virtual void ProcessArgs(IIgorStepHandler StepHandler)
 		{
 		}
 
