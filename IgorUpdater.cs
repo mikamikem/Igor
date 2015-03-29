@@ -494,7 +494,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 1;
+		private const int Version = 2;
 
 		public static bool bDontUpdate = false;
 		public static bool bAlwaysUpdate = false;
