@@ -4,5 +4,6 @@
     <Module ModuleName="Core.Core" ModuleDescriptorRelativePath="Core/Core/Core.xml" />
     <Module ModuleName="Build.Common" ModuleDescriptorRelativePath="Build/Common/Common.xml" />
     <Module ModuleName="Build.Desktop" ModuleDescriptorRelativePath="Build/Desktop/Desktop.xml" />
+    <Module ModuleName="3rdParty.AmplifyTexture" ModuleDescriptorRelativePath="3rdParty/AmplifyTexture/IgorAmplifyTexture.xml" />
   </Modules>
 </IgorModuleList>
