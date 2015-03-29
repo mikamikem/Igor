@@ -37,6 +37,7 @@ namespace Igor
 		private bool bInitialized = false;
 
 		protected List<string> AvailableModuleNames = new List<string>();
+		protected Dictionary<string, List<string>> DependencyToDependentModules = new Dictionary<string, List<string>>(); // This maps from ie. Build Common -> { Build.Desktop, Build.iOS }
 		protected bool bAvailableModulesExpanded = false;
 		protected Dictionary<string, bool> ModuleCategoryExpanded = new Dictionary<string, bool>();
 		protected bool bModulesChanged = false;
@@ -125,6 +126,32 @@ namespace Igor
 					foreach(IgorModuleList.ModuleItem CurrentModule in ModuleListInst.Modules)
 					{
 						AvailableModuleNames.Add(CurrentModule.ModuleName);
+
+						string ModuleDescriptor = IgorUtils.DownloadFileForUpdate(IgorUpdater.RemoteRelativeModuleRoot + CurrentModule.ModuleDescriptorRelativePath);
+
+						if(File.Exists(ModuleDescriptor))
+						{
+							IgorModuleDescriptor NewModuleDescriptorInst = IgorModuleDescriptor.Load(ModuleDescriptor);
+
+							if(NewModuleDescriptorInst != null)
+							{
+								foreach(string Dependency in NewModuleDescriptorInst.ModuleDependencies)
+								{
+									if(!DependencyToDependentModules.ContainsKey(Dependency))
+									{
+										List<string> NewList = new List<string>();
+
+										NewList.Add(CurrentModule.ModuleName);
+
+										DependencyToDependentModules.Add(Dependency, NewList);
+									}
+									else
+									{
+										DependencyToDependentModules[Dependency].Add(CurrentModule.ModuleName);
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -265,25 +292,56 @@ namespace Igor
 								
 								bool bWasInstalled = false;
 								string MergedName = CurrentModules.Key + "." + CurrentModuleName;
+								bool bIsDependency = false;
+								string DependentOf = "";
+
+								if(DependencyToDependentModules.ContainsKey(MergedName))
+								{
+									foreach(string CurrentDependent in DependencyToDependentModules[MergedName])
+									{
+										if(ConfigInst.EnabledModules.Contains(CurrentDependent))
+										{
+											if(bIsDependency)
+											{
+												DependentOf += ", ";
+											}
+
+											DependentOf += CurrentDependent;
+
+											bIsDependency = true;
+										}
+									}
+								}
 
 								if(ConfigInst.EnabledModules.Contains(MergedName))
 								{
 									bWasInstalled = true;
 								}
 
-								bool bInstalled = EditorGUILayout.Toggle(CurrentModuleName, bWasInstalled);
+								GUI.enabled = !bIsDependency;
 
-								if(!bWasInstalled && bInstalled)
+								EditorGUILayout.BeginHorizontal();
+
+								bool bInstalled = EditorGUILayout.ToggleLeft(CurrentModuleName + (bIsDependency ? " - Required by (" + DependentOf + ")" : ""), bWasInstalled || bIsDependency);
+
+								EditorGUILayout.EndHorizontal();
+
+								GUI.enabled = true;
+
+								if(!bIsDependency)
 								{
-									ConfigInst.EnabledModules.Add(MergedName);
+									if(!bWasInstalled && bInstalled)
+									{
+										ConfigInst.EnabledModules.Add(MergedName);
 
-									bModulesChanged = true;
-								}
-								else if(bWasInstalled && !bInstalled)
-								{
-									ConfigInst.EnabledModules.Remove(MergedName);
+										bModulesChanged = true;
+									}
+									else if(bWasInstalled && !bInstalled)
+									{
+										ConfigInst.EnabledModules.Remove(MergedName);
 
-									bModulesChanged = true;
+										bModulesChanged = true;
+									}
 								}
 							}
 
