@@ -407,26 +407,32 @@ namespace Igor
 
 					IgorJobConfig.InternalOverride = null;
 
-					foreach(KeyValuePair<StepID, List<string>> CurrentStep in StepIDToFunctions)
+					List<StepID> SortedSteps = new List<StepID>(StepIDToFunctions.Keys);
+
+					SortedSteps.Sort();
+
+					foreach(StepID CurrentStep in SortedSteps)
 					{
-						bool bCurrentStepExpanded = StepIDExpanded.ContainsKey(CurrentStep.Key) && StepIDExpanded[CurrentStep.Key];
+						bool bCurrentStepExpanded = StepIDExpanded.ContainsKey(CurrentStep) && StepIDExpanded[CurrentStep];
 
 						EditorGUILayout.BeginVertical("box");
 
-						bCurrentStepExpanded = EditorGUILayout.Foldout(bCurrentStepExpanded, CurrentStep.Key.StepPriority.ToString() + " - " + CurrentStep.Key.StepName);
+						bCurrentStepExpanded = EditorGUILayout.Foldout(bCurrentStepExpanded, CurrentStep.StepPriority.ToString() + " - " + CurrentStep.StepName);
 
-						if(!StepIDExpanded.ContainsKey(CurrentStep.Key))
+						if(!StepIDExpanded.ContainsKey(CurrentStep))
 						{
-							StepIDExpanded.Add(CurrentStep.Key, bCurrentStepExpanded);
+							StepIDExpanded.Add(CurrentStep, bCurrentStepExpanded);
 						}
 
-						StepIDExpanded[CurrentStep.Key] = bCurrentStepExpanded;
+						StepIDExpanded[CurrentStep] = bCurrentStepExpanded;
 
 						if(bCurrentStepExpanded)
 						{
+							List<string> CurrentStepFuncs = StepIDToFunctions[CurrentStep];
+
 							EditorGUI.indentLevel += 1;
 
-							foreach(string CurrentStepFunctionName in CurrentStep.Value)
+							foreach(string CurrentStepFunctionName in CurrentStepFuncs)
 							{
 								EditorGUILayout.LabelField(CurrentStepFunctionName);
 							}
