@@ -494,7 +494,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 3;
+		private const int Version = 4;
 
 		public static bool bDontUpdate = false;
 		public static bool bAlwaysUpdate = false;
@@ -531,23 +531,19 @@ namespace Igor
 
 			if(!bDontUpdate || bForce)
 			{
-				if(!SelfUpdate() || (bAlwaysUpdate && !EditorApplication.isCompiling))
-				{
-					if(!UpdateCore() || (bAlwaysUpdate && !EditorApplication.isCompiling))
-					{
-						if(!UpdateModules() || (bAlwaysUpdate && !EditorApplication.isCompiling))
-						{
-							if(bAlwaysUpdate && EditorApplication.isCompiling)
-							{
-								return true;
-							}
+				bool bNeedsRebuild = SelfUpdate();
 
-							return false;
-						}
-					}
+				bNeedsRebuild = UpdateCore() || bNeedsRebuild;
+				bNeedsRebuild = UpdateModules() || bNeedsRebuild;
+
+				if(bNeedsRebuild)
+				{
+					IgorJobConfig.SetBoolParam("restartingfromupdate", true);
+
+					AssetDatabase.Refresh();
 				}
 
-				return true;
+				return bNeedsRebuild;
 			}
 
 			return false;
@@ -619,10 +615,6 @@ namespace Igor
 
 						File.Copy(LocalUpdater, InstalledFilePath);
 
-						IgorJobConfig.SetBoolParam("finishedselfupdate", true);
-
-						AssetDatabase.Refresh();
-
 						return true;
 					}
 				}
@@ -680,10 +672,6 @@ namespace Igor
 
 				if(UpdateModule(CoreModuleName))
 				{
-					IgorJobConfig.SetBoolParam("finishedcoreupdate", true);
-
-					AssetDatabase.Refresh();
-
 					return true;
 				}
 			}
@@ -870,10 +858,6 @@ namespace Igor
 
 					if(bUpdated)
 					{
-						IgorJobConfig.SetBoolParam("finishedmoduleupdate", true);
-
-						AssetDatabase.Refresh();
-
 						return true;
 					}
 				}
@@ -919,12 +903,9 @@ namespace Igor
 			{
 				FindCore();
 
-				if(IgorJobConfig.IsBoolParamSet("finishedselfupdate") || IgorJobConfig.IsBoolParamSet("finishedcoreupdate") || IgorJobConfig.IsBoolParamSet("finishedmoduleupdate") ||
-				   IgorJobConfig.IsBoolParamSet("updatebeforebuild") || Core == null)
+				if(IgorJobConfig.IsBoolParamSet("restartingfromupdate") || IgorJobConfig.IsBoolParamSet("updatebeforebuild") || Core == null)
 				{
-					IgorJobConfig.SetBoolParam("finishedselfupdate", false);
-					IgorJobConfig.SetBoolParam("finishedcoreupdate", false);
-					IgorJobConfig.SetBoolParam("finishedmoduleupdate", false);
+					IgorJobConfig.SetBoolParam("restartingfromupdate", false);
 
 					if(!CheckForUpdates())
 					{
