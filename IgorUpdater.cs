@@ -762,7 +762,7 @@ namespace Igor
 									{
 										foreach(string LocalFile in CurrentModuleDescriptorInst.ModuleFiles)
 										{
-											string FullLocalPath = Path.Combine(LocalModuleRoot, LocalFile);
+											string FullLocalPath = Path.Combine(LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile));
 
 											if(File.Exists(FullLocalPath))
 											{
