@@ -8,5 +8,6 @@
     <Module ModuleName="Package.Common" ModuleDescriptorRelativePath="Package/Common/Common.xml" />
     <Module ModuleName="Package.Zip" ModuleDescriptorRelativePath="Package/Zip/Zip.xml" />
     <Module ModuleName="Distribution.JenkinsFTP" ModuleDescriptorRelativePath="Distribution/JenkinsFTP/JenkinsFTP.xml" />
+    <Module ModuleName="Distribution.BitTorrentSync" ModuleDescriptorRelativePath="Distribution/BitTorrentSync/BitTorrentSync.xml" />
   </Modules>
 </IgorModuleList>

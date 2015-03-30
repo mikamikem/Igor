@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <ModuleName>Distribution.JenkinsFTP</ModuleName>
+  <ModuleName>Distribution.BitTorrentSync</ModuleName>
   <ModuleVersion>1</ModuleVersion>
   <ModuleFiles>
-    <File>JenkinsFTP.cs</File>
+    <File>BitTorrentSync.cs</File>
   </ModuleFiles>
   <ModuleDependencies>
     <Module>Build.Common</Module>
