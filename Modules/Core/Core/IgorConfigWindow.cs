@@ -283,28 +283,40 @@ namespace Igor
 
 					Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(AvailableModuleNames);
 
-					foreach(KeyValuePair<string, List<string>> CurrentModules in AvailableModuleGroupsAndNames)
+					List<string> SortedGroups = new List<string>();
+
+					SortedGroups.AddRange(AvailableModuleGroupsAndNames.Keys);
+
+					SortedGroups.Sort();
+
+					foreach(string CurrentGroup in SortedGroups)
 					{
-						bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentModules.Key) && ModuleCategoryExpanded[CurrentModules.Key];
+						List<string> SortedModules = new List<string>();
 
-						bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentModules.Key);
+						SortedModules.AddRange(AvailableModuleGroupsAndNames[CurrentGroup]);
 
-						if(!ModuleCategoryExpanded.ContainsKey(CurrentModules.Key))
+						SortedModules.Sort();
+
+						bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentGroup) && ModuleCategoryExpanded[CurrentGroup];
+
+						bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentGroup);
+
+						if(!ModuleCategoryExpanded.ContainsKey(CurrentGroup))
 						{
-							ModuleCategoryExpanded.Add(CurrentModules.Key, bCurrentCategoryExpanded);
+							ModuleCategoryExpanded.Add(CurrentGroup, bCurrentCategoryExpanded);
 						}
 
-						ModuleCategoryExpanded[CurrentModules.Key] = bCurrentCategoryExpanded;
+						ModuleCategoryExpanded[CurrentGroup] = bCurrentCategoryExpanded;
 
 						if(bCurrentCategoryExpanded)
 						{
 							EditorGUI.indentLevel += 1;
 
-							foreach(string CurrentModuleName in CurrentModules.Value)
+							foreach(string CurrentModuleName in SortedModules)
 							{
 								bool bWasInstalled = false;
-								string MergedName = CurrentModules.Key + "." + CurrentModuleName;
-								bool bIsDependency = CurrentModuleName == "Core" && CurrentModules.Key == "Core";
+								string MergedName = CurrentGroup + "." + CurrentModuleName;
+								bool bIsDependency = CurrentModuleName == "Core" && CurrentGroup == "Core";
 								string DependentOf = bIsDependency ? "Everything" : "";
 
 								if(!bIsDependency && DependencyToDependentModules.ContainsKey(MergedName))
@@ -536,31 +548,43 @@ namespace Igor
 
 				EditorGUILayout.LabelField("Module Options");
 
-				foreach(KeyValuePair<string, List<string>> CurrentModules in AvailableModuleGroupsAndNames)
+				List<string> SortedGroups = new List<string>();
+
+				SortedGroups.AddRange(AvailableModuleGroupsAndNames.Keys);
+
+				SortedGroups.Sort();
+
+				foreach(string CurrentGroup in SortedGroups)
 				{
-					if(CurrentModules.Key == "Core" && CurrentModules.Value.Count == 1)
+					List<string> SortedModules = new List<string>();
+
+					SortedModules.AddRange(AvailableModuleGroupsAndNames[CurrentGroup]);
+
+					if(CurrentGroup == "Core" && SortedModules.Count == 1)
 					{
 						continue;
 					}
 
-					bool bCurrentCategoryExpanded = ParamsModuleCategoryExpanded.ContainsKey(CurrentModules.Key) && ParamsModuleCategoryExpanded[CurrentModules.Key];
+					SortedModules.Sort();
 
-					bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentModules.Key);
+					bool bCurrentCategoryExpanded = ParamsModuleCategoryExpanded.ContainsKey(CurrentGroup) && ParamsModuleCategoryExpanded[CurrentGroup];
 
-					if(!ParamsModuleCategoryExpanded.ContainsKey(CurrentModules.Key))
+					bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentGroup);
+
+					if(!ParamsModuleCategoryExpanded.ContainsKey(CurrentGroup))
 					{
-						ParamsModuleCategoryExpanded.Add(CurrentModules.Key, bCurrentCategoryExpanded);
+						ParamsModuleCategoryExpanded.Add(CurrentGroup, bCurrentCategoryExpanded);
 					}
 
-					ParamsModuleCategoryExpanded[CurrentModules.Key] = bCurrentCategoryExpanded;
+					ParamsModuleCategoryExpanded[CurrentGroup] = bCurrentCategoryExpanded;
 
 					if(bCurrentCategoryExpanded)
 					{
 						EditorGUI.indentLevel += 1;
 
-						foreach(string CurrentModuleName in CurrentModules.Value)
+						foreach(string CurrentModuleName in SortedModules)
 						{
-							string FullModuleName = CurrentModules.Key + "." + CurrentModuleName;
+							string FullModuleName = CurrentGroup + "." + CurrentModuleName;
 
 							IIgorModule CurrentModule = ModuleNameToInst.ContainsKey(FullModuleName) ? ModuleNameToInst[FullModuleName] : null;
 
