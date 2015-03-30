@@ -30,13 +30,27 @@ namespace Igor
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
+			bool bStepRegistered = false;
+
 			if(IgorJobConfig.GetStringParam(UploadToFTPFlag) != "" &&
 				(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) ||
-					(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "" && IgorUtils.GetEnvVariable(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag)) != "")))
+					(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "" && IgorUtils.GetEnvVariable(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag)) == "true")))
+			{
+				StepHandler.RegisterJobStep(UploadToFTPStep, this, UploadToFTP);
+
+				bStepRegistered = true;
+			}
+
+			if(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) || IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "")
+			{
+				StepHandler.RegisterJobStep(IgorBuildCommon.PreBuildCleanupStep, this, Cleanup);
+
+				bStepRegistered = true;
+			}
+
+			if(bStepRegistered)
 			{
 				IgorCore.SetModuleActiveForJob(this);
-				StepHandler.RegisterJobStep(IgorBuildCommon.PreBuildCleanupStep, this, Cleanup);
-				StepHandler.RegisterJobStep(UploadToFTPStep, this, UploadToFTP);
 			}
 		}
 
