@@ -85,6 +85,12 @@ namespace Igor
 			else
 			{
 				Log("Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
+
+				List<string> NewProducts = new List<string>();
+
+				NewProducts.Add(ZipFilename);
+
+				IgorBuildCommon.SetNewBuildProducts(NewProducts);
 			}
 		}
 
@@ -121,6 +127,12 @@ namespace Igor
 			else
 			{
 				Log("Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
+
+				List<string> NewProducts = new List<string>();
+
+				NewProducts.Add(ZipFilename);
+
+				IgorBuildCommon.SetNewBuildProducts(NewProducts);
 			}
 		}
 	}

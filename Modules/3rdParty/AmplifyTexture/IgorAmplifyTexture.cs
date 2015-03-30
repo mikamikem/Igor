@@ -16,7 +16,7 @@ namespace Igor
 		public static string UpdateAmplifyFlag = "updateamplify";
 		public static string RebuildAmplifyFlag = "rebuildamplify";
 
-		public static StepID BuildAmplifyStep = new StepID("BuildAmplify", 100);
+		public static StepID BuildAmplifyStep = new StepID("BuildAmplify", 300);
 
 		public override string GetModuleName()
 		{

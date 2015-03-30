@@ -18,7 +18,8 @@ namespace Igor
 		protected static string ProductsFlag = "buildproducts";
 
 		public static StepID BuildStep = new StepID("Build", 500);
-		public static StepID SwitchPlatformStep = new StepID("SwitchPlatform", 0);
+		public static StepID SwitchPlatformStep = new StepID("SwitchPlatform", 250);
+		public static StepID PreBuildCleanupStep = new StepID("PreBuildCleanup", 0);
 
 		public delegate BuildOptions GetExtraBuildOptions(BuildTarget CurrentTarget);
 

@@ -111,5 +111,19 @@ namespace Igor
 
 			return NewProcess.ExitCode;
 		}
+
+		public static string GetEnvVariable(string EnvironmentVariableName)
+		{
+			string Value = "";
+
+			Value = System.Environment.GetEnvironmentVariable(EnvironmentVariableName);
+
+			if(Value == null)
+			{
+				Value = "";
+			}
+
+			return Value;
+		}
 	}
 }
