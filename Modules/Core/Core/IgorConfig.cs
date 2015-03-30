@@ -47,6 +47,9 @@ namespace Igor
 	 	public void Save(string path)
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorConfig));
+
+	 		IgorUtils.DeleteFile(path);
+
 	 		using(FileStream stream = new FileStream(path, FileMode.Create))
 	 		{
 	 			serializer.Serialize(stream, this);
@@ -56,6 +59,12 @@ namespace Igor
 	 	public static IgorConfig Load(string path)
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorConfig));
+
+	 		if(File.Exists(path))
+			{
+				File.SetAttributes(path, System.IO.FileAttributes.Normal);
+			}
+
 	 		using(var stream = new FileStream(path, FileMode.Open))
 	 		{
 	 			return serializer.Deserialize(stream) as IgorConfig;

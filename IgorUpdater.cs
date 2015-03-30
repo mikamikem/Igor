@@ -223,6 +223,9 @@ namespace Igor
 	 	public void Save(string path)
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorModuleList));
+
+	 		IgorUtils.DeleteFile(path);
+
 	 		using(FileStream stream = new FileStream(path, FileMode.Create))
 	 		{
 	 			serializer.Serialize(stream, this);
@@ -232,6 +235,12 @@ namespace Igor
 	 	public static IgorModuleList Load(string path)
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorModuleList));
+
+	 		if(File.Exists(path))
+			{
+				File.SetAttributes(path, System.IO.FileAttributes.Normal);
+			}
+
 	 		using(var stream = new FileStream(path, FileMode.Open))
 	 		{
 	 			return serializer.Deserialize(stream) as IgorModuleList;
@@ -256,6 +265,9 @@ namespace Igor
 	 	public void Save(string path)
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorModuleDescriptor));
+
+	 		IgorUtils.DeleteFile(path);
+
 	 		using(FileStream stream = new FileStream(path, FileMode.Create))
 	 		{
 	 			serializer.Serialize(stream, this);
@@ -265,6 +277,12 @@ namespace Igor
 	 	public static IgorModuleDescriptor Load(string path)
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorModuleDescriptor));
+
+	 		if(File.Exists(path))
+			{
+				File.SetAttributes(path, System.IO.FileAttributes.Normal);
+			}
+
 	 		using(var stream = new FileStream(path, FileMode.Open))
 	 		{
 	 			return serializer.Deserialize(stream) as IgorModuleDescriptor;
@@ -500,7 +518,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 6;
+		private const int Version = 7;
 
 		public static bool bDontUpdate = false;
 		public static bool bAlwaysUpdate = false;
