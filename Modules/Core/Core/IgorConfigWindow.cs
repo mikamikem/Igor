@@ -243,7 +243,11 @@ namespace Igor
 			}
 			catch(System.Exception e)
 			{
-				IgorCore.LogError(null, "ListWindow threw an exception in OnGUI() - " + e.ToString());
+				// Sometimes when transitioning to running the GUI freaks out and throws exceptions, so we can ignore those
+				if(!IgorJobConfig.GetIsRunning())
+				{
+					IgorCore.LogError(null, "ListWindow threw an exception in OnGUI() - " + e.ToString());
+				}
 			}
 		}
 

@@ -15,10 +15,14 @@ namespace Igor
 		public static string BuildFlag = "build";
 		public static string PlatformFlag = "platform";
 
+		protected static string ProductsFlag = "buildproducts";
+
 		public static StepID BuildStep = new StepID("Build", 500);
 		public static StepID SwitchPlatformStep = new StepID("SwitchPlatform", 0);
 
 		public delegate BuildOptions GetExtraBuildOptions(BuildTarget CurrentTarget);
+
+		protected static List<string> CurrentBuildProducts = new List<string>();
 
 		public override string GetModuleName()
 		{
@@ -47,6 +51,34 @@ namespace Igor
 			}
 			
 			return LevelNames.ToArray();
+		}
+
+		public static void SetNewBuildProducts(List<string> NewBuildProducts)
+		{
+			CurrentBuildProducts.Clear();
+			CurrentBuildProducts.AddRange(NewBuildProducts);
+
+			string CombinedProducts = "";
+
+			foreach(string CurrentProduct in NewBuildProducts)
+			{
+				CombinedProducts += (CombinedProducts.Length > 0 ? "," : "") + CurrentProduct;
+			}
+
+			IgorJobConfig.SetStringParam(ProductsFlag, CombinedProducts);
+		}
+
+		public static List<string> GetBuildProducts()
+		{
+			if(CurrentBuildProducts.Count == 0)
+			{
+				string CombinedProducts = IgorJobConfig.GetStringParam(ProductsFlag);
+
+				CurrentBuildProducts.Clear();
+				CurrentBuildProducts.AddRange(CombinedProducts.Split(','));
+			}
+
+			return CurrentBuildProducts;
 		}
 	}
 }

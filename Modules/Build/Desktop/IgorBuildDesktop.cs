@@ -79,7 +79,7 @@ namespace Igor
 			string EnabledParams = CurrentParams;
 
 			DrawBoolParam(ref EnabledParams, "Build the game", IgorBuildCommon.BuildFlag);
-			DrawStringParam(ref EnabledParams, "Platform to build", IgorBuildCommon.PlatformFlag, new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
+			DrawStringOptionsParam(ref EnabledParams, "Platform to build", IgorBuildCommon.PlatformFlag, new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
 
 			return EnabledParams;
 		}
@@ -161,6 +161,16 @@ namespace Igor
 			return BuiltName;
 		}
 
+		public virtual bool IsPlatformWindows(BuildTarget CurrentTarget)
+		{
+			if(CurrentTarget == BuildTarget.StandaloneWindows || CurrentTarget == BuildTarget.StandaloneWindows64)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		public virtual BuildOptions GetExternalBuildOptions(BuildTarget CurrentTarget)
 		{
 			BuildOptions ExtraOptions = BuildOptions.None;
@@ -211,6 +221,17 @@ namespace Igor
 #else
 			BuildPipeline.BuildPlayer(IgorBuildCommon.GetLevels(), System.IO.Path.Combine(System.IO.Path.GetFullPath("."), BuiltName), JobBuildTarget, AllOptions);
 #endif
+
+			List<string> BuiltFiles = new List<string>();
+
+			BuiltFiles.Add(BuiltName);
+
+			if(IsPlatformWindows(JobBuildTarget))
+			{
+				BuiltFiles.Add(BuiltName.Substring(0, BuiltName.LastIndexOf('.')) + "_Data");
+			}
+
+			IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
 
 			return true;
 		}

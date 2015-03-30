@@ -39,12 +39,21 @@ namespace Igor
 			CurrentParams = IgorUtils.SetBoolParam(CurrentParams, BoolParam, bIsEnabled);
 		}
 
-		public virtual void DrawStringParam(ref string CurrentParams, string StringLabel, string StringParam, List<string> ValidOptions)
+		public virtual void DrawStringParam(ref string CurrentParams, string StringLabel, string StringParam)
 		{
-			DrawStringParam(ref CurrentParams, StringLabel, StringParam, ValidOptions.ToArray());
+			string CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringParam);
+
+			CurrentStringValue = EditorGUILayout.TextField(StringLabel, CurrentStringValue);
+
+			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
 		}
 
-		public virtual void DrawStringParam(ref string CurrentParams, string StringLabel, string StringParam, string[] ValidOptions)
+		public virtual void DrawStringOptionsParam(ref string CurrentParams, string StringLabel, string StringParam, List<string> ValidOptions)
+		{
+			DrawStringOptionsParam(ref CurrentParams, StringLabel, StringParam, ValidOptions.ToArray());
+		}
+
+		public virtual void DrawStringOptionsParam(ref string CurrentParams, string StringLabel, string StringParam, string[] ValidOptions)
 		{
 			string CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringParam);
 

@@ -18,7 +18,7 @@ namespace Igor
 		void RunJobInst();
 	}
 
-	public class IgorUtils
+	public partial class IgorUtils
 	{
 		public static List<Type> GetTypesWith<TAttribute>(bool bInherit) where TAttribute : Attribute
 		{
@@ -307,7 +307,7 @@ namespace Igor
 	 		{
 	 			return InternalOverride;
 	 		}
-	 		
+
 	 		if(File.Exists(IgorJobConfigPath))
 	 		{
 				return IgorJobConfig.Load(IgorJobConfigPath);
@@ -475,26 +475,23 @@ namespace Igor
 	 	}
 	}
 
-	public class DummyValidation : ICertificatePolicy
-	{
-	    public bool CheckValidationResult(ServicePoint sp, X509Certificate cert,
-	       WebRequest request, int problem)
-	    {        
-	        return true; 
-	    }
-	}
-
 	[InitializeOnLoad]
 	public class IgorUpdater
 	{
 		static IgorUpdater()
 		{
-			ServicePointManager.CertificatePolicy = new DummyValidation();
+			ServicePointManager.ServerCertificateValidationCallback +=
+			delegate(object sender, X509Certificate certificate,
+			                        X509Chain chain,
+			                        System.Net.Security.SslPolicyErrors sslPolicyErrors)
+			    {
+			        return true;
+			    };
 
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 4;
+		private const int Version = 5;
 
 		public static bool bDontUpdate = false;
 		public static bool bAlwaysUpdate = false;
@@ -862,16 +859,9 @@ namespace Igor
 					}
 				}
 			}
-			catch(TimeoutException to)
+			catch(TimeoutException)
 			{
-				if(false)
-				{
-					Debug.LogError("Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
-
-					bThrewException = true;
-
-					CleanupTemp();
-				}
+				// We should eventually handle this case by triggering a re-attempt
 			}
 			catch(Exception e)
 			{
