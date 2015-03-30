@@ -112,7 +112,7 @@ namespace Igor
 
 				if(File.Exists(DestinationFile))
 				{
-					File.Delete(DestinationFile);
+					IgorUtils.DeleteFile(DestinationFile);
 				}
 
 				File.Copy(FileToCopy, DestinationFile);

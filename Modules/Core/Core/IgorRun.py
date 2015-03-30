@@ -32,78 +32,80 @@ JobConfigFilename = "IgorJob.xml"
 UnityAutomatorFilename = "IgorRun.py"
 
 def GetUnityPath():
-    if _platform == "linux" or _platform == "linux2":
-        return ""
-    elif _platform == "darwin":
-        return "/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-    elif _platform == "win32":
-        return "\"C:\\Program Files (x86)\\Unity\\Editor\\Unity.exe\""
-    
-    return ""
-    
+	if _platform == "linux" or _platform == "linux2":
+		return ""
+	elif _platform == "darwin":
+		return "/Applications/Unity/Unity.app/Contents/MacOS/Unity"
+	elif _platform == "win32":
+		if os.path.exists("C:\\Program Files\\Unity\\Editor\\Unity.exe"):
+			return "\"C:\\Program Files\\Unity\\Editor\\Unity.exe\""
+		return "\"C:\\Program Files (x86)\\Unity\\Editor\\Unity.exe\""
+	
+	return ""
+	
 def num(s):
-    try:
-        return int(s)
-    except ValueError:
-        return float(s)
+	try:
+		return int(s)
+	except ValueError:
+		return float(s)
 
 def SetFileExecutable(Filename):
-    Stats = os.stat(Filename)
-    os.chmod(Filename, Stats.st_mode | stat.S_IEXEC)
+	Stats = os.stat(Filename)
+	os.chmod(Filename, Stats.st_mode | stat.S_IEXEC)
 
-    return
+	return
 
 def DownloadFileToLocation(FileURL, LocalURL):
-    global Local
+	global Local
 
-    if os.path.dirname(LocalURL) != '':
-        if not os.path.exists(os.path.dirname(LocalURL)):
-            print("Making dirs \"" + os.path.dirname(LocalURL) + "\"")
-            os.makedirs(os.path.dirname(LocalURL))
+	if os.path.dirname(LocalURL) != '':
+		if not os.path.exists(os.path.dirname(LocalURL)):
+			print("Making dirs \"" + os.path.dirname(LocalURL) + "\"")
+			os.makedirs(os.path.dirname(LocalURL))
 
-    if Local == False:
-        # Download the file from `url` and save it locally under `file_name`:
-        with closing(urlopen(FileURL)) as response, open(LocalURL, 'wb') as out_file:
-            data = response.read() # a `bytes` object
-            out_file.write(data)
-    else:
-        shutil.copy(FileURL, LocalURL)
+	if Local == False:
+		# Download the file from `url` and save it locally under `file_name`:
+		with closing(urlopen(FileURL)) as response, open(LocalURL, 'wb') as out_file:
+			data = response.read() # a `bytes` object
+			out_file.write(data)
+	else:
+		shutil.copy(FileURL, LocalURL)
 
-    return
+	return
 
 def BootstrapIfRequested():
-    global UnityAutomatorFilename, RunningDirectory
+	global UnityAutomatorFilename, RunningDirectory
 
-    bootstrapparser = argparse.ArgumentParser(add_help=False)
-    bootstrapparser.add_argument('--bootstrap')
-    bootstrapparser.add_argument('--finalbootstrap')
+	bootstrapparser = argparse.ArgumentParser(add_help=False)
+	bootstrapparser.add_argument('--bootstrap')
+	bootstrapparser.add_argument('--finalbootstrap')
 
-    bootstrapargs, unknown = bootstrapparser.parse_known_args()
+	bootstrapargs, unknown = bootstrapparser.parse_known_args()
 
-    if bootstrapargs.finalbootstrap != None and bootstrapargs.finalbootstrap != '':
-        TempFile = bootstrapargs.finalbootstrap
+	if bootstrapargs.finalbootstrap != None and bootstrapargs.finalbootstrap != '':
+		TempFile = bootstrapargs.finalbootstrap
 
-        print("Bootstrap (4/4) - Removing temp bootstrap file " + TempFile)
+		print("Bootstrap (4/4) - Removing temp bootstrap file " + TempFile)
 
-        os.remove(TempFile)
+		os.remove(TempFile)
 
-    elif bootstrapargs.bootstrap != None and bootstrapargs.bootstrap != '':
-        OriginalFile = bootstrapargs.bootstrap
+	elif bootstrapargs.bootstrap != None and bootstrapargs.bootstrap != '':
+		OriginalFile = bootstrapargs.bootstrap
 
-        BaseName = UnityAutomatorFilename
+		BaseName = UnityAutomatorFilename
 
-        print("Bootstrap (2/4) - Removing the original file " + OriginalFile)
+		print("Bootstrap (2/4) - Removing the original file " + OriginalFile)
 
-        os.remove(OriginalFile)
-        
-        print("Bootstrap (3/4) - Copying the new file to " + BaseName)
-    
-        PathToNewScript = os.path.join(RunningDirectory, BaseName)
-        shutil.copy(__file__, os.path.join(os.getcwd(), PathToNewScript))
+		os.remove(OriginalFile)
+		
+		print("Bootstrap (3/4) - Copying the new file to " + BaseName)
+	
+		PathToNewScript = os.path.join(RunningDirectory, BaseName)
+		shutil.copy(__file__, os.path.join(os.getcwd(), PathToNewScript))
 
-        os.execv(PathToNewScript, [PathToNewScript, '--finalbootstrap'] + sys.argv)
+		os.execv(PathToNewScript, [PathToNewScript, '--finalbootstrap'] + sys.argv)
 
-    return
+	return
 
 def SelfUpdate():
 	global Local, RemoteXMLFile, RemotePythonFile, LocalXMLFile, LocalPythonFile, TempLocalXMLFile, AlwaysUpdate, CoreDirectory, TempLocalPythonFile

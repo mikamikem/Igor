@@ -60,6 +60,15 @@ namespace Igor
 			return AllTypes;
 		}
 
+		public static void DeleteFile(string TargetFile)
+		{
+			if(File.Exists(TargetFile))
+			{
+		        File.SetAttributes(TargetFile, System.IO.FileAttributes.Normal);
+		        File.Delete(TargetFile);
+		    }
+		}
+
 		public static void DeleteDirectory(string targetDir)
 		{
 			if(!Directory.Exists(targetDir))
@@ -94,7 +103,7 @@ namespace Igor
 			{
 				if(File.Exists(DestFilePath))
 				{
-					File.Delete(DestFilePath);
+					IgorUtils.DeleteFile(DestFilePath);
 				}
 
 				if(!Directory.Exists(Path.GetDirectoryName(DestFilePath)))
@@ -326,7 +335,7 @@ namespace Igor
 	 	{
 	 		if(File.Exists(IgorJobConfigPath))
 	 		{
-	 			File.Delete(IgorJobConfigPath);
+				IgorUtils.DeleteFile(IgorJobConfigPath);
 	 		}
 	 	}
 
@@ -607,7 +616,7 @@ namespace Igor
 					{
 						if(File.Exists(InstalledFilePath))
 						{
-							File.Delete(InstalledFilePath);
+							IgorUtils.DeleteFile(InstalledFilePath);
 						}
 
 						File.Copy(LocalUpdater, InstalledFilePath);
@@ -659,7 +668,7 @@ namespace Igor
 				{
 					if(File.Exists(InstalledModulesListPath))
 					{
-						File.Delete(InstalledModulesListPath);
+						IgorUtils.DeleteFile(InstalledModulesListPath);
 					}
 
 					File.Copy(LocalModulesList, InstalledModulesListPath);
@@ -762,11 +771,11 @@ namespace Igor
 
 											if(File.Exists(FullLocalPath))
 											{
-												File.Delete(FullLocalPath);
+												IgorUtils.DeleteFile(FullLocalPath);
 											}
 										}
 
-										File.Delete(CurrentModuleDescriptor);
+										IgorUtils.DeleteFile(CurrentModuleDescriptor);
 									}
 
 									if(!Directory.Exists(Path.GetDirectoryName(CurrentModuleDescriptor)))
@@ -809,7 +818,7 @@ namespace Igor
 
 										if(File.Exists(FullLocalPath))
 										{
-											File.Delete(FullLocalPath);
+											IgorUtils.DeleteFile(FullLocalPath);
 										}
 
 										if(!Directory.Exists(Path.GetDirectoryName(FullLocalPath)))
