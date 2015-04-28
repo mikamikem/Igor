@@ -14,6 +14,7 @@ namespace Igor
 	public interface IIgorCore
 	{
 		List<string> GetEnabledModuleNames();
+		string GetLocalUpdatePrefix();
 
 		void RunJobInst();
 	}
@@ -113,7 +114,19 @@ namespace Igor
 
 				if(IgorUpdater.bLocalDownload)
 				{
-					File.Copy(Path.Combine(IgorUpdater.LocalPrefix, RelativePath), DestFilePath);
+					string ParentDirectory = Directory.GetCurrentDirectory();
+					string NewLocalPrefix = IgorUpdater.GetLocalPrefix();
+
+					while(NewLocalPrefix.StartsWith(".."))
+					{
+						ParentDirectory = Directory.GetParent(ParentDirectory).ToString();
+
+						NewLocalPrefix = NewLocalPrefix.Substring(3);
+					}
+
+					NewLocalPrefix = Path.Combine(ParentDirectory, NewLocalPrefix);
+
+					File.Copy(Path.Combine(NewLocalPrefix, RelativePath), DestFilePath);
 				}
 				else
 				{
@@ -518,14 +531,15 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 7;
+		private const int Version = 8;
 
 		public static bool bDontUpdate = false;
 		public static bool bAlwaysUpdate = false;
 		public static bool bLocalDownload = false;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
-		public static string LocalPrefix = "TestDeploy/";
+		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
+		public static string ExplicitLocalPrefix = "TestDeploy/";
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
 		public static string TempLocalDirectory = "IgorTemp/";
 
@@ -542,9 +556,31 @@ namespace Igor
 
 		private static List<string> UpdatedModules = new List<string>();
 
+		public static string GetLocalPrefix()
+		{
+			if(LocalPrefix == "")
+			{
+				FindCore();
+
+				if(Core != null)
+				{
+					LocalPrefix = Core.GetLocalUpdatePrefix();
+				}
+
+				if(LocalPrefix == "")
+				{
+					LocalPrefix = ExplicitLocalPrefix;
+				}
+			}
+			
+			return LocalPrefix;
+		}
+
 		[MenuItem("Window/Igor/Check For Updates %i", false, 2)]
 		public static void MenuCheckForUpdates()
 		{
+			LocalPrefix = "";
+			
 			CheckForUpdates(true, true);
 		}
 

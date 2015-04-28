@@ -104,6 +104,8 @@ namespace Igor
 
 		public bool bDevMode = false;
 
+		public string LocalUpdatePrefix = "";
+
 		public virtual List<string> GetEnabledModuleNames()
 		{
 			return EnabledModules;

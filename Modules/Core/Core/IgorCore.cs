@@ -49,6 +49,11 @@ namespace Igor
 		public static List<IIgorModule> ActiveModulesForJob = new List<IIgorModule>();
 		public static Dictionary<StepID, List<JobStep>> JobSteps = new Dictionary<StepID, List<JobStep>>();
 
+		public string GetLocalUpdatePrefix()
+		{
+			return IgorConfig.GetInstance().LocalUpdatePrefix;
+		}
+
 		public List<string> GetEnabledModuleNames()
 		{
 			return IgorConfig.GetInstance().GetEnabledModuleNames();
