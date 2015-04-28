@@ -51,7 +51,7 @@ namespace Igor
 
 		public string GetLocalUpdatePrefix()
 		{
-			return IgorConfig.GetInstance().LocalUpdatePrefix;
+			return IgorConfig.ReGetInstance().LocalUpdatePrefix;
 		}
 
 		public List<string> GetEnabledModuleNames()

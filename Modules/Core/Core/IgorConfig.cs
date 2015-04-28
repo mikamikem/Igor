@@ -32,6 +32,13 @@ namespace Igor
 			return Instance;
 		}
 
+		public static IgorConfig ReGetInstance()
+		{
+			Instance = null;
+
+			return GetInstance();
+		}
+
 		public static void InitializeStartingConfig()
 		{
 			IgorConfig NewInst = new IgorConfig();
