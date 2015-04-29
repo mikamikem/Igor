@@ -682,7 +682,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 9;
+		private const int Version = 10;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
