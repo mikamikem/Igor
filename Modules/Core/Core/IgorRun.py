@@ -110,7 +110,7 @@ def BootstrapIfRequested():
 		PathToNewScript = os.path.join(RunningDirectory, BaseName)
 		shutil.copy(__file__, os.path.join(os.getcwd(), PathToNewScript))
 
-		os.execvp('python', ["\"" + os.getcwd() + "\"", PathToNewScript, '--finalbootstrap'] + sys.argv)
+		os.execvp('python', ["\"" + os.getcwd() + "\"", PathToNewScript, '--finalbootstrap="' + sys.argv[0] + '"'] + sys.argv)
 
 	return
 
@@ -198,6 +198,9 @@ if testargs.noselfupdate == False and testargs.finalbootstrap == None and testar
 	SelfUpdate()
 
 passthroughstring = ' '.join(passthrough)
+
+if passthroughstring.find('-'):
+	passthroughstring = passthroughstring[passthroughstring.find('-'):]
 
 print("\n\n-= Igor - The Unity Automator =-\n\n")
 
