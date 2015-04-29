@@ -25,6 +25,7 @@ namespace Igor
 		public static StepID SwitchPlatformStep = new StepID("SwitchPlatform", 250);
 		public static StepID PreBuildCleanupStep = new StepID("PreBuildCleanup", 0);
 
+        public delegate BuildOptions GetExtraBuildOptions(BuildTarget CurrentTarget);
         public static string CommitInfo = string.Empty;
 
         public static int SetBuildOptionsBitfield = 0;

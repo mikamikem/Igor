@@ -61,6 +61,12 @@ def num(s):
 	except ValueError:
 		return float(s)
 
+def SetFileWritable(Filename):
+	Stats = os.stat(Filename)
+	os.chmod(Filename, Stats.st_mode | stat.S_IWRITE)
+
+	return
+
 def SetFileExecutable(Filename):
 	Stats = os.stat(Filename)
 	os.chmod(Filename, Stats.st_mode | stat.S_IEXEC)
@@ -108,6 +114,7 @@ def BootstrapIfRequested():
 
 		print("Bootstrap (2/4) - Removing the original file " + OriginalFile)
 
+		SetFileWritable(OriginalFile)
 		os.remove(OriginalFile)
 		
 		print("Bootstrap (3/4) - Copying the new file to " + BaseName)

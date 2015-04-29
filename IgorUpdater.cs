@@ -505,18 +505,6 @@ namespace Igor
 	 		return false;
 	 	}
 
-        public static bool IsStringParamSet(string StringParam)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return IgorUtils.IsStringParamSet(Inst.Persistent.JobCommandLineParams, StringParam);
-	 		}
-
-	 		return false;
-	 	}
-
 	 	public static void SetBoolParam(string BoolParam, bool bTrue)
 	 	{
 	 		IgorJobConfig Inst = GetConfig();
@@ -1045,7 +1033,7 @@ namespace Igor
 											}
 
 											FullLocalPath = Path.Combine(Base, NewLocalFile);
-											RemotePath = RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/" + LocalFile.Substring(LocalFile.LastIndexOf("/") + 1);
+											RemotePath = IgorUtils.GetRemoteFileFromModuleFilename(RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/", ModuleFile, ref bIsExternal);
 										}
 
                                         string TempDownloadPath = "";

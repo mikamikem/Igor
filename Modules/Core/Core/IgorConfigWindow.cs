@@ -94,9 +94,15 @@ namespace Igor
 
 		public virtual void Update()
 		{
-			if(!bInitialized)
+			bool bQueueRepaint = false;
+
+			if(!bInitialized || IgorCore.bTriggerConfigWindowRefresh)
 			{
+				IgorCore.bTriggerConfigWindowRefresh = false;
+
 				Initialize();
+
+				bQueueRepaint = true;
 			}
 
 			if(EditorApplication.isCompiling)
@@ -108,6 +114,8 @@ namespace Igor
 				TimeToActivate = EditorApplication.timeSinceStartup + DelayAfterCompiling;
 
 				Repaint();
+
+				bQueueRepaint = false;
 			}
 			else if(!EditorApplication.isCompiling && EditorApplication.timeSinceStartup > TimeToActivate)
 			{
@@ -119,6 +127,8 @@ namespace Igor
 //					IgorCore.Log(null, "Pausing for " + DelayAfterCompiling + " seconds to make sure Unity is done compiling.");
 
 					Repaint();
+
+					bQueueRepaint = false;
 				}
 				else if(IgorJobConfig.GetIsRunning())
 				{

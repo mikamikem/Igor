@@ -128,7 +128,16 @@ namespace Igor
 		}
 
 		public BuildTarget JobBuildTarget = BuildTarget.StandaloneOSXIntel;
+		public List<IgorBuildCommon.GetExtraBuildOptions> BuildOptionsDelegates = new List<IgorBuildCommon.GetExtraBuildOptions>();
 
+		public virtual void AddDelegateCallback(IgorBuildCommon.GetExtraBuildOptions NewDelegate)
+		{
+			if(!BuildOptionsDelegates.Contains(NewDelegate))
+			{
+				BuildOptionsDelegates.Add(NewDelegate);
+			}
+		}
+		
 		public virtual string GetBuiltNameForTarget(BuildTarget NewTarget)
 		{
 			string BuiltName = "";
@@ -220,6 +229,18 @@ namespace Igor
 			}
 
 			return false;
+		}
+
+		public virtual BuildOptions GetExternalBuildOptions(BuildTarget CurrentTarget)
+		{
+			BuildOptions ExtraOptions = BuildOptions.None;
+
+			foreach(IgorBuildCommon.GetExtraBuildOptions CurrentDelegate in BuildOptionsDelegates)
+			{
+				ExtraOptions |= CurrentDelegate(CurrentTarget);
+			}
+
+			return ExtraOptions;
 		}
 
 		public virtual bool SwitchPlatforms()

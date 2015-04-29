@@ -50,8 +50,12 @@ namespace Igor
 		public static List<IIgorModule> ActiveModulesForJob = new List<IIgorModule>();
 		public static Dictionary<StepID, List<JobStep>> JobSteps = new Dictionary<StepID, List<JobStep>>();
 
-        public string GetLocalUpdatePrefix()
+		public static bool bTriggerConfigWindowRefresh = false;
+
+		public string GetLocalUpdatePrefix()
 		{
+			bTriggerConfigWindowRefresh = true;
+			
 			return IgorConfig.ReGetInstance().LocalUpdatePrefix;
 		}
 
