@@ -184,7 +184,7 @@ def RunUnity(Function):
 
 	return
 
-BootstrapIfRequested()
+#BootstrapIfRequested()
 
 parser = argparse.ArgumentParser(description='Igor - The Unity automator.', add_help=False)
 parser.add_argument('--noselfupdate', action='store_true')
@@ -194,8 +194,8 @@ parser.add_argument('--bootstrap')
 
 testargs, passthrough = parser.parse_known_args()
 
-if testargs.noselfupdate == False and testargs.finalbootstrap == None and testargs.bootstrap == None:
-	SelfUpdate()
+#if testargs.noselfupdate == False and testargs.finalbootstrap == None and testargs.bootstrap == None:
+#	SelfUpdate()
 
 passthroughstring = ' '.join(passthrough)
 
