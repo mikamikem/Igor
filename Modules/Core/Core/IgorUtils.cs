@@ -129,7 +129,7 @@ namespace Igor
 
 	    public static float PlayJobsDoneSound()
 	    {
-	        AudioClip Clip = AssetDatabase.LoadAssetAtPath("Assets/Editor/Igor/jobs_done.wav", typeof(AudioClip)) as AudioClip;
+	        AudioClip Clip = AssetDatabase.LoadAssetAtPath("Assets/Editor/Igor/Modules/Core/Core/jobs_done.wav", typeof(AudioClip)) as AudioClip;
 	        if(Clip != null)
 	        {
 	            PlayAudioClip(Clip);
