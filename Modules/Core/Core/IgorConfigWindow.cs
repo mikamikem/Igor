@@ -1,35 +1,49 @@
+#if UNITY_4_5 || UNITY_4_6 || UNITY_5_0
+#define GREATER_THAN_4_3
+#endif
+
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditorInternal;
 
 namespace Igor
 {
 	public class IgorConfigWindow : EditorWindow, IIgorStepHandler
 	{
+        [System.Serializable]
+	    public class FoldoutState : SerializableDictionary<string, bool>
+	    { }
+
+	    static IgorConfigWindow _window;
+	    static IgorConfigWindow Window
+	    {
+	        get
+	        {
+	            if(_window == null)
+	            {
+	                System.Reflection.Assembly EditorAssembly = typeof(UnityEditor.EditorWindow).Assembly;
+			        System.Type InspectorViewType = EditorAssembly.GetType("UnityEditor.InspectorWindow");
+			
+			        if(InspectorViewType != null)
+			        {
+				        _window = EditorWindow.GetWindow<IgorConfigWindow>("Igor Project Configuration", InspectorViewType);
+			        }
+			        else
+			        {
+				        _window = EditorWindow.GetWindow<IgorConfigWindow>("Igor Project Configuration");
+			        }
+
+			        _window.Show();
+	            }
+                return _window;
+	        }
+	    }
+
 		[MenuItem("Window/Igor/Igor Configuration", false, 1)]
-		public static IgorConfigWindow OpenOrGetConfigWindow()
-		{
-			System.Reflection.Assembly EditorAssembly = typeof(UnityEditor.EditorWindow).Assembly;
-			
-			System.Type InspectorViewType = EditorAssembly.GetType("UnityEditor.InspectorWindow");
-			
-			IgorConfigWindow Window = null;
-
-			if(InspectorViewType != null)
-			{
-				Window = EditorWindow.GetWindow<IgorConfigWindow>("Igor Project Configuration", InspectorViewType);
-			}
-			else
-			{
-				Window = EditorWindow.GetWindow<IgorConfigWindow>("Igor Project Configuration");
-			}
-
-			Window.Show();
-
-			return Window;
-		}
+		public static IgorConfigWindow OpenOrGetConfigWindow() { return Window; }
 
 		public static double DelayAfterCompiling = 10.0;
 		public static double TimeToActivate = DelayAfterCompiling;
@@ -41,33 +55,48 @@ namespace Igor
 		protected Dictionary<string, int> ModuleNamesToAvailableVersions = new Dictionary<string, int>();
 		protected Dictionary<string, List<string>> DependencyToDependentModules = new Dictionary<string, List<string>>(); // This maps from ie. Build Common -> { Build.Desktop, Build.iOS }
 		protected bool bAvailableModulesExpanded = false;
-		protected Dictionary<string, bool> ModuleCategoryExpanded = new Dictionary<string, bool>();
+
+        [SerializeField]
+		protected FoldoutState ModuleCategoryExpanded = new FoldoutState();
+
 		protected bool bModulesChanged = false;
 
 		protected List<IgorPersistentJobConfig> Jobs = new List<IgorPersistentJobConfig>();
-		protected static bool bStaticDevMode = false;
-		protected bool bDevMode = false;
-		protected int CurrentJob = -1;
 
-		protected Dictionary<string, bool> ParamsModuleCategoryExpanded = new Dictionary<string, bool>();
-		protected Dictionary<IIgorModule, bool> IsModuleExpanded = new Dictionary<IIgorModule, bool>(); 
+        [SerializeField]
+		protected int _currentJobIndex = -1;
+
+	    protected int CurrentJobIndex
+	    {
+            get {  return Mathf.Clamp(_currentJobIndex, 0, Jobs.Count - 1); }
+            set { _currentJobIndex = Mathf.Clamp(value, 0, Jobs.Count - 1); }
+	    }
+
+		protected FoldoutState ParamsModuleCategoryExpanded = new FoldoutState();
+		protected FoldoutState IsModuleExpanded = new FoldoutState(); 
 		protected bool bShowParams = true;
 
 		protected bool bJobStepsExpanded = false;
 		protected Dictionary<StepID, List<string>> StepIDToFunctions = new Dictionary<StepID, List<string>>();
-		protected Dictionary<StepID, bool> StepIDExpanded = new Dictionary<StepID, bool>();
+		protected FoldoutState StepIDExpanded = new FoldoutState();
+
+	    protected Vector2 ScrollPosition ;
+
+	    public IgorPersistentJobConfig CurrentJobInst
+	    {
+            get
+            {
+                if(Jobs.Count > 0)
+                    return Jobs[CurrentJobIndex];
+                return null;
+            }
+	    }
 
 		public virtual void Update()
 		{
-			bool bQueueRepaint = false;
-
-			if(!bInitialized || IgorCore.bTriggerConfigWindowRefresh)
+			if(!bInitialized)
 			{
-				IgorCore.bTriggerConfigWindowRefresh = false;
-
 				Initialize();
-
-				bQueueRepaint = true;
 			}
 
 			if(EditorApplication.isCompiling)
@@ -79,8 +108,6 @@ namespace Igor
 				TimeToActivate = EditorApplication.timeSinceStartup + DelayAfterCompiling;
 
 				Repaint();
-
-				bQueueRepaint = false;
 			}
 			else if(!EditorApplication.isCompiling && EditorApplication.timeSinceStartup > TimeToActivate)
 			{
@@ -92,18 +119,11 @@ namespace Igor
 //					IgorCore.Log(null, "Pausing for " + DelayAfterCompiling + " seconds to make sure Unity is done compiling.");
 
 					Repaint();
-
-					bQueueRepaint = false;
 				}
 				else if(IgorJobConfig.GetIsRunning())
 				{
 					IgorCore.RunJob();
 				}
-			}
-
-			if(bQueueRepaint)
-			{
-				Repaint();
 			}
 		}
 
@@ -117,11 +137,6 @@ namespace Igor
 			TimeToActivate = EditorApplication.timeSinceStartup + DelayAfterCompiling;
 
 			GetValuesFromConfig();
-
-			if(Jobs.Count > 0)
-			{
-				CurrentJob = 0;
-			}
 
 			IgorCore.RegisterAllModules();
 
@@ -243,6 +258,11 @@ namespace Igor
 					Initialize();
 				}
 
+                if(!IgorJobConfig.GetIsRunning() || IgorCore.EnabledModules.Count == 0)
+				{
+					IgorCore.RegisterAllModules();
+				}
+
 				if(IgorJobConfig.GetIsRunning())
 				{
 					DrawJobRunning();
@@ -278,118 +298,120 @@ namespace Igor
 
 		protected virtual void DrawConfiguration()
 		{
-			EditorGUILayout.BeginVertical("box");
+			ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition);
 
-			EditorGUILayout.LabelField("Igor Global Config (Igor Updater Version - " + IgorUpdater.GetCurrentVersion() + ")");
+		    EditorGUILayout.BeginVertical("box");
+		    {
+		        EditorGUILayout.LabelField("Igor Global Config (Igor Updater Version - " + IgorUpdater.GetCurrentVersion() + ")");
 
-			IgorConfig ConfigInst = IgorConfig.GetInstance();
+		        IgorConfig ConfigInst = IgorConfig.GetInstance();
 
-			if(ConfigInst != null)
-			{
-				EditorGUILayout.Separator();
+		        if(ConfigInst != null)
+		        {
+		            EditorGUILayout.Separator();
 
-				EditorGUILayout.BeginVertical("box");
+		            EditorGUILayout.BeginVertical("box");
 
-				bAvailableModulesExpanded = EditorGUILayout.Foldout(bAvailableModulesExpanded, "Available Modules");
+		            bAvailableModulesExpanded = EditorGUILayout.Foldout(bAvailableModulesExpanded, "Available Modules");
 
-				if(bAvailableModulesExpanded)
-				{
-					EditorGUI.indentLevel += 1;
+		            if(bAvailableModulesExpanded)
+		            {
+		                EditorGUI.indentLevel += 1;
 
-					Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(AvailableModuleNames);
+		                Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(AvailableModuleNames);
 
-					List<string> SortedGroups = new List<string>();
+		                List<string> SortedGroups = new List<string>();
 
-					SortedGroups.AddRange(AvailableModuleGroupsAndNames.Keys);
+		                SortedGroups.AddRange(AvailableModuleGroupsAndNames.Keys);
 
-					SortedGroups.Sort();
+		                SortedGroups.Sort();
 
-					foreach(string CurrentGroup in SortedGroups)
-					{
-						List<string> SortedModules = new List<string>();
+		                foreach(string CurrentGroup in SortedGroups)
+		                {
+		                    List<string> SortedModules = new List<string>();
 
-						SortedModules.AddRange(AvailableModuleGroupsAndNames[CurrentGroup]);
+		                    SortedModules.AddRange(AvailableModuleGroupsAndNames[CurrentGroup]);
 
-						SortedModules.Sort();
+		                    SortedModules.Sort();
 
-						bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentGroup) && ModuleCategoryExpanded[CurrentGroup];
+		                    bool bCurrentCategoryExpanded = ModuleCategoryExpanded.ContainsKey(CurrentGroup) && ModuleCategoryExpanded[CurrentGroup];
 
-						bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentGroup);
+		                    bCurrentCategoryExpanded = EditorGUILayout.Foldout(bCurrentCategoryExpanded, CurrentGroup);
 
-						if(!ModuleCategoryExpanded.ContainsKey(CurrentGroup))
-						{
-							ModuleCategoryExpanded.Add(CurrentGroup, bCurrentCategoryExpanded);
-						}
+		                    if(!ModuleCategoryExpanded.ContainsKey(CurrentGroup))
+		                    {
+		                        ModuleCategoryExpanded.Add(CurrentGroup, bCurrentCategoryExpanded);
+		                    }
 
-						ModuleCategoryExpanded[CurrentGroup] = bCurrentCategoryExpanded;
+		                    ModuleCategoryExpanded[CurrentGroup] = bCurrentCategoryExpanded;
 
-						if(bCurrentCategoryExpanded)
-						{
-							EditorGUI.indentLevel += 1;
+		                    if(bCurrentCategoryExpanded)
+		                    {
+		                        EditorGUI.indentLevel += 1;
 
-							foreach(string CurrentModuleName in SortedModules)
-							{
-								bool bWasInstalled = false;
-								string MergedName = CurrentGroup + "." + CurrentModuleName;
-								bool bIsDependency = CurrentModuleName == "Core" && CurrentGroup == "Core";
-								string DependentOf = bIsDependency ? "Everything" : "";
+		                        foreach(string CurrentModuleName in SortedModules)
+		                        {
+		                            bool bWasInstalled = false;
+		                            string MergedName = CurrentGroup + "." + CurrentModuleName;
+		                            bool bIsDependency = CurrentModuleName == "Core" && CurrentGroup == "Core";
+		                            string DependentOf = bIsDependency ? "Everything" : "";
 
-								if(!bIsDependency && DependencyToDependentModules.ContainsKey(MergedName))
-								{
-									foreach(string CurrentDependent in DependencyToDependentModules[MergedName])
-									{
-										if(ConfigInst.EnabledModules.Contains(CurrentDependent))
-										{
-											if(bIsDependency)
-											{
-												DependentOf += ", ";
-											}
+		                            if(!bIsDependency && DependencyToDependentModules.ContainsKey(MergedName))
+		                            {
+		                                foreach(string CurrentDependent in DependencyToDependentModules[MergedName])
+		                                {
+		                                    if(ConfigInst.EnabledModules.Contains(CurrentDependent))
+		                                    {
+		                                        if(bIsDependency)
+		                                        {
+		                                            DependentOf += ", ";
+		                                        }
 
-											DependentOf += CurrentDependent;
+		                                        DependentOf += CurrentDependent;
 
-											bIsDependency = true;
-										}
-									}
-								}
+		                                        bIsDependency = true;
+		                                    }
+		                                }
+		                            }
 
-								string VersionString = "";
+		                            string VersionString = "";
 
-								if(ModuleNamesToCurrentVersions.ContainsKey(MergedName))
-								{
-									VersionString += " - Inst (" + ModuleNamesToCurrentVersions[MergedName] + ")";
-								}
+		                            if(ModuleNamesToCurrentVersions.ContainsKey(MergedName))
+		                            {
+		                                VersionString += " - Inst (" + ModuleNamesToCurrentVersions[MergedName] + ")";
+		                            }
 
-								if(ModuleNamesToAvailableVersions.ContainsKey(MergedName))
-								{
-									VersionString += " Avail (" + ModuleNamesToAvailableVersions[MergedName] + ")";
-								}
+		                            if(ModuleNamesToAvailableVersions.ContainsKey(MergedName))
+		                            {
+		                                VersionString += " Avail (" + ModuleNamesToAvailableVersions[MergedName] + ")";
+		                            }
 
-								if(ConfigInst.EnabledModules.Contains(MergedName))
-								{
-									bWasInstalled = true;
-								}
+		                            if(ConfigInst.EnabledModules.Contains(MergedName))
+		                            {
+		                                bWasInstalled = true;
+		                            }
 
-								GUI.enabled = !bIsDependency;
+		                            GUI.enabled = !bIsDependency;
 
-								EditorGUILayout.BeginHorizontal();
+		                            EditorGUILayout.BeginHorizontal();
 
-								bool bInstalled = EditorGUILayout.ToggleLeft(CurrentModuleName + VersionString + (bIsDependency ? " - Required by (" + DependentOf + ")" : ""), bWasInstalled || bIsDependency);
+		                            bool bInstalled = EditorGUILayout.ToggleLeft(CurrentModuleName + VersionString + (bIsDependency ? " - Required by (" + DependentOf + ")" : ""), bWasInstalled || bIsDependency);
 
-								EditorGUILayout.EndHorizontal();
+		                            EditorGUILayout.EndHorizontal();
 
-								GUI.enabled = true;
+		                            GUI.enabled = true;
 
-								if(!bIsDependency)
-								{
-									if(!bWasInstalled && bInstalled)
-									{
-										ConfigInst.EnabledModules.Add(MergedName);
+		                            if(!bIsDependency)
+		                            {
+		                                if(!bWasInstalled && bInstalled)
+		                                {
+		                                    ConfigInst.EnabledModules.Add(MergedName);
 
-										bModulesChanged = true;
-									}
-									else if(bWasInstalled && !bInstalled)
-									{
-										ConfigInst.EnabledModules.Remove(MergedName);
+		                                    bModulesChanged = true;
+		                                }
+		                                else if(bWasInstalled && !bInstalled)
+		                                {
+		                                    ConfigInst.EnabledModules.Remove(MergedName);
 
 										bModulesChanged = true;
 									}
@@ -404,42 +426,55 @@ namespace Igor
 									}
 								}
 							}
+		                        EditorGUI.indentLevel -= 1;
+		                    }
+		                }
 
-							EditorGUI.indentLevel -= 1;
-						}
-					}
+		                EditorGUI.indentLevel -= 1;
+		            }
 
-					EditorGUI.indentLevel -= 1;
-				}
+		            EditorGUILayout.EndVertical();
 
-				EditorGUILayout.EndVertical();
+		            EditorGUILayout.Separator();
+		        }
 
-				EditorGUILayout.Separator();
-			}
+		        DrawJobDropdown();
 
-			DrawJobDropdown();
+		        EditorGUILayout.Separator();
 
-			bDevMode = EditorGUILayout.Toggle("Developer Mode", bDevMode);
+		        EditorGUILayout.BeginHorizontal();
 
-			bStaticDevMode = bDevMode;
+		        if(GUILayout.Button("Reload Configuration") && !EditorUtility.DisplayDialog("Reload Igor's Configuration?", "This will reset any unsaved changes for the global values AND ALL JOBS!  Are you sure you want to reload?", "I'm not ready yet...", "Yup clobber my unsaved changes!"))
+		        {
+		            GetValuesFromConfig();
+		        }
 
-			EditorGUILayout.Separator();
+		        if(GUILayout.Button("Save Configuration"))
+		        {
+		            SaveConfiguration();
+		        }
 
-			EditorGUILayout.BeginHorizontal();
+		        EditorGUILayout.EndHorizontal();
 
-			if(GUILayout.Button("Reload Configuration") && !EditorUtility.DisplayDialog("Reload Igor's Configuration?", "This will reset any unsaved changes for the global values AND ALL JOBS!  Are you sure you want to reload?", "I'm not ready yet...", "Yup clobber my unsaved changes!"))
-			{
-				GetValuesFromConfig();
-			}
+                EditorGUILayout.Separator();
 
-			if(GUILayout.Button("Save Configuration"))
-			{
-				SaveConfiguration();
-			}
+                GUI.enabled = CurrentJobInst != null;
+                GUILayout.BeginHorizontal();
+                {
+				    if(GUILayout.Button("Run Job"))
+				    {
+					    TriggerJob(CurrentJobInst.JobName);
+				    }
 
-			EditorGUILayout.EndHorizontal();
-
-			EditorGUILayout.EndVertical();
+				    if(GUILayout.Button("Delete job") && !EditorUtility.DisplayDialog("Delete this job configuration?", "This will delete the whole job!  Are you sure you want to delete this?", "I'm not ready yet...", "Yup delete the job!"))
+				    {
+					    DeleteSelectedJob();
+				    }
+                }
+                GUILayout.EndHorizontal();
+                GUI.enabled = true;
+		    }
+		    EditorGUILayout.EndVertical();
 
 			EditorGUILayout.Separator();
 
@@ -447,24 +482,8 @@ namespace Igor
 
 			EditorGUILayout.LabelField("Igor Job Config");
 
-			if(CurrentJob < Jobs.Count && CurrentJob >= 0)
+			if(CurrentJobInst != null)
 			{
-				IgorPersistentJobConfig CurrentJobInst = Jobs[CurrentJob];
-
-				EditorGUILayout.Separator();
-
-				if(GUILayout.Button("Run Job"))
-				{
-					TriggerJob(CurrentJobInst.JobName);
-				}
-
-				EditorGUILayout.Separator();
-
-				if(GUILayout.Button("Delete job") && !EditorUtility.DisplayDialog("Delete this job configuration?", "This will delete the whole job!  Are you sure you want to delete this?", "I'm not ready yet...", "Yup delete the job!"))
-				{
-					DeleteSelectedJob();
-				}
-
 				EditorGUILayout.Separator();
 
 				CurrentJobInst.JobName = EditorGUILayout.TextField("Job Name", CurrentJobInst.JobName);
@@ -475,7 +494,13 @@ namespace Igor
 
 				bShowParams = GUILayout.SelectionGrid(bShowParams ? 0 : 1, new string[] { "Parameters", "Jenkins Job" }, 2) == 0;
 
-				GUIStyle TextAreaStyle = new GUIStyle(EditorStyles.textArea);
+				GUIStyle TextAreaStyle = new GUIStyle(
+#if GREATER_THAN_4_3
+                    EditorStyles.textArea
+#else
+                    EditorStyles.textField
+#endif
+                );
 				TextAreaStyle.wordWrap = true;
 
 				if(bShowParams)
@@ -531,18 +556,18 @@ namespace Igor
 
 					foreach(StepID CurrentStep in SortedSteps)
 					{
-						bool bCurrentStepExpanded = StepIDExpanded.ContainsKey(CurrentStep) && StepIDExpanded[CurrentStep];
+						bool bCurrentStepExpanded = StepIDExpanded.ContainsKey(CurrentStep.StepName) && StepIDExpanded[CurrentStep.StepName];
 
 						EditorGUILayout.BeginVertical("box");
 
 						bCurrentStepExpanded = EditorGUILayout.Foldout(bCurrentStepExpanded, CurrentStep.StepPriority.ToString() + " - " + CurrentStep.StepName);
 
-						if(!StepIDExpanded.ContainsKey(CurrentStep))
+						if(!StepIDExpanded.ContainsKey(CurrentStep.StepName))
 						{
-							StepIDExpanded.Add(CurrentStep, bCurrentStepExpanded);
+							StepIDExpanded.Add(CurrentStep.StepName, bCurrentStepExpanded);
 						}
 
-						StepIDExpanded[CurrentStep] = bCurrentStepExpanded;
+						StepIDExpanded[CurrentStep.StepName] = bCurrentStepExpanded;
 
 						if(bCurrentStepExpanded)
 						{
@@ -606,41 +631,29 @@ namespace Igor
 					{
 						EditorGUI.indentLevel += 1;
 
-						IIgorModule CommonModule = ModuleNameToInst.ContainsKey(CurrentGroup + ".Common") ? ModuleNameToInst[CurrentGroup + ".Common"] : null;
-
-						if(CommonModule != null)
-						{
-							CurrentJobInst.JobCommandLineParams = CommonModule.DrawJobInspectorAndGetEnabledParams(CurrentJobInst.JobCommandLineParams);
-						}
-
 						foreach(string CurrentModuleName in SortedModules)
 						{
-							if(CurrentModuleName == "Common")
-							{
-								continue;
-							}
-
 							string FullModuleName = CurrentGroup + "." + CurrentModuleName;
 
 							IIgorModule CurrentModule = ModuleNameToInst.ContainsKey(FullModuleName) ? ModuleNameToInst[FullModuleName] : null;
 
-							if(CurrentModule == null || !CurrentModule.ShouldDrawInspectorForParams(CurrentJobInst.JobCommandLineParams))
+							if(CurrentModule == null)
 							{
 								continue;
 							}
 
-							if(!IsModuleExpanded.ContainsKey(CurrentModule))
+							if(!IsModuleExpanded.ContainsKey(CurrentModule.GetModuleName()))
 							{
-								IsModuleExpanded.Add(CurrentModule, false);
+								IsModuleExpanded.Add(CurrentModule.GetModuleName(), false);
 							}
 
-							bool bIsExpanded = IsModuleExpanded[CurrentModule];
+							bool bIsExpanded = IsModuleExpanded[CurrentModule.GetModuleName()];
 
 							EditorGUILayout.BeginVertical("box");
 
 							bIsExpanded = EditorGUILayout.Foldout(bIsExpanded, CurrentModule.GetModuleName());
 
-							IsModuleExpanded[CurrentModule] = bIsExpanded;
+							IsModuleExpanded[CurrentModule.GetModuleName()] = bIsExpanded;
 
 							if(bIsExpanded)
 							{
@@ -665,27 +678,27 @@ namespace Igor
 				EditorGUILayout.LabelField("Select a job above.");
 			}
 
-			EditorGUILayout.EndVertical();
+            EditorGUILayout.EndVertical();
+			
+            EditorGUILayout.EndScrollView();
 		}
 
 		public virtual void SaveConfiguration()
 		{
 			List<IgorPersistentJobConfig> NewJobs = new List<IgorPersistentJobConfig>();
 
-			foreach(IgorPersistentJobConfig CurrentJob in Jobs)
+			foreach(IgorPersistentJobConfig Job in Jobs)
 			{
 				IgorPersistentJobConfig NewJob = new IgorPersistentJobConfig();
 
-				NewJob.JobName = string.Copy(CurrentJob.JobName);
-				NewJob.JobCommandLineParams = string.Copy(CurrentJob.JobCommandLineParams);
+				NewJob.JobName = string.Copy(Job.JobName);
+				NewJob.JobCommandLineParams = string.Copy(Job.JobCommandLineParams);
 
 				NewJobs.Add(NewJob);
 			}
 
 			IgorConfig.GetInstance().JobConfigs = NewJobs;
 			IgorConfig.GetInstance().Save();
-
-			IgorConfig.SetIsDevMode(bDevMode);
 
 			GenerateEditorMenuOptions();
 
@@ -708,9 +721,9 @@ namespace Igor
 
 			JobNames.Add("Create new job");
 
-			CurrentJob = EditorGUILayout.Popup("Job to configure", CurrentJob, JobNames.ToArray());
+			CurrentJobIndex = EditorGUILayout.Popup("Job to configure", CurrentJobIndex, JobNames.ToArray());
 
-			if(CurrentJob == (JobNames.Count - 1))
+			if(CurrentJobIndex == (JobNames.Count - 1))
 			{
 				IgorPersistentJobConfig NewJob = new IgorPersistentJobConfig();
 
@@ -722,17 +735,17 @@ namespace Igor
 
 		public virtual void DeleteSelectedJob()
 		{
-			Jobs.RemoveAt(CurrentJob);
+			Jobs.RemoveAt(CurrentJobIndex);
 
-			if(CurrentJob >= Jobs.Count)
+			if(CurrentJobIndex >= Jobs.Count)
 			{
-				CurrentJob = Jobs.Count - 1;
+				CurrentJobIndex = Jobs.Count - 1;
 			}
 		}
 
 		public static void TriggerJob(string JobName)
 		{
-			IgorConfig.TriggerJobByName(JobName, true);
+			IgorConfig.TriggerJobByName(JobName, true, false);
 		}
 
 		public virtual void GetValuesFromConfig()
@@ -751,19 +764,16 @@ namespace Igor
 
 			Jobs = NewJobs;
 
-			bDevMode = IgorConfig.GetIsDevMode();
-
 			bModulesChanged = false;
 		}
-
-		protected string JenkinsJobHeader = "python " + Path.Combine(IgorUpdater.BaseIgorDirectory, IgorRunner) + " ";
-		protected string JenkinsJobFooter = "";
 
 		public static string IgorRunner = "IgorRun.py";
 
 		public virtual string GenerateJenkinsJobForParams(string Params)
 		{
-			return JenkinsJobHeader + Params + JenkinsJobFooter;
+            var path = Path.Combine(Path.Combine("Assets", "Editor"), IgorRunner);
+			string JenkinsString = "python " + path + " " + Params;
+		    return JenkinsString;
 		}
 
 		protected string EditorMenuOptionsFilePath = Path.Combine(IgorUpdater.LocalModuleRoot, Path.Combine("Core", Path.Combine("Core", "IgorMenuOptions.cs")));
@@ -797,12 +807,6 @@ namespace Igor
 			FullEditorMenuOptionFile += EditorMenuOptionFooter;
 
 			File.WriteAllText(EditorMenuOptionsFilePath, FullEditorMenuOptionFile);
-		}
-
-		[MenuItem("Window/Igor/Dev/GenerateModuleDescriptor", true)]
-		public static bool IsInDevMode()
-		{
-			return bStaticDevMode;
 		}
 
 		[MenuItem("Window/Igor/Dev/GenerateModuleDescriptor", false, 3)]
