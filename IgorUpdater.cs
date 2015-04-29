@@ -507,6 +507,18 @@ namespace Igor
 	 		}
 	 	}
 
+		public static bool IsStringParamSet(string StringParam)
+	 	{
+	 		IgorJobConfig Inst = GetConfig();
+
+	 		if(Inst != null)
+	 		{
+	 			return IgorUtils.IsStringParamSet(Inst.Persistent.JobCommandLineParams, StringParam);
+	 		}
+
+	 		return false;
+	 	}
+
 	 	public static string GetStringParam(string ParamKey)
 	 	{
 	 		IgorJobConfig Inst = GetConfig();
@@ -672,7 +684,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 11;
+		private const int Version = 12;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
