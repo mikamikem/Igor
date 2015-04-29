@@ -251,16 +251,6 @@ namespace Igor
  			return false;
 	 	}
 
-        public static bool IsStringParamSet(string AllParams, string StringParam)
-	 	{
- 			if(AllParams.Contains("--" + StringParam + "="))
- 			{
- 				return true;
- 			}
-
- 			return false;
-	 	}
-
 	 	public static string SetBoolParam(string OriginalParams, string BoolParam, bool bTrue)
 	 	{
 	 		string NewParams = OriginalParams;
@@ -682,7 +672,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 10;
+		private const int Version = 11;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
