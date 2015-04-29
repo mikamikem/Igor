@@ -149,7 +149,7 @@ def SelfUpdate():
 			if os.path.exists(TempLocalPythonFile):
 				SetFileExecutable(TempLocalPythonFile)
 
-				os.execvp('python', ["\"" + os.getcwd() + "\"", TempLocalPythonFile, '--bootstrap'] + sys.argv)
+				os.execvp('python', ["\"" + os.getcwd() + "\"", TempLocalPythonFile, '--bootstrap="' + sys.argv[0] + '"'] + sys.argv)
 		else:
 			print("We have the latest version!\n")
 
