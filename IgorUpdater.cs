@@ -177,6 +177,16 @@ namespace Igor
  			return NewParams;
 	 	}
 
+	 	public static bool IsStringParamSet(string AllParams, string ParamKey)
+	 	{
+ 			if(AllParams.Contains("--" + ParamKey + "="))
+ 			{
+ 				return true;
+ 			}
+
+ 			return false;
+	 	}
+
 	 	public static string GetStringParam(string AllParams, string ParamKey)
 	 	{
  			if(AllParams.Contains("--" + ParamKey + "="))

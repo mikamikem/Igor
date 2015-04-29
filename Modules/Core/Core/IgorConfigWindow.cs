@@ -394,6 +394,15 @@ namespace Igor
 										bModulesChanged = true;
 									}
 								}
+								else
+								{
+									if(!bWasInstalled)
+									{
+										ConfigInst.EnabledModules.Add(MergedName);
+
+										bModulesChanged = true;
+									}
+								}
 							}
 
 							EditorGUI.indentLevel -= 1;
@@ -597,13 +606,25 @@ namespace Igor
 					{
 						EditorGUI.indentLevel += 1;
 
+						IIgorModule CommonModule = ModuleNameToInst.ContainsKey(CurrentGroup + ".Common") ? ModuleNameToInst[CurrentGroup + ".Common"] : null;
+
+						if(CommonModule != null)
+						{
+							CurrentJobInst.JobCommandLineParams = CommonModule.DrawJobInspectorAndGetEnabledParams(CurrentJobInst.JobCommandLineParams);
+						}
+
 						foreach(string CurrentModuleName in SortedModules)
 						{
+							if(CurrentModuleName == "Common")
+							{
+								continue;
+							}
+
 							string FullModuleName = CurrentGroup + "." + CurrentModuleName;
 
 							IIgorModule CurrentModule = ModuleNameToInst.ContainsKey(FullModuleName) ? ModuleNameToInst[FullModuleName] : null;
 
-							if(CurrentModule == null)
+							if(CurrentModule == null || !CurrentModule.ShouldDrawInspectorForParams(CurrentJobInst.JobCommandLineParams))
 							{
 								continue;
 							}

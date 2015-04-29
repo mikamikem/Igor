@@ -30,6 +30,11 @@ namespace Igor
 			return CurrentParams;
 		}
 
+		public virtual bool ShouldDrawInspectorForParams(string CurrentParams)
+		{
+			return true;
+		}
+
 		public virtual void DrawBoolParam(ref string CurrentParams, string BoolLabel, string BoolParam)
 		{
 			bool bIsEnabled = IgorUtils.IsBoolParamSet(CurrentParams, BoolParam);
@@ -46,6 +51,192 @@ namespace Igor
 			CurrentStringValue = EditorGUILayout.TextField(StringLabel, CurrentStringValue);
 
 			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+		}
+
+		protected static Texture2D LabelFieldBGGreen = null;
+		protected static Texture2D TextFieldBGGreenNormal = null;
+		protected static Texture2D TextFieldBGGreenActive = null;
+
+		public static Texture2D TintTextureWithColor(Texture2D InTexture, Color TintColor, float TintAmount)
+		{
+			Texture2D TintedTexture = InTexture;
+
+			if(InTexture != null)
+			{
+				RenderTexture TempRenderTexture = new RenderTexture(InTexture.width, InTexture.height, 32);
+
+				Graphics.Blit(InTexture, TempRenderTexture);
+
+				RenderTexture.active = TempRenderTexture;
+
+				TintedTexture = new Texture2D(InTexture.width, InTexture.height);
+
+				TintedTexture.ReadPixels(new Rect(0.0f, 0.0f, InTexture.width, InTexture.height), 0, 0);
+
+				RenderTexture.active = null;
+
+				for(int CurrentX = 0; CurrentX < InTexture.width; ++CurrentX)
+				{
+					for(int CurrentY = 0; CurrentY < InTexture.height; ++CurrentY)
+					{
+						Color OriginalColor = TintedTexture.GetPixel(CurrentX, CurrentY);
+						Color NewColor = new Color((TintColor.r*TintAmount) + (OriginalColor.r*(1.0f-TintAmount)), (TintColor.g*TintAmount) + (OriginalColor.g*(1.0f-TintAmount)),
+						                           (TintColor.b*TintAmount) + (OriginalColor.b*(1.0f-TintAmount)), OriginalColor.a);
+
+						TintedTexture.SetPixel(CurrentX, CurrentY, NewColor);
+					}
+				}
+
+				TintedTexture.Apply();
+			}
+			
+			return TintedTexture;
+		}
+		
+		public static Texture2D GetTextFieldBGGreenNormal()
+		{
+			if(TextFieldBGGreenNormal == null)
+			{
+				GUISkin CurrentSkin = GUI.skin;
+
+				Texture2D TextFieldBG = CurrentSkin.textField.normal.background;
+
+				TextFieldBGGreenNormal = TintTextureWithColor(TextFieldBG, Color.green, 0.25f);				
+			}
+
+			return TextFieldBGGreenNormal;
+		}
+
+		public static Texture2D GetTextFieldBGGreenActive()
+		{
+			if(TextFieldBGGreenActive == null)
+			{
+				GUISkin CurrentSkin = GUI.skin;
+
+				Texture2D TextFieldBG = CurrentSkin.textField.focused.background;
+
+				TextFieldBGGreenActive = TintTextureWithColor(TextFieldBG, Color.green, 0.25f);				
+			}
+
+			return TextFieldBGGreenActive;
+		}
+
+		public static Texture2D GenerateTexture2DWithColor(Color InColor)
+		{
+			Texture2D NewTexture = new Texture2D(1, 1, TextureFormat.ARGB32, true);
+			NewTexture.SetPixel(0, 1, Color.Lerp(InColor, Color.white, 0.0f));
+			NewTexture.Apply();
+			
+			return NewTexture;
+		}
+
+		public static Texture2D GetLabelFieldBGGreen()
+		{
+			if(LabelFieldBGGreen == null)
+			{
+				GUISkin CurrentSkin = GUI.skin;
+
+				Texture2D LabelFieldBG = CurrentSkin.label.normal.background;
+
+				LabelFieldBGGreen = TintTextureWithColor(LabelFieldBG, Color.green, 0.25f);				
+
+				if(LabelFieldBGGreen == null)
+				{
+					LabelFieldBGGreen = GenerateTexture2DWithColor(new Color(Color.green.r * 0.45f, Color.green.g * 0.45f, Color.green.b * 0.45f));
+				}
+			}
+
+			return LabelFieldBGGreen;
+		}
+
+		public virtual void DrawStringConfigParam(ref string CurrentParams, string StringLabel, string StringOverrideParam, string ConfigKey)
+		{
+			string CurrentStringValue = "";
+			string CurrentConfigValue = IgorConfig.GetModuleString(this, ConfigKey);
+
+			bool bDisplayConfigValue = false;
+
+			if(IgorUtils.IsStringParamSet(CurrentParams, StringOverrideParam))
+			{
+				CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringOverrideParam);
+			}
+			else
+			{
+				bDisplayConfigValue = true;
+			}
+
+			EditorGUILayout.BeginHorizontal();
+
+			EditorGUILayout.LabelField(StringLabel, GUILayout.MaxWidth(100.0f));
+
+			EditorGUILayout.BeginHorizontal();
+
+			string DisplayString = bDisplayConfigValue ? CurrentConfigValue : CurrentStringValue;
+
+			GUIStyle TextFieldStyle = new GUIStyle(GUI.skin.textField);
+
+			if(!bDisplayConfigValue)
+			{
+				TextFieldStyle.normal.background = GetTextFieldBGGreenNormal();
+				TextFieldStyle.focused.background = GetTextFieldBGGreenActive();
+			}
+
+			CurrentStringValue = GUILayout.TextField(DisplayString, TextFieldStyle, GUILayout.ExpandWidth(true), GUILayout.MinWidth(100.0f));
+
+			if(bDisplayConfigValue && CurrentStringValue == CurrentConfigValue)
+			{
+				CurrentStringValue = "";
+			}
+
+			GUIStyle ButtonStyle = new GUIStyle(GUI.skin.button);
+
+			ButtonStyle.border = new RectOffset();
+			ButtonStyle.margin = new RectOffset();
+
+			if(GUILayout.Button(new GUIContent("<-", "Use the config value"), ButtonStyle, GUILayout.Width(25.0f)))
+			{
+				CurrentStringValue = "";
+			}
+
+			if(GUILayout.Button(new GUIContent("->", "Update the config value to the current value (This will change all other jobs that haven't overridden this value!)"), ButtonStyle, GUILayout.Width(25.0f)))
+			{
+				if(!bDisplayConfigValue)
+				{
+					CurrentConfigValue = CurrentStringValue;
+				}
+
+				IgorConfig.SetModuleString(this, ConfigKey, CurrentConfigValue);
+			}
+
+			string ConfigLabel = CurrentConfigValue + " - From Global Config Key: " + GetModuleName() + "." + ConfigKey;
+//			string ConfigLabel = "Global Config: \"" + CurrentConfigValue + "\" from Key: \"" + GetModuleName() + "." + ConfigKey + "\"";
+
+			GUIStyle LabelFieldStyle = new GUIStyle(GUI.skin.label);
+
+			LabelFieldStyle.alignment = TextAnchor.MiddleLeft;
+			LabelFieldStyle.border = new RectOffset();
+			LabelFieldStyle.contentOffset = new Vector2();
+			LabelFieldStyle.margin = new RectOffset();
+
+			if(bDisplayConfigValue)
+			{
+				LabelFieldStyle.normal.background = GetLabelFieldBGGreen();
+			}
+
+			GUILayout.Label(new GUIContent(ConfigLabel, ConfigLabel), LabelFieldStyle, GUILayout.MinWidth(20.0f));
+
+			if(GUILayout.Button(new GUIContent("X", "Clear the config value (This will change all other jobs that haven't overridden this value!)"), ButtonStyle, GUILayout.Width(25.0f)))
+			{
+				CurrentConfigValue = "";
+
+				IgorConfig.SetModuleString(this, ConfigKey, CurrentConfigValue);
+			}
+
+			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.EndHorizontal();
+
+			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringOverrideParam, CurrentStringValue);
 		}
 
 		public virtual void DrawStringOptionsParam(ref string CurrentParams, string StringLabel, string StringParam, List<string> ValidOptions)
@@ -77,16 +268,40 @@ namespace Igor
 				}
 			}
 
-			ChosenIndex = EditorGUILayout.Popup(StringLabel, ChosenIndex, AllOptions.ToArray());
-
-			CurrentStringValue = AllOptions[ChosenIndex];
-
-			if(CurrentStringValue == "Not set")
+			if(ChosenIndex == -1)
 			{
-				CurrentStringValue = "";
-			}
+				EditorGUILayout.BeginHorizontal();
 
-			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+				EditorGUILayout.LabelField(StringLabel);
+
+				EditorGUILayout.BeginHorizontal();
+
+				EditorGUILayout.LabelField(CurrentStringValue);
+
+				if(GUILayout.Button(new GUIContent("Reset shared value", "This value is set in another module.  Resetting it will change the value in another module!")))
+				{
+					CurrentStringValue = "";
+
+					CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+				}
+
+				EditorGUILayout.EndHorizontal();
+
+				EditorGUILayout.EndHorizontal();
+			}
+			else
+			{
+				ChosenIndex = EditorGUILayout.Popup(StringLabel, ChosenIndex, AllOptions.ToArray());
+
+				CurrentStringValue = AllOptions[ChosenIndex];
+
+				if(CurrentStringValue == "Not set")
+				{
+					CurrentStringValue = "";
+				}
+
+				CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+			}
 		}
 
 		public virtual void Log(string Message)

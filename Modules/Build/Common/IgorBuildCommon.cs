@@ -14,6 +14,7 @@ namespace Igor
 	{
 		public static string BuildFlag = "build";
 		public static string PlatformFlag = "platform";
+		public static string BuiltNameFlag = "builtname";
 
 		protected static string ProductsFlag = "buildproducts";
 
@@ -24,6 +25,8 @@ namespace Igor
 		public delegate BuildOptions GetExtraBuildOptions(BuildTarget CurrentTarget);
 
 		protected static List<string> CurrentBuildProducts = new List<string>();
+
+		public static List<string> AvailablePlatforms = new List<string>();
 
 		public override string GetModuleName()
 		{
@@ -37,6 +40,22 @@ namespace Igor
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
+			IgorCore.SetModuleActiveForJob(this);
+		}
+
+		public static void RegisterBuildPlatforms(string[] Platforms)
+		{
+			AvailablePlatforms.AddRange(Platforms);
+		}
+
+		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
+		{
+			string EnabledParams = CurrentParams;
+
+			DrawBoolParam(ref EnabledParams, "Build the game", BuildFlag);
+			DrawStringOptionsParam(ref EnabledParams, "Platform to build", PlatformFlag, AvailablePlatforms);
+
+			return EnabledParams;
 		}
 
 		public static string[] GetLevels()

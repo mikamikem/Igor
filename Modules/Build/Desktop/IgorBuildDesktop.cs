@@ -22,6 +22,8 @@ namespace Igor
 			IgorCore.RegisterNewModule(this);
 
 			BuildOptionsDelegates.Clear();
+
+			IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
 		}
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
@@ -74,12 +76,52 @@ namespace Igor
 			}
 		}
 
+		public virtual string GetBuiltNameConfigKeyForPlatform(string PlatformName)
+		{
+			return "Built" + PlatformName + "Name";
+		}
+
+		public override bool ShouldDrawInspectorForParams(string CurrentParams)
+		{
+			bool bBuilding = IgorUtils.IsBoolParamSet(CurrentParams, IgorBuildCommon.BuildFlag);
+			bool bRecognizedPlatform = false;
+
+			if(bBuilding)
+			{
+				string Platform = IgorUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
+
+				if(Platform == "OSX32")
+				{
+					bRecognizedPlatform = true;
+				}
+				else if(Platform == "OSX64")
+				{
+					bRecognizedPlatform = true;
+				}
+				else if(Platform == "OSXUniversal")
+				{
+					bRecognizedPlatform = true;
+				}
+				else if(Platform == "Windows32")
+				{
+					bRecognizedPlatform = true;
+				}
+				else if(Platform == "Windows64")
+				{
+					bRecognizedPlatform = true;
+				}
+			}
+
+			return bBuilding && bRecognizedPlatform;
+		}
+
 		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
 
-			DrawBoolParam(ref EnabledParams, "Build the game", IgorBuildCommon.BuildFlag);
-			DrawStringOptionsParam(ref EnabledParams, "Platform to build", IgorBuildCommon.PlatformFlag, new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
+			string Platform = IgorUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
+
+			DrawStringConfigParam(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, GetBuiltNameConfigKeyForPlatform(Platform));
 
 			return EnabledParams;
 		}
@@ -125,7 +167,7 @@ namespace Igor
 			}
 			else if(NewTarget == BuildTarget.StandaloneWindows64)
 			{
-				BuiltName = GetConfigString("BuiltWindows4Name");
+				BuiltName = GetConfigString("BuiltWindows64Name");
 				bWindows = true;
 			}
 

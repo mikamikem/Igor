@@ -9,5 +9,6 @@ namespace Igor
 		void ProcessArgs(IIgorStepHandler StepHandler);
 
 		string DrawJobInspectorAndGetEnabledParams(string CurrentParams);
+		bool ShouldDrawInspectorForParams(string CurrentParams);
 	}
 }
