@@ -96,7 +96,56 @@ namespace Igor
 		    System.IO.Directory.Delete(targetDir, false);
 		}
 
-		public static string DownloadFileForUpdate(string RelativePath)
+		public static string GetLocalFileFromModuleFilename(string Filename)
+		{
+			string LocalFileName = Filename;
+
+			if(LocalFileName.StartsWith("("))
+			{
+				LocalFileName = LocalFileName.Substring(LocalFileName.IndexOf(")") + 1);
+			}
+
+			LocalFileName = LocalFileName.Replace("[", "");
+			LocalFileName = LocalFileName.Replace("]", "");
+
+			return LocalFileName;
+		}
+
+		public static string GetRemoteFileFromModuleFilename(string RootPath, string Filename, ref bool bIsRemote)
+		{
+			string RemoteFileName = Filename;
+
+			bIsRemote = false;
+
+			if(RemoteFileName.StartsWith("("))
+			{
+				RemoteFileName = RemoteFileName.Replace("(", "");
+				RemoteFileName = RemoteFileName.Replace(")", "");
+
+				bIsRemote = true;
+			}
+			else
+			{
+				if(RemoteFileName.StartsWith("."))
+				{
+					RemoteFileName = RemoteFileName.Substring(RemoteFileName.LastIndexOf("/") + 1);
+				}
+
+				RemoteFileName = RootPath + RemoteFileName;
+			}
+
+			if(RemoteFileName.Contains("["))
+			{
+				int IndexStart = RemoteFileName.IndexOf("[");
+				int IndexEnd = RemoteFileName.LastIndexOf("]") + 1;
+
+				RemoteFileName = RemoteFileName.Replace(RemoteFileName.Substring(IndexStart, IndexEnd - IndexStart), "");
+			}
+
+			return RemoteFileName;
+		}
+
+		public static string DownloadFileForUpdate(string RelativePath, string AbsolutePath = "")
 		{
 			string DestFilePath = Path.Combine(IgorUpdater.TempLocalDirectory, RelativePath);
 			
@@ -112,7 +161,7 @@ namespace Igor
 					Directory.CreateDirectory(Path.GetDirectoryName(DestFilePath));
 				}
 
-				if(IgorUpdater.bLocalDownload)
+				if(IgorUpdater.bLocalDownload && AbsolutePath == "")
 				{
 					string ParentDirectory = Directory.GetCurrentDirectory();
 					string NewLocalPrefix = IgorUpdater.GetLocalPrefix();
@@ -132,7 +181,14 @@ namespace Igor
 				{
 					using (WebClient Client = new WebClient())
 					{
-						Client.DownloadFile(IgorUpdater.RemotePrefix + RelativePath, DestFilePath);
+						if(AbsolutePath == "")
+						{
+							Client.DownloadFile(IgorUpdater.RemotePrefix + RelativePath, DestFilePath);
+						}
+						else
+						{
+							Client.DownloadFile(AbsolutePath, DestFilePath);
+						}
 					}
 				}
 			}
@@ -541,7 +597,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 8;
+		private const int Version = 9;
 
 		public static bool bDontUpdate = false;
 		public static bool bAlwaysUpdate = false;
@@ -829,8 +885,9 @@ namespace Igor
 
 									if(CurrentModuleDescriptorInst != null)
 									{
-										foreach(string LocalFile in CurrentModuleDescriptorInst.ModuleFiles)
+										foreach(string ModuleFile in CurrentModuleDescriptorInst.ModuleFiles)
 										{
+											string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
 											string FullLocalPath = Path.Combine(LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile));
 
 											if(File.Exists(FullLocalPath))
@@ -849,10 +906,13 @@ namespace Igor
 
 									File.Copy(ModuleDescriptor, CurrentModuleDescriptor);
 
-									foreach(string LocalFile in NewModuleDescriptorInst.ModuleFiles)
+									foreach(string ModuleFile in NewModuleDescriptorInst.ModuleFiles)
 									{
+										bool bIsExternal = false;
+
+										string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
 										string FullLocalPath = Path.Combine(LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile));
-										string RemotePath = RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/" + LocalFile;
+										string RemotePath = IgorUtils.GetRemoteFileFromModuleFilename(RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/", ModuleFile, ref bIsExternal);
 
 										if(LocalFile.StartsWith("."))
 										{
@@ -875,10 +935,19 @@ namespace Igor
 											}
 
 											FullLocalPath = Path.Combine(Base, NewLocalFile);
-											RemotePath = RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/" + LocalFile.Substring(LocalFile.LastIndexOf("/") + 1);
+											RemotePath = IgorUtils.GetRemoteFileFromModuleFilename(RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/", ModuleFile, ref bIsExternal);
 										}
 
-										string TempDownloadPath = IgorUtils.DownloadFileForUpdate(RemotePath);
+										string TempDownloadPath = "";
+
+										if(bIsExternal)
+										{
+											TempDownloadPath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile), RemotePath);
+										}
+										else
+										{
+											TempDownloadPath = IgorUtils.DownloadFileForUpdate(RemotePath);
+										}
 
 										if(File.Exists(FullLocalPath))
 										{
