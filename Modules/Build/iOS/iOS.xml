@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ModuleName>Build.iOS</ModuleName>
+  <ModuleVersion>1</ModuleVersion>
+  <ModuleFiles>
+    <File>IgorBuildiOS.cs</File>
+    <File>IgorXCodeProjUtils.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXBuildFile.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXBuildPhase.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXDictionary.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXFileReference.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXGroup.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXList.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXObject.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXParser.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXProject.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCBuildConfiguration.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCConfigurationList.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCFileOperationQueue.cs</File>
+    <File>(https://raw.githubusercontent.com/kexplo/XCodeEditor-for-Unity/5e459b2cf9275e30898882e4d025afbfb94413bd/)[XCodeEditor/]XCMod.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCProject.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCSourceFile.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCTarget.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCodeEditorMenu.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XMiniJSON.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]LICENSE</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]Readme.mdown</File>
+  </ModuleFiles>
+  <ModuleDependencies>
+    <Module>Build.Common</Module>
+  </ModuleDependencies>
+</IgorModuleDescriptor>
