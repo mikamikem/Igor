@@ -55,6 +55,12 @@ def SetFileExecutable(Filename):
 
 	return
 
+def SetFileWritable(Filename):
+	Stats = os.stat(Filename)
+	os.chmod(Filename, Stats.st_mode | stat.S_IWRITE)
+
+	return
+
 def DownloadFileToLocation(FileURL, LocalURL):
 	global Local
 
@@ -96,6 +102,7 @@ def BootstrapIfRequested():
 
 		print("Bootstrap (2/4) - Removing the original file " + OriginalFile)
 
+		SetFileWritable(OriginalFile)
 		os.remove(OriginalFile)
 		
 		print("Bootstrap (3/4) - Copying the new file to " + BaseName)
@@ -103,7 +110,7 @@ def BootstrapIfRequested():
 		PathToNewScript = os.path.join(RunningDirectory, BaseName)
 		shutil.copy(__file__, os.path.join(os.getcwd(), PathToNewScript))
 
-		os.execv(PathToNewScript, [PathToNewScript, '--finalbootstrap'] + sys.argv)
+		os.execvp('python', ["\"" + os.getcwd() + "\"", PathToNewScript, '--finalbootstrap'] + sys.argv)
 
 	return
 
@@ -142,7 +149,7 @@ def SelfUpdate():
 			if os.path.exists(TempLocalPythonFile):
 				SetFileExecutable(TempLocalPythonFile)
 
-				os.execv(TempLocalPythonFile, [TempLocalPythonFile, '--bootstrap'] + sys.argv)
+				os.execvp('python', ["\"" + os.getcwd() + "\"", TempLocalPythonFile, '--bootstrap'] + sys.argv)
 		else:
 			print("We have the latest version!\n")
 
