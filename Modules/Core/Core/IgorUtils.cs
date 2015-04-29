@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
@@ -125,5 +126,48 @@ namespace Igor
 
 			return Value;
 		}
+
+	    public static float PlayJobsDoneSound()
+	    {
+	        AudioClip Clip = AssetDatabase.LoadAssetAtPath("Assets/Editor/Igor/jobs_done.wav", typeof(AudioClip)) as AudioClip;
+	        if(Clip != null)
+	        {
+	            PlayAudioClip(Clip);
+	            return Clip.length;
+	        }
+	        return 0f;
+	    }
+
+	    static void PlayAudioClip(AudioClip Clip)
+	    {
+	        if(Clip != null)
+	        {
+	            System.Reflection.Assembly UnityEditorAssembly = typeof(AudioImporter).Assembly;
+	            if(UnityEditorAssembly != null)
+	            {
+	                System.Type AudioUtilClass = UnityEditorAssembly.GetType("UnityEditor.AudioUtil");
+	                if(AudioUtilClass != null)
+	                {
+	                    System.Reflection.MethodInfo Method = AudioUtilClass.GetMethod(
+	                        "PlayClip",
+	                        System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public,
+	                        null,
+	                        new System.Type[]
+	                        {
+	                            typeof(AudioClip)
+	                        },
+	                        null
+	                        );
+	                    Method.Invoke(
+	                        null,
+	                        new object[]
+	                        {
+	                            Clip
+	                        }
+	                        );
+	                }
+	            }
+	        }
+	    }
 	}
 }

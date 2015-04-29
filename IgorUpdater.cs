@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
@@ -96,7 +96,7 @@ namespace Igor
 		    System.IO.Directory.Delete(targetDir, false);
 		}
 
-		public static string GetLocalFileFromModuleFilename(string Filename)
+        public static string GetLocalFileFromModuleFilename(string Filename)
 		{
 			string LocalFileName = Filename;
 
@@ -161,7 +161,7 @@ namespace Igor
 					Directory.CreateDirectory(Path.GetDirectoryName(DestFilePath));
 				}
 
-				if(IgorUpdater.bLocalDownload && AbsolutePath == "")
+				if((IgorUpdater.bLocalDownload || IgorUpdater.bDontUpdate) && AbsolutePath == "")
 				{
 					string ParentDirectory = Directory.GetCurrentDirectory();
 					string NewLocalPrefix = IgorUpdater.GetLocalPrefix();
@@ -174,22 +174,28 @@ namespace Igor
 					}
 
 					NewLocalPrefix = Path.Combine(ParentDirectory, NewLocalPrefix);
+                    string LocalFilePath = Path.Combine(NewLocalPrefix, RelativePath);
 
-					File.Copy(Path.Combine(NewLocalPrefix, RelativePath), DestFilePath);
+                    if(File.Exists(LocalFilePath))
+					    File.Copy(LocalFilePath, DestFilePath);
 				}
 				else
 				{
-					using (WebClient Client = new WebClient())
+                    string PathToSource = string.Empty;
+                    if(AbsolutePath == "")
 					{
-						if(AbsolutePath == "")
-						{
-							Client.DownloadFile(IgorUpdater.RemotePrefix + RelativePath, DestFilePath);
-						}
-						else
-						{
-							Client.DownloadFile(AbsolutePath, DestFilePath);
-						}
+						PathToSource = IgorUpdater.RemotePrefix + RelativePath;
 					}
+					else
+					{
+						PathToSource = AbsolutePath;
+                    }
+                    
+				    WWW www = new WWW(PathToSource);
+                    while(!www.isDone)
+                    { }
+				    File.WriteAllText(DestFilePath, www.text);
+                    www.Dispose();
 				}
 			}
 			catch(Exception e)
@@ -200,9 +206,54 @@ namespace Igor
 			return DestFilePath;
 		}
 
+        public static string ClearParam(string AllParams, string Param)
+        {
+            string Query = string.Empty;
+            if(IsBoolParamSet(AllParams, Param))
+            {
+                Query = "--" + Param;
+            }
+            else
+            if(IsStringParamSet(AllParams, Param))
+            {
+                string Value = GetStringParam(AllParams, Param);
+                Query = "--" + Param + "=" + "\"" + Value + "\"";
+            }
+
+            int StartParamIndex = AllParams.IndexOf(Query);
+            string TrimTarget = AllParams.Substring(0, StartParamIndex);
+            string TrimmedTarget = TrimTarget.TrimEnd(new char[] { ' ' });
+            int Difference = TrimTarget.Length - TrimmedTarget.Length;
+            string ReplaceText = AllParams.Substring(StartParamIndex - Difference, Query.Length + Difference);
+            
+            if(!string.IsNullOrEmpty(ReplaceText))
+            {
+                AllParams = AllParams.Replace(ReplaceText, string.Empty);
+            }
+
+            return AllParams;
+        }
+
 	 	public static bool IsBoolParamSet(string AllParams, string BoolParam)
 	 	{
- 			if(AllParams.Contains("--" + BoolParam))
+            string ContainsQuery = "--" + BoolParam;
+ 			if(AllParams.Contains(ContainsQuery))
+ 			{
+                string Substring = AllParams.Substring(AllParams.IndexOf(ContainsQuery) + ContainsQuery.Length);
+                if(Substring.Length > 0)
+                {
+                    return Substring[0] != '=';
+                }
+
+ 				return true;
+ 			}
+
+ 			return false;
+	 	}
+
+        public static bool IsStringParamSet(string AllParams, string StringParam)
+	 	{
+ 			if(AllParams.Contains("--" + StringParam + "="))
  			{
  				return true;
  			}
@@ -218,8 +269,8 @@ namespace Igor
  			{
  				if(!bTrue)
  				{
- 					NewParams = NewParams.Replace(" --" + BoolParam, "");
- 					NewParams = NewParams.Replace("--" + BoolParam, "");
+ 					NewParams = NewParams.Replace(" --" + BoolParam, string.Empty);
+ 					NewParams = NewParams.Replace("--" + BoolParam, string.Empty);
  				}
  			}
  			else
@@ -245,22 +296,25 @@ namespace Igor
 
 	 	public static string GetStringParam(string AllParams, string ParamKey)
 	 	{
- 			if(AllParams.Contains("--" + ParamKey + "="))
+            string Result = string.Empty;
+ 			
+            if(AllParams.Contains("--" + ParamKey + "="))
  			{
- 				int StartingPos = AllParams.IndexOf("--" + ParamKey + "=") + ("--" + ParamKey + "=").Length;
- 				int EndingPos = AllParams.IndexOf(" ", StartingPos);
+ 			    int StartingPos = 1, EndingPos = -1;
 
- 				if(EndingPos > StartingPos)
- 				{
-	 				return AllParams.Substring(StartingPos, EndingPos - StartingPos);
-	 			}
-	 			else
-	 			{
-	 				return AllParams.Substring(StartingPos);
-	 			}
+ 				StartingPos = AllParams.IndexOf("--" + ParamKey + "=") + ("--" + ParamKey + "=").Length;
+
+                string StartSubstring = AllParams.Substring(StartingPos);
+
+ 			    EndingPos = StartSubstring.IndexOf("--");
+                if(EndingPos < 0)
+                    EndingPos = StartSubstring.Length;
+ 				
+                Result = StartSubstring.Substring(0, EndingPos);
+                Result = Result.Trim(new char[] {' ', '"'});
  			}
 
- 			return "";
+ 			return Result;
 	 	}
 
 	 	public static string SetStringParam(string AllParams, string ParamKey, string ParamValue)
@@ -269,15 +323,17 @@ namespace Igor
 
  			if(NewParams.Contains("--" + ParamKey + "="))
  			{
- 				string CurrentValue = GetStringParam(AllParams, ParamKey);
-
- 				NewParams = NewParams.Replace(" --" + ParamKey + "=" + CurrentValue, "");
- 				NewParams = NewParams.Replace("--" + ParamKey + "=" + CurrentValue, "");
+ 				NewParams = ClearParam(AllParams, ParamKey);
  			}
 
- 			if(ParamValue != "")
+ 			if(ParamValue != string.Empty)
  			{
- 				NewParams += " --" + ParamKey + "=" + ParamValue;
+                string MungedParamValue = ParamValue;
+                if(!MungedParamValue.StartsWith("\""))
+                    MungedParamValue = "\"" + MungedParamValue;
+                if(!MungedParamValue.EndsWith("\""))
+                    MungedParamValue = MungedParamValue + "\"";
+ 				NewParams += " --" + ParamKey + "=" + MungedParamValue;
  			}
 
  			return NewParams;
@@ -369,6 +425,7 @@ namespace Igor
 	 	}
 	}
 
+    [System.Serializable]
 	public class IgorPersistentJobConfig
 	{
 		public string JobCommandLineParams = "";
@@ -443,6 +500,18 @@ namespace Igor
 	 		if(Inst != null)
 	 		{
 	 			return IgorUtils.IsBoolParamSet(Inst.Persistent.JobCommandLineParams, BoolParam);
+	 		}
+
+	 		return false;
+	 	}
+
+        public static bool IsStringParamSet(string StringParam)
+	 	{
+	 		IgorJobConfig Inst = GetConfig();
+
+	 		if(Inst != null)
+	 		{
+	 			return IgorUtils.IsStringParamSet(Inst.Persistent.JobCommandLineParams, StringParam);
 	 		}
 
 	 		return false;
@@ -584,6 +653,34 @@ namespace Igor
 	[InitializeOnLoad]
 	public class IgorUpdater
 	{
+		static string kPrefix = "Igor_";
+
+		[PreferenceItem("Igor")]
+		static void PreferencesGUI()
+		{
+			bDontUpdate = EditorGUILayout.Toggle(new GUIContent("Don't auto-update", "No updating Igor files from local or remote sources"), bDontUpdate);
+			bAlwaysUpdate = EditorGUILayout.Toggle(new GUIContent("Always update", "Update even if the versions match"), bAlwaysUpdate);
+			bLocalDownload = EditorGUILayout.Toggle(new GUIContent("Local update", "Update from local directory 'TestDeploy' instead of remotely from GitHub"), bLocalDownload);
+		}
+
+		public static bool bDontUpdate
+		{
+			get { return EditorPrefs.GetBool(kPrefix + "bDontUpdate", false); }
+			set { EditorPrefs.SetBool(kPrefix + "bDontUpdate", value); }
+		}
+
+		public static bool bAlwaysUpdate
+		{
+			get { return EditorPrefs.GetBool(kPrefix + "bAlwaysUpdate", false); }
+			set { EditorPrefs.SetBool(kPrefix + "bAlwaysUpdate", value); }
+		}
+
+		public static bool bLocalDownload
+		{
+			get { return EditorPrefs.GetBool(kPrefix + "bLocalDownload", false); }
+			set { EditorPrefs.SetBool(kPrefix + "bLocalDownload", value); }
+		}
+
 		static IgorUpdater()
 		{
 			ServicePointManager.ServerCertificateValidationCallback +=
@@ -599,13 +696,9 @@ namespace Igor
 
 		private const int Version = 9;
 
-		public static bool bDontUpdate = false;
-		public static bool bAlwaysUpdate = false;
-		public static bool bLocalDownload = false;
-
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
-		public static string ExplicitLocalPrefix = "TestDeploy/";
+        public static string ExplicitLocalPrefix = "TestDeploy/";
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
 		public static string TempLocalDirectory = "IgorTemp/";
 
@@ -620,6 +713,7 @@ namespace Igor
 
 		public static IIgorCore Core = null;
 
+        private static List<string> UpdatedContent = new List<string>(); 
 		private static List<string> UpdatedModules = new List<string>();
 
 		public static string GetLocalPrefix()
@@ -651,12 +745,14 @@ namespace Igor
 		}
 
 		// Returns true if files were updated
-		public static bool CheckForUpdates(bool bForce = false, bool bFromMenu = false)
+		public static bool CheckForUpdates(bool bForce = false, bool bFromMenu = false, bool bSynchronous = false)
 		{
 			IgorJobConfig.SetWasMenuTriggered(bFromMenu);
 
 			if(!bDontUpdate || bForce)
 			{
+                UpdatedContent.Clear();
+
 				bool bNeedsRebuild = SelfUpdate();
 
 				bNeedsRebuild = UpdateCore() || bNeedsRebuild;
@@ -666,7 +762,12 @@ namespace Igor
 				{
 					IgorJobConfig.SetBoolParam("restartingfromupdate", true);
 
-					AssetDatabase.Refresh();
+                    Debug.Log("The following Igor content was updated, refreshing AssetDatabase:");
+                    foreach(var content in UpdatedContent)
+                        Debug.Log(content);
+
+                    ImportAssetOptions options = bSynchronous ? ImportAssetOptions.ForceSynchronousImport : ImportAssetOptions.Default;
+					AssetDatabase.Refresh(options);
 				}
 
 				return bNeedsRebuild;
@@ -704,15 +805,18 @@ namespace Igor
 			{
 				string FileContents = File.ReadAllText(Filename);
 
-				int StartOfVersionNumber = FileContents.IndexOf("private const int Version = ") + "private const int Version = ".Length;
+			    if(!string.IsNullOrEmpty(FileContents))
+			    {
+			        int StartOfVersionNumber = FileContents.IndexOf("private const int Version = ") + "private const int Version = ".Length;
 
-				string VersionNumberString = FileContents.Substring(StartOfVersionNumber, FileContents.IndexOf(";", StartOfVersionNumber) - StartOfVersionNumber);
+			        string VersionNumberString = FileContents.Substring(StartOfVersionNumber, FileContents.IndexOf(";", StartOfVersionNumber) - StartOfVersionNumber);
 
-				int VersionNumber = -1;
+			        int VersionNumber = -1;
 
-				int.TryParse(VersionNumberString, out VersionNumber);
+			        int.TryParse(VersionNumberString, out VersionNumber);
 
-				return VersionNumber;
+			        return VersionNumber;
+			    }
 			}
 
 			return -1;
@@ -769,6 +873,7 @@ namespace Igor
 			{
 				if(bThrewException)
 				{
+                    Debug.LogError("Exiting EditorApplication because an exception was thrown.");
 					EditorApplication.Exit(-1);
 				}
 			}
@@ -825,6 +930,7 @@ namespace Igor
 			{
 				if(bThrewException)
 				{
+                    Debug.LogError("Exiting EditorApplication because an exception was thrown.");
 					EditorApplication.Exit(-1);
 				}
 			}
@@ -882,12 +988,14 @@ namespace Igor
 								if(CurrentModuleDescriptorInst == null || NewVersion > CurrentModuleDescriptorInst.ModuleVersion || bAlwaysUpdate)
 								{
 									bUpdated = true;
+                                    UpdatedContent.Add(ModuleName);
 
 									if(CurrentModuleDescriptorInst != null)
 									{
 										foreach(string ModuleFile in CurrentModuleDescriptorInst.ModuleFiles)
 										{
-											string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
+                                            string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
+
 											string FullLocalPath = Path.Combine(LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile));
 
 											if(File.Exists(FullLocalPath))
@@ -908,11 +1016,13 @@ namespace Igor
 
 									foreach(string ModuleFile in NewModuleDescriptorInst.ModuleFiles)
 									{
-										bool bIsExternal = false;
+                                        bool bIsExternal = false;
 
-										string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
+                                        string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
+
 										string FullLocalPath = Path.Combine(LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile));
-										string RemotePath = IgorUtils.GetRemoteFileFromModuleFilename(RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/", ModuleFile, ref bIsExternal);
+										
+                                        string RemotePath = IgorUtils.GetRemoteFileFromModuleFilename(RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/", ModuleFile, ref bIsExternal);
 
 										if(LocalFile.StartsWith("."))
 										{
@@ -935,12 +1045,11 @@ namespace Igor
 											}
 
 											FullLocalPath = Path.Combine(Base, NewLocalFile);
-											RemotePath = IgorUtils.GetRemoteFileFromModuleFilename(RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/", ModuleFile, ref bIsExternal);
+											RemotePath = RemoteRelativeModuleRoot + Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath) + "/" + LocalFile.Substring(LocalFile.LastIndexOf("/") + 1);
 										}
 
-										string TempDownloadPath = "";
-
-										if(bIsExternal)
+                                        string TempDownloadPath = "";
+                                        if(bIsExternal)
 										{
 											TempDownloadPath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile), RemotePath);
 										}
@@ -1018,6 +1127,7 @@ namespace Igor
 			{
 				if(bThrewException)
 				{
+                    Debug.LogError("Exiting EditorApplication because an exception was thrown.");
 					EditorApplication.Exit(-1);
 				}
 			}
@@ -1027,50 +1137,54 @@ namespace Igor
 
 		public static void CheckIfResuming()
 		{
-			bool bThrewException = false;
+		    if(!EditorApplication.isCompiling)
+		    {
+		        bool bThrewException = false;
 
-			EditorApplication.update -= CheckIfResuming;
+		        EditorApplication.update -= CheckIfResuming;
 
-			try
-			{
-				FindCore();
+		        try
+		        {
+		            FindCore();
 
-				if(IgorJobConfig.IsBoolParamSet("restartingfromupdate") || IgorJobConfig.IsBoolParamSet("updatebeforebuild") || Core == null)
-				{
-					IgorJobConfig.SetBoolParam("restartingfromupdate", false);
+		            if(IgorJobConfig.IsBoolParamSet("restartingfromupdate") || IgorJobConfig.IsBoolParamSet("updatebeforebuild") || Core == null)
+		            {
+		                IgorJobConfig.SetBoolParam("restartingfromupdate", false);
 
-					if(!CheckForUpdates())
-					{
-						if(IgorJobConfig.IsBoolParamSet("updatebeforebuild"))
-						{
-							IgorJobConfig.SetBoolParam("updatebeforebuild", false);
+		                if(!CheckForUpdates())
+		                {
+		                    if(IgorJobConfig.IsBoolParamSet("updatebeforebuild"))
+		                    {
+		                        IgorJobConfig.SetBoolParam("updatebeforebuild", false);
 
-							if(Core != null)
-							{
-								Core.RunJobInst();
-							}
-							else
-							{
-								Debug.LogError("Something went really wrong.  We don't have Igor's core, but we've already finished updating everything.  Report this with your logs please!");
-							}
-						}
-					}
-				}
-			}
-			catch(Exception e)
-			{
-				Debug.LogError("Caught exception while resuming from updates.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
+		                        if(Core != null)
+		                        {
+		                            Core.RunJobInst();
+		                        }
+		                        else
+		                        {
+		                            Debug.LogError("Something went really wrong.  We don't have Igor's core, but we've already finished updating everything.  Report this with your logs please!");
+		                        }
+		                    }
+		                }
+		            }
+		        }
+		        catch(Exception e)
+		        {
+		            Debug.LogError("Caught exception while resuming from updates.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
 
-				bThrewException = true;
-			}
+		            bThrewException = true;
+		        }
 
-			if(!IgorJobConfig.GetWasMenuTriggered())
-			{
-				if(bThrewException)
-				{
-					EditorApplication.Exit(-1);
-				}
-			}
+		        if(!IgorJobConfig.GetWasMenuTriggered())
+		        {
+		            if(bThrewException)
+		            {
+                        Debug.LogError("Exiting EditorApplication because an exception was thrown.");
+		                EditorApplication.Exit(-1);
+		            }
+		        }
+		    }
 		}
 
 		public static void GenerateModuleList()

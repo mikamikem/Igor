@@ -35,20 +35,22 @@ namespace Igor
 			return true;
 		}
 
-		public virtual void DrawBoolParam(ref string CurrentParams, string BoolLabel, string BoolParam)
+		public virtual bool DrawBoolParam(ref string CurrentParams, string BoolLabel, string BoolParam)
 		{
 			bool bIsEnabled = IgorUtils.IsBoolParamSet(CurrentParams, BoolParam);
 
 			bIsEnabled = EditorGUILayout.Toggle(BoolLabel, bIsEnabled);
 
 			CurrentParams = IgorUtils.SetBoolParam(CurrentParams, BoolParam, bIsEnabled);
+
+            return bIsEnabled;
 		}
 
 		public virtual void DrawStringParam(ref string CurrentParams, string StringLabel, string StringParam)
 		{
 			string CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringParam);
 
-			CurrentStringValue = EditorGUILayout.TextField(StringLabel, CurrentStringValue);
+			CurrentStringValue = EditorGUILayout.TextField(StringLabel, string.IsNullOrEmpty(CurrentStringValue) ? string.Empty : CurrentStringValue);
 
 			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
 		}
@@ -291,17 +293,20 @@ namespace Igor
 			}
 			else
 			{
-				ChosenIndex = EditorGUILayout.Popup(StringLabel, ChosenIndex, AllOptions.ToArray());
+			    int NewIndex = EditorGUILayout.Popup(StringLabel, ChosenIndex, AllOptions.ToArray());
+		        if(NewIndex != ChosenIndex)
+		        {
+		            ChosenIndex = NewIndex;
+		            CurrentStringValue = AllOptions[ChosenIndex];
 
-				CurrentStringValue = AllOptions[ChosenIndex];
+		            if(CurrentStringValue == "Not set")
+		            {
+		                CurrentStringValue = "";
+		            }
 
-				if(CurrentStringValue == "Not set")
-				{
-					CurrentStringValue = "";
-				}
-
-				CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
-			}
+		            CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+		        }
+            }
 		}
 
 		public virtual void Log(string Message)

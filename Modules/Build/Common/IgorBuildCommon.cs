@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,14 +15,49 @@ namespace Igor
 		public static string BuildFlag = "build";
 		public static string PlatformFlag = "platform";
 		public static string BuiltNameFlag = "builtname";
+        public static string AppendCommitInfoFlag = "appendcommitinfo";
+        public static string BuildOptionsFlag = "buildoptions";
 
 		protected static string ProductsFlag = "buildproducts";
 
 		public static StepID BuildStep = new StepID("Build", 500);
+        public static StepID OverridePlayerSettings = new StepID("OverridePlayerSettings", 275);
 		public static StepID SwitchPlatformStep = new StepID("SwitchPlatform", 250);
 		public static StepID PreBuildCleanupStep = new StepID("PreBuildCleanup", 0);
 
-		public delegate BuildOptions GetExtraBuildOptions(BuildTarget CurrentTarget);
+        public static string CommitInfo = string.Empty;
+
+        public static int SetBuildOptionsBitfield = 0;
+
+        static List<BuildOptions> _buildOptionValues = null;
+        static List<BuildOptions> BuildOptionValues
+        {
+            get
+            {
+                if(_buildOptionValues == null)
+                {
+                    _buildOptionValues = new List<BuildOptions>();
+
+                    var values = System.Enum.GetValues(typeof(BuildOptions));
+                    foreach(BuildOptions value in values)
+                    {
+                        _buildOptionValues.Add(value);
+                    }
+                }
+                return _buildOptionValues;
+            }
+        }
+
+        static string[] _buildOptionNames = null;
+        static string[] BuildOptionNames
+        {
+            get
+            {
+                if(_buildOptionNames == null)
+                    _buildOptionNames = System.Enum.GetNames(typeof(BuildOptions));
+                return _buildOptionNames;
+            }
+        }
 
 		protected static List<string> CurrentBuildProducts = new List<string>();
 
@@ -35,12 +70,33 @@ namespace Igor
 
 		public override void RegisterModule()
 		{
-			IgorCore.RegisterNewModule(this);
+			bool DidRegister = IgorCore.RegisterNewModule(this);
+            if(DidRegister)
+            {
+                AvailablePlatforms.Clear();
+            }
 		}
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
 			IgorCore.SetModuleActiveForJob(this);
+
+            if(IgorJobConfig.IsBoolParamSet(IgorBuildCommon.BuildFlag))
+			{
+                if(IgorJobConfig.IsStringParamSet(IgorBuildCommon.AppendCommitInfoFlag))
+                {
+                    CommitInfo = IgorJobConfig.GetStringParam(IgorBuildCommon.AppendCommitInfoFlag);
+                }
+
+                if(IgorJobConfig.IsStringParamSet(IgorBuildCommon.BuildOptionsFlag))
+                {
+                    int OutResult = 0;
+                    if(Int32.TryParse(IgorJobConfig.GetStringParam(IgorBuildCommon.BuildOptionsFlag).Trim('"'), out OutResult))
+                    {
+                        SetBuildOptionsBitfield = OutResult;
+                    }
+                }
+            }
 		}
 
 		public static void RegisterBuildPlatforms(string[] Platforms)
@@ -54,6 +110,29 @@ namespace Igor
 
 			DrawBoolParam(ref EnabledParams, "Build the game", BuildFlag);
 			DrawStringOptionsParam(ref EnabledParams, "Platform to build", PlatformFlag, AvailablePlatforms);
+
+            DrawBoolParam(ref EnabledParams, "Append Commit Info", IgorBuildCommon.AppendCommitInfoFlag);
+                
+            string BuildOptionsAsString = IgorUtils.GetStringParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag).Trim('"');
+            if(!string.IsNullOrEmpty(BuildOptionsAsString))
+            {
+                int OutResult = 0;
+                if(Int32.TryParse(BuildOptionsAsString, out OutResult))
+                {
+                    SetBuildOptionsBitfield = OutResult;
+                }
+            }
+
+            int newValue = EditorGUILayout.MaskField(SetBuildOptionsBitfield, BuildOptionNames);
+            if(newValue != SetBuildOptionsBitfield)
+            {
+                SetBuildOptionsBitfield = newValue;
+
+                if(SetBuildOptionsBitfield != 0)
+                    EnabledParams = IgorUtils.SetStringParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag, ((int)SetBuildOptionsBitfield).ToString());
+                else
+                    EnabledParams = IgorUtils.ClearParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag);
+            }
 
 			return EnabledParams;
 		}
@@ -100,5 +179,18 @@ namespace Igor
 
 			return CurrentBuildProducts;
 		}
-	}
+
+        public static BuildOptions GetBuildOptions()
+        {
+            int BuildOptionsBitfield = 0;
+            for(int i = 0; i < BuildOptionValues.Count; ++i)
+            {
+                if((SetBuildOptionsBitfield & (1 << i)) != 0)
+                {
+                    BuildOptionsBitfield |= (int)BuildOptionValues[i];
+                }
+            }
+            return (BuildOptions)BuildOptionsBitfield;
+        }
+    }
 }

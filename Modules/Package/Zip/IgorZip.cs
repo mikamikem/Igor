@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Igor
 	public class IgorZip : IgorModuleBase
 	{
 		public static string ZipFlag = "zip";
-		public static string ZipFilenameFlag = "zipname";
+		public static string ZipFilenameFlag = "package_name";
 
 		public override string GetModuleName()
 		{
@@ -38,8 +38,15 @@ namespace Igor
 		{
 			string EnabledParams = CurrentParams;
 
-			DrawBoolParam(ref EnabledParams, "Zip the built files", ZipFlag);
-			DrawStringParam(ref EnabledParams, "Zip filename", ZipFilenameFlag);
+			var bZip = DrawBoolParam(ref EnabledParams, "Zip the built files", ZipFlag);
+            if(bZip)
+            {
+			    DrawStringParam(ref EnabledParams, "Zip filename", ZipFilenameFlag);
+            }
+            else
+            {
+                EnabledParams = IgorUtils.ClearParam(EnabledParams, ZipFilenameFlag);
+            }
 
 			return EnabledParams;
 		}
@@ -99,9 +106,18 @@ namespace Igor
 			string ZipCommand = "";
 			string ZipParams = "";
 
-			if(File.Exists("C:\\Program Files\\7-Zip\\7z.exe"))
+			string PathX86 = "C:\\Program Files (x86)\\7-Zip\\7z.exe";
+			string Path64 = "C:\\Program Files\\7-Zip\\7z.exe";
+
+			if(File.Exists(PathX86))
 			{
-				ZipCommand = "C:\\Program Files\\7-Zip\\7z.exe";
+				ZipCommand = PathX86;
+				ZipParams += "a -tzip " + ZipFilename + " ";
+			}
+			else
+			if(File.Exists(Path64))
+			{
+				ZipCommand = Path64;
 				ZipParams += "a -tzip " + ZipFilename + " ";
 			}
 			else

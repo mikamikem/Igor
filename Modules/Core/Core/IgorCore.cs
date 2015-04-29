@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +6,7 @@ using System.Net;
 using System.IO;
 using System;
 using System.Reflection;
+using System.Threading;
 using System.Xml.Serialization;
 
 namespace Igor
@@ -49,12 +50,8 @@ namespace Igor
 		public static List<IIgorModule> ActiveModulesForJob = new List<IIgorModule>();
 		public static Dictionary<StepID, List<JobStep>> JobSteps = new Dictionary<StepID, List<JobStep>>();
 
-		public static bool bTriggerConfigWindowRefresh = false;
-
-		public string GetLocalUpdatePrefix()
+        public string GetLocalUpdatePrefix()
 		{
-			bTriggerConfigWindowRefresh = true;
-			
 			return IgorConfig.ReGetInstance().LocalUpdatePrefix;
 		}
 
@@ -68,10 +65,30 @@ namespace Igor
 			return IgorConfig.GetInstance().GetEnabledModuleNames();
 		}
 
+        static List<Type> _ModuleTypes;
+        static List<Type> ModuleTypes
+        {
+            get
+            {
+                if(_ModuleTypes == null)
+                    _ModuleTypes = IgorUtils.GetTypesInheritFrom<IIgorModule>();
+                return _ModuleTypes;
+            }
+        }
+
+        static List<Type> _LoggerTypes;
+        static List<Type> LoggerTypes
+        {
+            get
+            {
+                if(_LoggerTypes == null)
+                    _LoggerTypes = IgorUtils.GetTypesInheritFrom<IIgorLogger>();
+                return _LoggerTypes;
+            }
+        }
+
 		public static void RegisterAllModules()
 		{
-			List<Type> ModuleTypes = IgorUtils.GetTypesInheritFrom<IIgorModule>();
-
 			foreach(Type CurrentType in ModuleTypes)
 			{
 				IIgorModule CurrentModule = (IIgorModule)Activator.CreateInstance(CurrentType);
@@ -81,8 +98,6 @@ namespace Igor
 					CurrentModule.RegisterModule();
 				}
 			}
-
-			List<Type> LoggerTypes = IgorUtils.GetTypesInheritFrom<IIgorLogger>();
 
 			foreach(Type CurrentType in LoggerTypes)
 			{
@@ -97,10 +112,7 @@ namespace Igor
 
 		public static void ProcessArgs()
 		{
-			if(IgorUpdater.Core != null)
-			{
-				IgorUpdater.FindCore();
-			}
+			IgorUpdater.FindCore();
 
 			if(IgorUpdater.Core != null)
 			{
@@ -128,14 +140,23 @@ namespace Igor
 
 		public static void UpdateAndRunJob()
 		{
+            Log("UpdateAndRunJob invoked from command line.");
+
 			IgorJobConfig.SetBoolParam("updatebeforebuild", true);
 
 			IgorConfigWindow.OpenOrGetConfigWindow();
 
-			if(!IgorUpdater.CheckForUpdates())
-			{
-				RunJob();
-			}
+		    bool DidUpdate = IgorUpdater.CheckForUpdates(false, false, true);
+		    if(!DidUpdate)
+		    {
+		        Log("Igor did not need to update, running job.");
+
+	            RunJob();
+		    }
+		    else
+		    {
+		        Log("Igor needed to update, waiting for re-compile to run a job...");
+		    }
 		}
 
 		public void RunJobInst()
@@ -145,6 +166,8 @@ namespace Igor
 
 		public static void CommandLineRunJob()
 		{
+            Log("CommandLineRunJob invoked from command line.");
+
 			RunJob();
 		}
 
@@ -208,6 +231,13 @@ namespace Igor
 			if(bDone)
 			{
 				Log("Job's done!");
+			    
+                float time = IgorUtils.PlayJobsDoneSound();
+			    System.Threading.Thread t = new System.Threading.Thread(() => WaitToExit(time));
+			    t.Start();
+                
+                while(t.IsAlive)
+                { }
 			}
 
 			if(!bWasStartedInEditor && (bThrewException || bDone))
@@ -223,6 +253,16 @@ namespace Igor
 			}
 		}
 
+	    static void WaitToExit(float time)
+	    {
+	        int Seconds = Mathf.FloorToInt(time);
+            int Milliseconds = Mathf.FloorToInt((time - Seconds) * 1000f);
+	            
+            System.DateTime WaitTime = System.DateTime.Now + new TimeSpan(0, 0, 0, Seconds, Milliseconds);
+            while(System.DateTime.Now < WaitTime)
+	        { }
+	    }
+
 		public static void Cleanup()
 		{
 			ActiveModulesForJob.Clear();
@@ -232,7 +272,7 @@ namespace Igor
 			IgorJobConfig.Cleanup();
 		}
 
-		public static void RegisterNewModule(IIgorModule NewModule)
+		public static bool RegisterNewModule(IIgorModule NewModule)
 		{
 			if(StaticGetEnabledModuleNames().Contains(NewModule.GetModuleName()))
 			{
@@ -249,8 +289,11 @@ namespace Igor
 				if(!bFound)
 				{
 					EnabledModules.Add(NewModule);
+                    return true;
 				}
 			}
+
+            return false;
 		}
 
 		public static void SetModuleActiveForJob(IIgorModule NewModule)

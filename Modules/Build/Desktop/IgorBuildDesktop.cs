@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.IO;
 using System;
 using System.Reflection;
 using System.Xml.Serialization;
+using System.Linq;
 
 namespace Igor
 {
@@ -19,11 +20,11 @@ namespace Igor
 
 		public override void RegisterModule()
 		{
-			IgorCore.RegisterNewModule(this);
-
-			BuildOptionsDelegates.Clear();
-
-			IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
+			bool DidRegister = IgorCore.RegisterNewModule(this);
+            if(DidRegister)
+            {
+			    IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
+            }
 		}
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
@@ -37,27 +38,27 @@ namespace Igor
 				bool bWindows = false;
 				bool bOSX = false;
 
-				if(Platform == "OSX32")
+				if(Platform.Contains("OSX32"))
 				{
 					JobBuildTarget = BuildTarget.StandaloneOSXIntel;
 					bOSX = true;
 				}
-				else if(Platform == "OSX64")
+				else if(Platform.Contains("OSX64"))
 				{
 					JobBuildTarget = BuildTarget.StandaloneOSXIntel64;
 					bOSX = true;
 				}
-				else if(Platform == "OSXUniversal")
+				else if(Platform.Contains("OSXUniversal"))
 				{
 					JobBuildTarget = BuildTarget.StandaloneOSXUniversal;
 					bOSX = true;
 				}
-				else if(Platform == "Windows32")
+				else if(Platform.Contains("Windows32"))
 				{
 					JobBuildTarget = BuildTarget.StandaloneWindows;
 					bWindows = true;
 				}
-				else if(Platform == "Windows64")
+				else if(Platform.Contains("Windows64"))
 				{
 					JobBuildTarget = BuildTarget.StandaloneWindows64;
 					bWindows = true;
@@ -115,7 +116,7 @@ namespace Igor
 			return bBuilding && bRecognizedPlatform;
 		}
 
-		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
+        public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
 
@@ -127,15 +128,6 @@ namespace Igor
 		}
 
 		public BuildTarget JobBuildTarget = BuildTarget.StandaloneOSXIntel;
-		public List<IgorBuildCommon.GetExtraBuildOptions> BuildOptionsDelegates = new List<IgorBuildCommon.GetExtraBuildOptions>();
-
-		public virtual void AddDelegateCallback(IgorBuildCommon.GetExtraBuildOptions NewDelegate)
-		{
-			if(!BuildOptionsDelegates.Contains(NewDelegate))
-			{
-				BuildOptionsDelegates.Add(NewDelegate);
-			}
-		}
 
 		public virtual string GetBuiltNameForTarget(BuildTarget NewTarget)
 		{
@@ -200,6 +192,23 @@ namespace Igor
 				}
 			}
 
+            if(!BuiltName.Contains(".exe") && !BuiltName.Contains(".app"))
+            {
+                if(bOSX)
+                {
+                    BuiltName += ".app";
+                }
+                if(bWindows)
+                {
+                    BuiltName += ".exe";
+                }
+            }
+
+            if(!string.IsNullOrEmpty(BuiltName) && !string.IsNullOrEmpty(IgorBuildCommon.CommitInfo))
+            {
+                BuiltName = BuiltName.Insert(BuiltName.IndexOf("."), "_" + IgorBuildCommon.CommitInfo.Trim(new char[] {'"'}));
+            }
+
 			return BuiltName;
 		}
 
@@ -211,18 +220,6 @@ namespace Igor
 			}
 
 			return false;
-		}
-
-		public virtual BuildOptions GetExternalBuildOptions(BuildTarget CurrentTarget)
-		{
-			BuildOptions ExtraOptions = BuildOptions.None;
-
-			foreach(IgorBuildCommon.GetExtraBuildOptions CurrentDelegate in BuildOptionsDelegates)
-			{
-				ExtraOptions |= CurrentDelegate(CurrentTarget);
-			}
-
-			return ExtraOptions;
 		}
 
 		public virtual bool SwitchPlatforms()
@@ -238,31 +235,26 @@ namespace Igor
 		{
 			Log("Building OSX build (Target:" + JobBuildTarget + ")");
 
-			return Build(BuildOptions.None);
+			return Build();
 		}
 
 		public virtual bool BuildWindows()
 		{
 			Log("Building Windows build (Target:" + JobBuildTarget + ")");
 
-			return Build(BuildOptions.None);
+			return Build();
 		}
 
-		public virtual bool Build(BuildOptions PlatformSpecificOptions)
+		public virtual bool Build()
 		{
 			string BuiltName = GetBuiltNameForTarget(JobBuildTarget);
 
-			Log("Destination file is: " + BuiltName);
-
-			BuildOptions AllOptions = PlatformSpecificOptions;
-
-			AllOptions |= GetExternalBuildOptions(JobBuildTarget);
-
-#if UNITY_4_3
-			BuildPipeline.BuildPlayer(IgorBuildCommon.GetLevels(), BuiltName, JobBuildTarget, AllOptions);
-#else
-			BuildPipeline.BuildPlayer(IgorBuildCommon.GetLevels(), System.IO.Path.Combine(System.IO.Path.GetFullPath("."), BuiltName), JobBuildTarget, AllOptions);
+#if !UNITY_4_3
+            BuiltName = System.IO.Path.Combine(System.IO.Path.GetFullPath("."), BuiltName);	
 #endif
+            BuildPipeline.BuildPlayer(IgorBuildCommon.GetLevels(), BuiltName, JobBuildTarget, IgorBuildCommon.GetBuildOptions());
+
+            Log("Destination file is: " + BuiltName);
 
 			List<string> BuiltFiles = new List<string>();
 
