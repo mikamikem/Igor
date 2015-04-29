@@ -109,8 +109,6 @@ namespace Igor
 		[XmlArrayItem("Job")]
 		public List<IgorPersistentJobConfig> JobConfigs = new List<IgorPersistentJobConfig>();
 
-		public bool bDevMode = false;
-
 		public string LocalUpdatePrefix = "";
 
 		public virtual List<string> GetEnabledModuleNames()
@@ -296,7 +294,7 @@ namespace Igor
 			return null;
 		}
 
-		public static void TriggerJobByName(string JobName, bool bFromMenu)
+		public static void TriggerJobByName(string JobName, bool bFromMenu, bool bAttemptUpdate)
 		{
 			IgorConfig Inst = GetInstance();
 
@@ -312,35 +310,18 @@ namespace Igor
 
 						NewConfig.Save(IgorJobConfig.IgorJobConfigPath);
 
-						IgorCore.RunJob(bFromMenu);
+					    if(!bAttemptUpdate)
+					    {
+					        IgorCore.RunJob(bFromMenu);
+					    }
+					    else
+					    {
+					        IgorCore.UpdateAndRunJob();
+					    }
 
-						return;
+					    return;
 					}
 				}
-			}
-		}
-
-		public static bool GetIsDevMode()
-		{
-			IgorConfig Inst = GetInstance();
-
-			if(Inst != null)
-			{
-				return Inst.bDevMode;
-			}
-
-			return false;
-		}
-
-		public static void SetIsDevMode(bool bDevMode)
-		{
-			IgorConfig Inst = GetInstance();
-
-			if(Inst != null)
-			{
-				Inst.bDevMode = bDevMode;
-
-				Inst.Save();
 			}
 		}
 	}

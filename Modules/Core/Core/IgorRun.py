@@ -32,16 +32,28 @@ JobConfigFilename = "IgorJob.xml"
 UnityAutomatorFilename = "IgorRun.py"
 
 def GetUnityPath():
-	if _platform == "linux" or _platform == "linux2":
-		return ""
-	elif _platform == "darwin":
-		return "/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-	elif _platform == "win32":
-		if os.path.exists("C:\\Program Files\\Unity\\Editor\\Unity.exe"):
-			return "\"C:\\Program Files\\Unity\\Editor\\Unity.exe\""
-		return "\"C:\\Program Files (x86)\\Unity\\Editor\\Unity.exe\""
+	unity_directory = os.environ.get('UNITY_DIR')
+	if(str(unity_directory) == "None"):
+		if _platform == "linux" or _platform == "linux2":
+			return ""
+		elif _platform == "darwin":
+			return "/Applications/Unity/Unity.app/Contents/MacOS/Unity"
+		elif _platform == "win32":
+			if os.path.exists("C:\\Program Files\\Unity\\Editor\\Unity.exe"):
+				return "\"C:\\Program Files\\Unity\\Editor\\Unity.exe\""
+			return "\"C:\\Program Files (x86)\\Unity\\Editor\\Unity.exe\""
+	else:
+		return "\"" + str(unity_directory) + "\"";
 	
 	return ""
+
+def GetCommitInfo():
+	info = str(os.environ.get('GIT_COMMIT'))
+	if(info == "None"):
+		#return ""
+		return "--appendcommitinfo=\"\""
+	else:
+		return "--appendcommitinfo=\"" + info + "\"";
 	
 def num(s):
 	try:
@@ -52,12 +64,6 @@ def num(s):
 def SetFileExecutable(Filename):
 	Stats = os.stat(Filename)
 	os.chmod(Filename, Stats.st_mode | stat.S_IEXEC)
-
-	return
-
-def SetFileWritable(Filename):
-	Stats = os.stat(Filename)
-	os.chmod(Filename, Stats.st_mode | stat.S_IWRITE)
 
 	return
 
@@ -102,7 +108,6 @@ def BootstrapIfRequested():
 
 		print("Bootstrap (2/4) - Removing the original file " + OriginalFile)
 
-		SetFileWritable(OriginalFile)
 		os.remove(OriginalFile)
 		
 		print("Bootstrap (3/4) - Copying the new file to " + BaseName)
@@ -110,7 +115,7 @@ def BootstrapIfRequested():
 		PathToNewScript = os.path.join(RunningDirectory, BaseName)
 		shutil.copy(__file__, os.path.join(os.getcwd(), PathToNewScript))
 
-		os.execvp('python', ["\"" + os.getcwd() + "\"", PathToNewScript, '--finalbootstrap'] + sys.argv)
+		os.execv(PathToNewScript, [PathToNewScript, '--finalbootstrap'] + sys.argv)
 
 	return
 
@@ -149,7 +154,7 @@ def SelfUpdate():
 			if os.path.exists(TempLocalPythonFile):
 				SetFileExecutable(TempLocalPythonFile)
 
-				os.execvp('python', ["\"" + os.getcwd() + "\"", TempLocalPythonFile, '--bootstrap="' + sys.argv[0] + '"'] + sys.argv)
+				os.execv(TempLocalPythonFile, [TempLocalPythonFile, '--bootstrap'] + sys.argv)
 		else:
 			print("We have the latest version!\n")
 
@@ -174,8 +179,9 @@ def RunUnity(Function):
 
 	BuildRC = subprocess.call(BuildCommand, shell=True)
 
-	with open("Igor.log", 'r') as fin:
-		print(fin.read())
+	if os.path.exists("Igor.log"):
+		with open("Igor.log", 'r') as fin:
+			print(fin.read())
 
 	if BuildRC != 0:
 		print("Return code from Unity was not 0.  Something went wrong so check the logs.")
@@ -190,6 +196,7 @@ parser = argparse.ArgumentParser(description='Igor - The Unity automator.', add_
 parser.add_argument('--noselfupdate', action='store_true')
 parser.add_argument('--nounityupdate', action='store_true')
 parser.add_argument('--finalbootstrap')
+parser.add_argument('--appendcommitinfo', action='store_true')
 parser.add_argument('--bootstrap')
 
 testargs, passthrough = parser.parse_known_args()
@@ -198,6 +205,9 @@ if testargs.noselfupdate == False and testargs.finalbootstrap == None and testar
 	SelfUpdate()
 
 passthroughstring = ' '.join(passthrough)
+
+if testargs.appendcommitinfo:
+	passthroughstring = passthroughstring + GetCommitInfo()
 
 print("\n\n-= Igor - The Unity Automator =-\n\n")
 
