@@ -21,10 +21,8 @@ namespace Igor
 		public override void RegisterModule()
 		{
 			bool DidRegister = IgorCore.RegisterNewModule(this);
-            if(DidRegister)
-            {
-			    IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
-            }
+
+		    IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
 		}
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)

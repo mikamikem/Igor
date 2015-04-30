@@ -280,7 +280,7 @@ namespace Igor
 
 				EditorGUILayout.LabelField(CurrentStringValue);
 
-				if(GUILayout.Button(new GUIContent("Reset shared value", "This value is set in another module.  Resetting it will change the value in another module!")))
+				if(GUILayout.Button(new GUIContent("Reset invalid value", "This value is set to an invalid value.")))
 				{
 					CurrentStringValue = "";
 

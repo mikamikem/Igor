@@ -833,6 +833,11 @@ namespace Igor
 
 			FullEditorMenuOptionFile += EditorMenuOptionFooter;
 
+			if(File.Exists(EditorMenuOptionsFilePath))
+			{
+				IgorUtils.DeleteFile(EditorMenuOptionsFilePath);
+			}
+
 			File.WriteAllText(EditorMenuOptionsFilePath, FullEditorMenuOptionFile);
 		}
 

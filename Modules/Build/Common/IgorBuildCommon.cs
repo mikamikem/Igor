@@ -102,7 +102,13 @@ namespace Igor
 
 		public static void RegisterBuildPlatforms(string[] Platforms)
 		{
-			AvailablePlatforms.AddRange(Platforms);
+            foreach(string Platform in Platforms)
+            {
+                if(!AvailablePlatforms.Contains(Platform))
+                {
+                    AvailablePlatforms.Add(Platform);
+                }
+            }
 		}
 
 		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)

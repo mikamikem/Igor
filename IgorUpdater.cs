@@ -209,35 +209,73 @@ namespace Igor
         public static string ClearParam(string AllParams, string Param)
         {
             string Query = string.Empty;
+            string StringValue = "";
+            bool bStringParam = false;
+
             if(IsBoolParamSet(AllParams, Param))
             {
-                Query = "--" + Param;
+                Query = "--" + Param + " ";
             }
             else
             if(IsStringParamSet(AllParams, Param))
             {
-                string Value = GetStringParam(AllParams, Param);
-                Query = "--" + Param + "=" + "\"" + Value + "\"";
+            	bStringParam = true;
+                StringValue = GetStringParam(AllParams, Param);
+                Query = "--" + Param + "=" + "\"" + StringValue + "\"";
             }
 
             int StartParamIndex = AllParams.IndexOf(Query);
-            string TrimTarget = AllParams.Substring(0, StartParamIndex);
-            string TrimmedTarget = TrimTarget.TrimEnd(new char[] { ' ' });
-            int Difference = TrimTarget.Length - TrimmedTarget.Length;
-            string ReplaceText = AllParams.Substring(StartParamIndex - Difference, Query.Length + Difference);
-            
-            if(!string.IsNullOrEmpty(ReplaceText))
+
+            if(StartParamIndex == -1 && !bStringParam)
             {
-                AllParams = AllParams.Replace(ReplaceText, string.Empty);
+            	Query = "--" + Param;
+            	StartParamIndex = AllParams.IndexOf(Query);
+
+            	if((StartParamIndex + Query.Length) != AllParams.Length)
+            	{
+            		StartParamIndex = -1;
+            	}
             }
+
+            if(StartParamIndex == -1 && bStringParam)
+            {
+            	Query = "--" + Param + "=" + StringValue;
+            	StartParamIndex = AllParams.IndexOf(Query);
+            }
+
+            if(StartParamIndex != -1)
+            {
+	            string TrimTarget = AllParams.Substring(0, StartParamIndex);
+	            string TrimmedTarget = TrimTarget.TrimEnd(new char[] { ' ' });
+	            int Difference = TrimTarget.Length - TrimmedTarget.Length;
+	            string ReplaceText = AllParams.Substring(StartParamIndex - Difference, Query.Length + Difference);
+	            
+	            if(!string.IsNullOrEmpty(ReplaceText))
+	            {
+	                AllParams = AllParams.Replace(ReplaceText, string.Empty);
+	            }
+	        }
 
             return AllParams;
         }
 
 	 	public static bool IsBoolParamSet(string AllParams, string BoolParam)
 	 	{
-            string ContainsQuery = "--" + BoolParam;
- 			if(AllParams.Contains(ContainsQuery))
+            string ContainsQuery = "--" + BoolParam + " ";
+            bool bHasFlag = AllParams.Contains(ContainsQuery);
+
+            if(!bHasFlag)
+            {
+            	ContainsQuery = "--" + BoolParam;
+            	int StartParamIndex = AllParams.IndexOf(ContainsQuery);
+
+            	if((StartParamIndex + ContainsQuery.Length) == AllParams.Length)
+            	{
+            		bHasFlag = true;
+            	}
+            }
+
+ 			if(bHasFlag)
  			{
                 string Substring = AllParams.Substring(AllParams.IndexOf(ContainsQuery) + ContainsQuery.Length);
                 if(Substring.Length > 0)
@@ -684,7 +722,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 12;
+		private const int Version = 13;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
