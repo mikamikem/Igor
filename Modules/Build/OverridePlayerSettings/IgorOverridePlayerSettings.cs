@@ -171,18 +171,6 @@ namespace Igor
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 	    }
 
-	    [MenuItem("Window/ForceSetSteam")]
-	    public static void SetSteam()
-	    {
-	        PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "STEAM");
-	    }
-
-        [MenuItem("Window/ForceSetEmpty")]
-	    public static void SetEmpty()
-	    {
-	        PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, string.Empty);
-	    }
-
 	    public virtual bool OverridePlayerSettings()
 	    {
 	        string TargetDirectory = IgorJobConfig.GetStringParam(OverridePlayerSettingsFlagFilenameFlag);
