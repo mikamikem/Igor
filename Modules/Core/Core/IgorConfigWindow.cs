@@ -748,16 +748,20 @@ namespace Igor
 
 			JobNames.Add("Create new job");
 
-			CurrentJobIndex = EditorGUILayout.Popup("Job to configure", CurrentJobIndex, JobNames.ToArray());
+			int NewJobIndex = EditorGUILayout.Popup("Job to configure", CurrentJobIndex, JobNames.ToArray());
+            if(NewJobIndex != CurrentJobIndex)
+            {
+			    if(_currentJobIndex == (JobNames.Count - 1))
+			    {
+				    IgorPersistentJobConfig NewJob = new IgorPersistentJobConfig();
 
-			if(CurrentJobIndex == (JobNames.Count - 1))
-			{
-				IgorPersistentJobConfig NewJob = new IgorPersistentJobConfig();
+				    NewJob.JobName = "New job";
 
-				NewJob.JobName = "New job";
-
-				Jobs.Add(NewJob);
-			}
+				    Jobs.Add(NewJob);
+			    }
+                
+                _currentJobIndex = NewJobIndex;
+            }
 		}
 
 		public virtual void DeleteSelectedJob()
