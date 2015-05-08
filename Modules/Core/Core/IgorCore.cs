@@ -269,6 +269,11 @@ namespace Igor
 
 		public static void Cleanup()
 		{
+            foreach(IIgorModule module in ActiveModulesForJob)
+            {
+                module.PostJobCleanup();
+            }
+
 			ActiveModulesForJob.Clear();
 
 			JobSteps.Clear();

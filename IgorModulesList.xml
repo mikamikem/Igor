@@ -2,9 +2,10 @@
 <IgorModuleList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Modules>
     <Module ModuleName="Core.Core" ModuleDescriptorRelativePath="Core/Core/Core.xml" />
+	<Module ModuleName="Configure.SetScriptingDefines" ModuleDescriptorRelativePath="Configure/SetScriptingDefines/SetScriptingDefines.xml" />
     <Module ModuleName="Build.Common" ModuleDescriptorRelativePath="Build/Common/Common.xml" />
     <Module ModuleName="Build.Desktop" ModuleDescriptorRelativePath="Build/Desktop/Desktop.xml" />
-    <Module ModuleName="Build.OverridePlayerSettings" ModuleDescriptorRelativePath="Build/OverridePlayerSettings/OverridePlayerSettings.xml" />
+    <Module ModuleName="Configure.OverridePlayerSettings" ModuleDescriptorRelativePath="Configure/OverridePlayerSettings/OverridePlayerSettings.xml" />
     <Module ModuleName="Build.iOS" ModuleDescriptorRelativePath="Build/iOS/iOS.xml" />
     <Module ModuleName="3rdParty.AmplifyTexture" ModuleDescriptorRelativePath="3rdParty/AmplifyTexture/IgorAmplifyTexture.xml" />
     <Module ModuleName="Package.Common" ModuleDescriptorRelativePath="Package/Common/Common.xml" />

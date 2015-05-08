@@ -10,5 +10,7 @@ namespace Igor
 
 		string DrawJobInspectorAndGetEnabledParams(string CurrentParams);
 		bool ShouldDrawInspectorForParams(string CurrentParams);
+
+        void PostJobCleanup();
 	}
 }
