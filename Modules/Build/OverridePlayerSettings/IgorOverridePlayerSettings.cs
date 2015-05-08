@@ -178,77 +178,82 @@ namespace Igor
 	    private static void CopyStoredPlayerSettingsOverCurrent(string TargetDirectory)
 	    {
 	        string[] SourceFilesPaths = Directory.GetFiles(TargetDirectory);
-		    foreach(string SourceFilePath in SourceFilesPaths)
-		    {
-		        string DestFilePath = SourceFilePath.Replace(TargetDirectory, "ProjectSettings");
-		        DestFilePath = Path.ChangeExtension(DestFilePath, ".asset");
-		        File.Copy(SourceFilePath, DestFilePath, true);
 
-                // We need to find the ProjectSettings file and locate the defines text manually because otherwise
-                // the recompile (if it even triggers; it's inconsistent) won't use the new defines.
-		        const string ScriptingDefineSymbolsTag = "scriptingDefineSymbols:\n";
-		        if(DestFilePath.Contains("ProjectSettings.asset"))
+            if(SourceFilesPaths.Length > 0)
+            {
+                Debug.Log("Overriding player settings with data from " + TargetDirectory + "...");
+		        foreach(string SourceFilePath in SourceFilesPaths)
 		        {
-		            string ProjectSettingsText = File.ReadAllText(SourceFilePath);
-		            int StartIndex = ProjectSettingsText.IndexOf(ScriptingDefineSymbolsTag) + ScriptingDefineSymbolsTag.Length;
-                    string StartOfDefinesBlock = ProjectSettingsText.Substring(StartIndex);
+		            string DestFilePath = SourceFilePath.Replace(TargetDirectory, "ProjectSettings");
+		            DestFilePath = Path.ChangeExtension(DestFilePath, ".asset");
+		            File.Copy(SourceFilePath, DestFilePath, true);
 
-		            HashSet<BuildTargetGroup> MatchedBuildTargetGroups = new HashSet<BuildTargetGroup>();
+                    Debug.Log("Replaced " + Path.GetFileName(DestFilePath));
 
-		            string NextLine;
-                    StringReader StringReader = new StringReader(StartOfDefinesBlock);
-		            bool bContinue = true;
-		            do
+                    // We need to find the ProjectSettings file and locate the defines text manually because otherwise
+                    // the recompile (if it even triggers; it's inconsistent) won't use the new defines.
+		            const string ScriptingDefineSymbolsTag = "scriptingDefineSymbols:\n";
+		            if(DestFilePath.Contains("ProjectSettings.asset"))
 		            {
-		                NextLine = StringReader.ReadLine();
-		                if(NextLine != null)
+		                string ProjectSettingsText = File.ReadAllText(SourceFilePath);
+		                int StartIndex = ProjectSettingsText.IndexOf(ScriptingDefineSymbolsTag) + ScriptingDefineSymbolsTag.Length;
+                        string StartOfDefinesBlock = ProjectSettingsText.Substring(StartIndex);
+
+		                HashSet<BuildTargetGroup> MatchedBuildTargetGroups = new HashSet<BuildTargetGroup>();
+
+		                string NextLine;
+                        StringReader StringReader = new StringReader(StartOfDefinesBlock);
+		                bool bContinue = true;
+		                do
 		                {
-		                    NextLine = NextLine.Trim();
-		                    if(NextLine.Length > 0 && char.IsNumber(NextLine[0]))
+		                    NextLine = StringReader.ReadLine();
+		                    if(NextLine != null)
 		                    {
-		                        int IndexOfColon = NextLine.IndexOf(':');
-		                        string BuildGroupText = NextLine.Substring(0, IndexOfColon);
-		                        string Define = NextLine.Substring(IndexOfColon + 1);
-
-		                        int BuildGroupAsInt = 0;
-                                Int32.TryParse(BuildGroupText, out BuildGroupAsInt);
-		                        BuildTargetGroup TargetGroup = (BuildTargetGroup)BuildGroupAsInt;
-
-		                        if(TargetGroup != BuildTargetGroup.Unknown)
+		                        NextLine = NextLine.Trim();
+		                        if(NextLine.Length > 0 && char.IsNumber(NextLine[0]))
 		                        {
-		                            PlayerSettings.SetScriptingDefineSymbolsForGroup(TargetGroup, Define);
-		                            MatchedBuildTargetGroups.Add(TargetGroup);
+		                            int IndexOfColon = NextLine.IndexOf(':');
+		                            string BuildGroupText = NextLine.Substring(0, IndexOfColon);
+		                            string Define = NextLine.Substring(IndexOfColon + 1);
+
+		                            int BuildGroupAsInt = 0;
+                                    Int32.TryParse(BuildGroupText, out BuildGroupAsInt);
+		                            BuildTargetGroup TargetGroup = (BuildTargetGroup)BuildGroupAsInt;
+
+		                            if(TargetGroup != BuildTargetGroup.Unknown)
+		                            {
+		                                PlayerSettings.SetScriptingDefineSymbolsForGroup(TargetGroup, Define);
+		                                MatchedBuildTargetGroups.Add(TargetGroup);
+		                            }
+		                        }
+                                else
+		                        {
+		                            bContinue = false;
 		                        }
 		                    }
-                            else
-		                    {
-		                        bContinue = false;
-		                    }
 		                }
-		            }
-		            while(bContinue);
+		                while(bContinue);
 
-                    // Make sure we wipe out defines on any other build targets.
-		            BuildTargetGroup[] AllTargetGroups = System.Enum.GetValues(typeof(BuildTargetGroup)) as BuildTargetGroup[];
-		            foreach(BuildTargetGroup Group in AllTargetGroups)
-		            {
-		                if(!MatchedBuildTargetGroups.Contains(Group))
+                        // Make sure we wipe out defines on any other build targets.
+		                BuildTargetGroup[] AllTargetGroups = System.Enum.GetValues(typeof(BuildTargetGroup)) as BuildTargetGroup[];
+		                foreach(BuildTargetGroup Group in AllTargetGroups)
 		                {
-		                    PlayerSettings.SetScriptingDefineSymbolsForGroup(Group, string.Empty);
+		                    if(!MatchedBuildTargetGroups.Contains(Group))
+		                    {
+		                        PlayerSettings.SetScriptingDefineSymbolsForGroup(Group, string.Empty);
+		                    }
 		                }
 		            }
 		        }
-		    }
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            }
 	    }
 
 	    public virtual bool OverridePlayerSettings()
 	    {
 	        string TargetDirectory = IgorJobConfig.GetStringParam(PlayerSettingsPathFlag);
 	        TargetDirectory = TargetDirectory.Replace("\"", string.Empty);
-	        string LogDetails = "Overriding default player settings with settings from directory " + TargetDirectory;
-	        Log(LogDetails);
 
 	        CopyStoredPlayerSettingsOverCurrent(TargetDirectory);
 	        return true;
