@@ -25,6 +25,10 @@ namespace Igor
 		{
 		}
 
+        public virtual void PostJobCleanup()
+        {
+        }
+
 		public virtual string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			return CurrentParams;
