@@ -12,10 +12,30 @@ namespace Igor
 {
 	public class IgorOverridePlayerSettings : IgorModuleBase
 	{
-	    static string kPlayerSettingsFolder = "Assets/Igor Job Player Settings";
+        static string[] kProjectSettingFiles =
+        {
+            "TimeManager.asset",
+            "TagManager.asset",
+            "QualitySettings.asset",
+            "ProjectSettings.asset",
+            "Physics2DSettings.asset",
+            "NetworkManager.asset",
+            "NavMeshLayers.asset",
+            "InputManager.asset",
+            "GraphicsSettings.asset",
+            "EditorSettings.asset",
+            "EditorBuildSettings.asset",
+            "DynamicsManager.asset",
+            "AudioManager.asset",
+        };
 
-        public static string OverridePlayerSettingsFlag = "override_player_settings";
-		public static string OverridePlayerSettingsFlagFilenameFlag = "player_settings_file";
+	    static string kPlayerSettingsFolder = "Igor Override Player Settings";
+
+        static string kIgorProjectSettingExtension = ".igorplayersettings";
+
+        public static string PlayerSettingFilesToOverrideFlag = "player_settings_to_override";
+		public static string PlayerSettingsPathFlag = "player_settings_file";
+        private int SelectedProjectSettingsAsInt;
 
 		public override string GetModuleName()
 		{
@@ -29,7 +49,7 @@ namespace Igor
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
-			if(IgorJobConfig.IsBoolParamSet(OverridePlayerSettingsFlag) && IgorJobConfig.GetStringParam(OverridePlayerSettingsFlagFilenameFlag) != string.Empty)
+			if(IgorJobConfig.IsStringParamSet(PlayerSettingFilesToOverrideFlag) && IgorJobConfig.IsStringParamSet(PlayerSettingsPathFlag))
 			{
 				IgorCore.SetModuleActiveForJob(this);
 				StepHandler.RegisterJobStep(IgorBuildCommon.OverridePlayerSettings, this, OverridePlayerSettings);
@@ -47,24 +67,67 @@ namespace Igor
 		    
             GUILayout.BeginHorizontal();
 		    {
-		        bool bOverridePlayerSettings = DrawBoolParam(ref EnabledParams, "Override", OverridePlayerSettingsFlag);
-                if(bOverridePlayerSettings)
+                string SelectedProjectSettingsAsString = IgorUtils.GetStringParam(EnabledParams, PlayerSettingFilesToOverrideFlag).Trim('"');
+
+                if(!string.IsNullOrEmpty(SelectedProjectSettingsAsString))
                 {
-                    EnabledParams = IgorUtils.SetStringParam(EnabledParams, OverridePlayerSettingsFlagFilenameFlag, '"' + TargetDirectory + '"');
-                }
-                else
-                {
-                    EnabledParams = IgorUtils.ClearParam(EnabledParams, OverridePlayerSettingsFlagFilenameFlag);
+                    int OutResult = 0;
+                    if(Int32.TryParse(SelectedProjectSettingsAsString, out OutResult))
+                    {
+                        SelectedProjectSettingsAsInt = OutResult;
+                    }
                 }
 
-		        GUILayout.Label(TargetDirectory);
+                int newValue = EditorGUILayout.MaskField(SelectedProjectSettingsAsInt, kProjectSettingFiles);
+
+                if(newValue != SelectedProjectSettingsAsInt)
+                {
+                    SelectedProjectSettingsAsInt = newValue;
+                    if(newValue != 0)
+                    {
+                        EnabledParams = IgorUtils.SetStringParam(EnabledParams, PlayerSettingFilesToOverrideFlag, SelectedProjectSettingsAsInt.ToString());
+                        EnabledParams = IgorUtils.SetStringParam(EnabledParams, PlayerSettingsPathFlag, '"' + TargetDirectory + '"');
+                    }
+                    else
+                    {
+                        EnabledParams = IgorUtils.ClearParam(EnabledParams, PlayerSettingFilesToOverrideFlag);
+                        EnabledParams = IgorUtils.ClearParam(EnabledParams, PlayerSettingsPathFlag);
+                    }
+                }
 		    }
             GUILayout.EndHorizontal();
+            
+            string FilesToSave = string.Empty;
+            for(int i = 0; i < kProjectSettingFiles.Length; ++i)
+            {
+                if(((1 << i) & SelectedProjectSettingsAsInt) != 0)
+                {
+                    FilesToSave += ((string.IsNullOrEmpty(FilesToSave) ? string.Empty : ", ") + kProjectSettingFiles[i].Replace(".asset", string.Empty));
+                }
+            }
+
+            GUILayout.Space(5f);
+            GUILayout.Label("Files to save: " + FilesToSave);
+
+            if(Directory.Exists(TargetDirectory))
+            {
+                GUILayout.Space(5f);
+                string[] SourceFilesPaths = Directory.GetFiles(TargetDirectory);
+
+                string ExistingOverrides = string.Empty;
+		        foreach(string SourceFilePath in SourceFilesPaths)
+                {
+                    ExistingOverrides += ((string.IsNullOrEmpty(ExistingOverrides) ? string.Empty : ", ") + Path.GetFileName(SourceFilePath).Replace(kIgorProjectSettingExtension, string.Empty));
+                }
+
+                GUILayout.Label("Existing overrides on disk: " + ExistingOverrides);    
+                GUILayout.Space(5f);
+            }
 
 		    GUILayout.BeginHorizontal();
 		    {
-		        GUI.enabled = CurrentJob != null;
-		        if(GUILayout.Button("Save"))
+		        GUI.enabled = CurrentJob != null && SelectedProjectSettingsAsInt != 0;
+		        if(GUILayout.Button("Save", GUILayout.ExpandWidth(false)))
 		        {
 		            if(!Directory.Exists(kPlayerSettingsFolder))
 		            {
@@ -79,9 +142,18 @@ namespace Igor
 		            {
 		                if(!SourceFilePath.EndsWith(".meta"))
 		                {
-		                    string DestFilePath = SourceFilePath.Replace("ProjectSettings\\", string.Empty);
-		                    DestFilePath = TargetDirectory + "/" + Path.ChangeExtension(DestFilePath, ".igorplayersettings");
-		                    File.Copy(SourceFilePath, DestFilePath);
+                            string FileName = Path.GetFileName(SourceFilePath);
+                            
+                            int IndexInKnownAssetList = Array.IndexOf(kProjectSettingFiles, FileName, 0, kProjectSettingFiles.Length);
+                            if(IndexInKnownAssetList != -1)
+                            {
+                                if((((1 << IndexInKnownAssetList) & SelectedProjectSettingsAsInt) != 0) || SelectedProjectSettingsAsInt == -1) 
+                                {
+		                            string DestFilePath = SourceFilePath.Replace("ProjectSettings\\", string.Empty);
+		                            DestFilePath = TargetDirectory + "/" + Path.ChangeExtension(DestFilePath, kIgorProjectSettingExtension);
+		                            File.Copy(SourceFilePath, DestFilePath);
+                                }
+                            }
 		                }
 		            }
 
@@ -91,7 +163,7 @@ namespace Igor
 		        string Tooltip = Directory.Exists(TargetDirectory) ? string.Empty : "Expected PlayerSettings directory " + " doesn't exist.";
 
 		        GUI.enabled &= Directory.Exists(TargetDirectory);
-		        if(GUILayout.Button(new GUIContent("Load saved settings file", Tooltip)))
+		        if(GUILayout.Button(new GUIContent("Load saved settings file", Tooltip), GUILayout.ExpandWidth(false)))
 		        {
 		            CopyStoredPlayerSettingsOverCurrent(TargetDirectory);
 		        }
@@ -173,7 +245,7 @@ namespace Igor
 
 	    public virtual bool OverridePlayerSettings()
 	    {
-	        string TargetDirectory = IgorJobConfig.GetStringParam(OverridePlayerSettingsFlagFilenameFlag);
+	        string TargetDirectory = IgorJobConfig.GetStringParam(PlayerSettingsPathFlag);
 	        TargetDirectory = TargetDirectory.Replace("\"", string.Empty);
 	        string LogDetails = "Overriding default player settings with settings from directory " + TargetDirectory;
 	        Log(LogDetails);
