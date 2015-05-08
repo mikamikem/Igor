@@ -12,6 +12,8 @@ namespace Igor
 {
 	public class IgorOverridePlayerSettings : IgorModuleBase
 	{
+        public static StepID OverridePlayerSettingsStep = new StepID("OverridePlayerSettings", 260);
+
         static string[] kProjectSettingFiles =
         {
             "TimeManager.asset",
@@ -39,7 +41,7 @@ namespace Igor
 
 		public override string GetModuleName()
 		{
-			return "Build.OverridePlayerSettings";
+			return "Configure.OverridePlayerSettings";
 		}
 
 		public override void RegisterModule()
@@ -52,7 +54,7 @@ namespace Igor
 			if(IgorJobConfig.IsStringParamSet(PlayerSettingFilesToOverrideFlag) && IgorJobConfig.IsStringParamSet(PlayerSettingsPathFlag))
 			{
 				IgorCore.SetModuleActiveForJob(this);
-				StepHandler.RegisterJobStep(IgorBuildCommon.OverridePlayerSettings, this, OverridePlayerSettings);
+				StepHandler.RegisterJobStep(OverridePlayerSettingsStep, this, OverridePlayerSettings);
 			}
 		}
 

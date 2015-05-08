@@ -12,7 +12,7 @@ namespace Igor
 {
 	public class IgorSetScriptingDefines : IgorModuleBase
 	{
-        public static StepID SetScriptingDefinesStep = new StepID("SetScriptingDefines", 260);
+        public static StepID SetScriptingDefinesStep = new StepID("SetScriptingDefines", 270);
 
         static List<BuildTargetGroup> _buildTargets = null;
         static List<BuildTargetGroup> BuildTargets
