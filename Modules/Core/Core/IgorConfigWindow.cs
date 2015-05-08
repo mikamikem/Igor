@@ -749,7 +749,7 @@ namespace Igor
 			JobNames.Add("Create new job");
 
 			int NewJobIndex = EditorGUILayout.Popup("Job to configure", CurrentJobIndex, JobNames.ToArray());
-            if(NewJobIndex != CurrentJobIndex)
+            if(NewJobIndex != CurrentJobIndex || JobNames.Count == 1)
             {
 			    if(_currentJobIndex == (JobNames.Count - 1))
 			    {
