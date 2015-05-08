@@ -71,7 +71,7 @@ namespace Igor
 			Command = UpdatePathForEnvVariables(Command);
 			
 			System.Diagnostics.ProcessStartInfo NewStartInfo = new System.Diagnostics.ProcessStartInfo();
-//			NewStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+			NewStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
 			
 			if(!bUseShell)
 			{

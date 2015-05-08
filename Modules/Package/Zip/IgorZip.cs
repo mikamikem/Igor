@@ -64,16 +64,21 @@ namespace Igor
 
 			Log(LogDetails);
 
-#if UNITY_EDITOR_OSX
-			RunMacZip(BuiltProducts, IgorJobConfig.GetStringParam(ZipFilenameFlag));
-#else
-			RunWindowsZip(BuiltProducts, IgorJobConfig.GetStringParam(ZipFilenameFlag));
-#endif // UNITY_EDITOR_OSX
+			ZipFilesCrossPlatform(this, BuiltProducts, IgorJobConfig.GetStringParam(ZipFilenameFlag));
 
 			return true;
 		}
 
-		public virtual void RunMacZip(List<string> FilesToZip, string ZipFilename)
+		public static void ZipFilesCrossPlatform(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts = true)
+		{
+#if UNITY_EDITOR_OSX
+			ZipFilesMac(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts);
+#else
+			ZipFilesWindows(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts);
+#endif // UNITY_EDITOR_OSX
+		}
+
+		public static void ZipFilesMac(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts)
 		{
 			string ZipParams = "-r " + ZipFilename + " ";
 
@@ -87,21 +92,24 @@ namespace Igor
 
 			if(IgorUtils.RunProcessCrossPlatform("zip", "", ZipParams, Path.GetFullPath("."), ref ZipOutput, ref ZipError, true) != 0)
 			{
-				LogError("There was a problem zipping the built files.\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
+				IgorCore.LogError(ModuleInst, "There was a problem zipping the built files.\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
 			}
 			else
 			{
-				Log("Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
+				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
 
-				List<string> NewProducts = new List<string>();
+				if(bUpdateBuildProducts)
+				{
+					List<string> NewProducts = new List<string>();
 
-				NewProducts.Add(ZipFilename);
+					NewProducts.Add(ZipFilename);
 
-				IgorBuildCommon.SetNewBuildProducts(NewProducts);
+					IgorBuildCommon.SetNewBuildProducts(NewProducts);
+				}
 			}
 		}
 
-		public virtual void RunWindowsZip(List<string> FilesToZip, string ZipFilename)
+		public static void ZipFilesWindows(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts)
 		{
 			string ZipCommand = "";
 			string ZipParams = "";
@@ -122,8 +130,8 @@ namespace Igor
 			}
 			else
 			{
-				LogError("7Zip is not installed.  Currently 7Zip is the only zip tool supported on Windows.\nPlease download it from here: http://www.7-zip.org/download.html");
-				LogError("Skipping zip step.");
+				IgorCore.LogError(ModuleInst, "7Zip is not installed.  Currently 7Zip is the only zip tool supported on Windows.\nPlease download it from here: http://www.7-zip.org/download.html");
+				IgorCore.LogError(ModuleInst, "Skipping zip step.");
 
 				return;
 			}
@@ -138,18 +146,57 @@ namespace Igor
 
 			if(IgorUtils.RunProcessCrossPlatform("", ZipCommand, ZipParams, Path.GetFullPath("."), ref ZipOutput, ref ZipError) != 0)
 			{
-				LogError("There was a problem zipping the built files.\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
+				IgorCore.LogError(ModuleInst, "There was a problem zipping the built files.\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
 			}
 			else
 			{
-				Log("Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
+				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
 
-				List<string> NewProducts = new List<string>();
+				if(bUpdateBuildProducts)
+				{
+					List<string> NewProducts = new List<string>();
 
-				NewProducts.Add(ZipFilename);
+					NewProducts.Add(ZipFilename);
 
-				IgorBuildCommon.SetNewBuildProducts(NewProducts);
+					IgorBuildCommon.SetNewBuildProducts(NewProducts);
+				}
 			}
+		}
+
+		public static void UnzipArchiveCrossPlatform(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo)
+		{
+#if UNITY_EDITOR_OSX
+			UnzipFileMac(ModuleInst, ZipFilename, DirectoryToUnzipTo);
+#else
+			UnzipFilesWindows(ModuleInst, ZipFilename, DirectoryToUnzipTo);
+#endif // UNITY_EDITOR_OSX
+		}
+
+		public static void UnzipFileMac(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo)
+		{
+			string ZipParams = ZipFilename;
+
+			if(DirectoryToUnzipTo != "")
+			{
+				ZipParams += " -d " + DirectoryToUnzipTo;
+			}
+
+			string ZipOutput = "";
+			string ZipError = "";
+
+			if(IgorUtils.RunProcessCrossPlatform("unzip", "", ZipParams, Path.GetFullPath("."), ref ZipOutput, ref ZipError, true) != 0)
+			{
+				IgorCore.LogError(ModuleInst, "There was a problem unzipping the archive " + ZipFilename + " to folder " + DirectoryToUnzipTo + ".\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
+			}
+			else
+			{
+				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " was successfully extracted to " + DirectoryToUnzipTo + "!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
+			}
+		}
+
+		public static void UnzipFileWindows(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo)
+		{
+			IgorAssert.EnsureTrue(ModuleInst, false, "Unzip is not implemented for Windows yet!");
 		}
 	}
 }

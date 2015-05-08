@@ -722,7 +722,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 13;
+		private const int Version = 14;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
@@ -733,7 +733,9 @@ namespace Igor
 		public static string IgorUpdaterFilename = "IgorUpdater.cs";
 		public static string IgorModulesListFilename = "IgorModulesList.xml";
 		public static string InstalledModulesListPath = Path.Combine(BaseIgorDirectory, IgorModulesListFilename);
-		private static IgorModuleList ModuleListInst = null;
+		public static string IgorLocalModulesListFilename = "IgorLocalModulesList.xml";
+		public static string InstalledLocalModulesListPath = Path.Combine(BaseIgorDirectory, IgorLocalModulesListFilename);
+		private static IgorModuleList SharedModuleListInst = null;
 
 		public static string LocalModuleRoot = Path.Combine(BaseIgorDirectory, "Modules");
 		public static string RemoteRelativeModuleRoot = "Modules/";
@@ -972,12 +974,12 @@ namespace Igor
 
 			if(File.Exists(InstalledModulesListPath))
 			{
-				ModuleListInst = IgorModuleList.Load(InstalledModulesListPath);
+				SharedModuleListInst = IgorModuleList.Load(InstalledModulesListPath);
 			}
 
-			if(ModuleListInst != null)
+			if(SharedModuleListInst != null)
 			{
-				foreach(IgorModuleList.ModuleItem CurrentModule in ModuleListInst.Modules)
+				foreach(IgorModuleList.ModuleItem CurrentModule in SharedModuleListInst.Modules)
 				{
 					if(CurrentModule.ModuleName == ModuleName)
 					{

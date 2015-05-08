@@ -13,9 +13,15 @@ namespace Igor
 	public class IgorBuildiOS : IgorModuleBase
 	{
 		public static StepID FixupXCodeProjStep = new StepID("FixupXCodeProj", 600);
+		public static StepID CustomFixupXCodeProjStep = new StepID("3rdPartyFixupXCodeProj", 650);
 		public static StepID BuildXCodeProjStep = new StepID("BuildXCodeProj", 700);
 
 		public static string iOSDevTeamIDFlag = "iOSDevTeamID";
+		public static string iOSBuiltNameFlag = "BuiltiOSName";
+		public static string iOSProvisionProfileFlag = "iOSProvisionProfile";
+		public static string iOSMobileProvisionFlag = "iOSMobileProvisionFile";
+
+		public static string EnableGameKitFlag = "EnableGamekit";
 
 		public override string GetModuleName()
 		{
@@ -64,6 +70,36 @@ namespace Igor
 					{
 						LogWarning("Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
 					}
+
+					if(IgorJobConfig.IsStringParamSet(iOSProvisionProfileFlag))
+					{
+						SigningIdentity = IgorJobConfig.GetStringParam(iOSProvisionProfileFlag);
+					}
+					else
+					{
+						SigningIdentity = IgorConfig.GetModuleString(this, iOSProvisionProfileFlag);
+					}
+
+					if(SigningIdentity == "")
+					{
+						LogWarning("Your Signing Identity hasn't been set!  Your build may not sign correctly.");
+					}
+
+					if(IgorJobConfig.IsStringParamSet(iOSMobileProvisionFlag))
+					{
+						ProvisionPath = IgorJobConfig.GetStringParam(iOSMobileProvisionFlag);
+					}
+					else
+					{
+						ProvisionPath = IgorConfig.GetModuleString(this, iOSMobileProvisionFlag);
+					}
+
+					if(ProvisionPath == "")
+					{
+						LogWarning("Your Mobile Provision path hasn't been set!  Your build may not sign correctly.");
+					}
+
+					bEnableGamekit = IgorJobConfig.IsBoolParamSet(EnableGameKitFlag);
 				}
 			}
 		}
@@ -72,9 +108,15 @@ namespace Igor
 		{
 			string EnabledParams = CurrentParams;
 
-			DrawStringConfigParam(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, "BuiltiOSName");
+			DrawStringConfigParam(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, iOSBuiltNameFlag);
 
 			DrawStringConfigParam(ref EnabledParams, "iOS Dev Team ID", iOSDevTeamIDFlag, iOSDevTeamIDFlag);
+
+			DrawStringConfigParam(ref EnabledParams, "iOS Signing Provision Profile Name", iOSProvisionProfileFlag, iOSProvisionProfileFlag);
+
+			DrawStringConfigParam(ref EnabledParams, "iOS Mobile Provision Path", iOSMobileProvisionFlag, iOSMobileProvisionFlag);
+
+			DrawBoolParam(ref EnabledParams, "Enable Gamekit", EnableGameKitFlag);
 
 			return EnabledParams;
 		}
@@ -100,6 +142,9 @@ namespace Igor
 		public BuildTarget JobBuildTarget = BuildTarget.iPhone;
 		public List<IgorBuildCommon.GetExtraBuildOptions> BuildOptionsDelegates = new List<IgorBuildCommon.GetExtraBuildOptions>();
 		public string DevTeamID = "";
+		public bool bEnableGamekit = false;
+		public string SigningIdentity = "";
+		public string ProvisionPath = "";
 
 		public virtual void AddDelegateCallback(IgorBuildCommon.GetExtraBuildOptions NewDelegate)
 		{
@@ -155,6 +200,16 @@ namespace Igor
 
 			EditorUserBuildSettings.SwitchActiveBuildTarget(JobBuildTarget);
 
+#if DUMMY
+			string XCodeProjDirectory = "iOS";
+
+			List<string> BuiltFiles = new List<string>();
+
+			BuiltFiles.Add(XCodeProjDirectory);
+
+			IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
+#endif
+
 			return true;
 		}
 
@@ -199,6 +254,21 @@ namespace Igor
 				string ProjectPath = Path.Combine(BuildProducts[0], "Unity-IPhone.xcodeproj");
 
 				IgorXCodeProjUtils.SetDevTeamID(this, ProjectPath, DevTeamID);
+
+				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_IDENTITY", "iPhone Developer");
+
+				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_IDENTITY[sdk=iphoneos*]", "iPhone Developer");
+
+				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_RESOURCE_RULES_PATH", "$(SDKROOT)/ResourceRules.plist");
+
+				string PlistPath = Path.Combine(BuildProducts[0], "Info.plist");
+
+				IgorPlistUtils.SetBoolValue(this, PlistPath, "UIViewControllerBasedStatusBarAppearance", false);
+
+				if(bEnableGamekit)
+				{
+					IgorPlistUtils.AddRequiredDeviceCapability(this, PlistPath, "gamekit");
+				}
 			}
 
 			return true;
@@ -206,7 +276,49 @@ namespace Igor
 
 		public virtual bool BuildXCodeProj()
 		{
-			string BuiltName = GetBuiltNameForTarget(JobBuildTarget);
+			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+
+			if(BuildProducts.Count > 0)
+			{
+				string BuiltName = GetBuiltNameForTarget(JobBuildTarget);
+				
+				string BuildOutput = "";
+				string BuildError = "";
+
+				string FullBuildProductPath = Path.Combine(Path.GetFullPath("."), BuildProducts[0]);
+
+				int BuildExitCode = IgorUtils.RunProcessCrossPlatform("/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
+					"-project Unity-iPhone.xcodeproj clean build", FullBuildProductPath, ref BuildOutput, ref BuildError);
+
+				if(BuildExitCode != 0)
+				{
+					LogError("XCode build failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
+
+					return true;
+				}
+
+				Log("XCode build succeeded!\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
+
+				BuildOutput = "";
+				BuildError = "";
+
+				string LastBundleIdentifierPart = PlayerSettings.bundleIdentifier.Substring(PlayerSettings.bundleIdentifier.LastIndexOf('.') + 1);
+
+				BuildExitCode = IgorUtils.RunProcessCrossPlatform("/usr/bin/xcrun", "",
+					"-sdk iphoneos PackageApplication -v \"build/" + LastBundleIdentifierPart + ".app\" -o \"" + Path.Combine(FullBuildProductPath, BuiltName + ".ipa") +
+					"\" --sign \"" + SigningIdentity + "\" --embed \"../" + ProvisionPath + "\"",
+					FullBuildProductPath, ref BuildOutput, ref BuildError);
+
+				if(BuildExitCode != 0)
+				{
+					LogError("Packaging the application failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
+
+					return true;
+				}
+
+				Log("Packaging the application succeeded!\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
+
+			}
 
 			return true;
 		}

@@ -172,48 +172,87 @@ namespace Igor
 					ModuleNamesToAvailableVersions.Clear();
 					ModuleNamesToCurrentVersions.Clear();
 
-					foreach(IgorModuleList.ModuleItem CurrentModule in ModuleListInst.Modules)
+					AppendToModuleList(ModuleListInst, false);
+
+					IgorModuleList LocalModuleListInst = IgorModuleList.Load(IgorUpdater.InstalledLocalModulesListPath);
+
+					if(LocalModuleListInst != null)
 					{
-						AvailableModuleNames.Add(CurrentModule.ModuleName);
+						AppendToModuleList(LocalModuleListInst, true);
+					}
+				}
+			}
+		}
 
-						string ModuleDescriptor = IgorUtils.DownloadFileForUpdate(IgorUpdater.RemoteRelativeModuleRoot + CurrentModule.ModuleDescriptorRelativePath);
-						string CurrentModuleDescriptor = Path.Combine(IgorUpdater.LocalModuleRoot, CurrentModule.ModuleDescriptorRelativePath);
+		protected virtual void AppendToModuleList(IgorModuleList ModuleListInst, bool bLocal)
+		{
+			foreach(IgorModuleList.ModuleItem CurrentModule in ModuleListInst.Modules)
+			{
+				if(!AvailableModuleNames.Contains(CurrentModule.ModuleName))
+				{
+					AvailableModuleNames.Add(CurrentModule.ModuleName);
+				}
 
-						if(File.Exists(ModuleDescriptor))
+				string ModuleDescriptor = "";
+
+				if(!bLocal)
+				{
+					ModuleDescriptor = IgorUtils.DownloadFileForUpdate(IgorUpdater.RemoteRelativeModuleRoot + CurrentModule.ModuleDescriptorRelativePath);
+				}
+
+				string CurrentModuleDescriptor = Path.Combine(IgorUpdater.LocalModuleRoot, CurrentModule.ModuleDescriptorRelativePath);
+				IgorModuleDescriptor CurrentModuleDescriptorInst = null;
+				
+				if(File.Exists(CurrentModuleDescriptor))
+				{
+					CurrentModuleDescriptorInst = IgorModuleDescriptor.Load(CurrentModuleDescriptor);
+
+					if(CurrentModuleDescriptorInst != null)
+					{
+						if(!ModuleNamesToCurrentVersions.ContainsKey(CurrentModule.ModuleName))
 						{
-							IgorModuleDescriptor CurrentModuleDescriptorInst = null;
-							IgorModuleDescriptor NewModuleDescriptorInst = IgorModuleDescriptor.Load(ModuleDescriptor);
+							ModuleNamesToCurrentVersions.Add(CurrentModule.ModuleName, CurrentModuleDescriptorInst.ModuleVersion);
+						}
+					}
+				}
 
-							if(File.Exists(CurrentModuleDescriptor))
-							{
-								CurrentModuleDescriptorInst = IgorModuleDescriptor.Load(CurrentModuleDescriptor);
+				IgorModuleDescriptor NewModuleDescriptorInst = null;
 
-								if(CurrentModuleDescriptorInst != null)
-								{
-									ModuleNamesToCurrentVersions.Add(CurrentModule.ModuleName, CurrentModuleDescriptorInst.ModuleVersion);
-								}
-							}
+				if(!bLocal && File.Exists(ModuleDescriptor))
+				{
+					NewModuleDescriptorInst = IgorModuleDescriptor.Load(ModuleDescriptor);
 
-							if(NewModuleDescriptorInst != null)
-							{
-								ModuleNamesToAvailableVersions.Add(CurrentModule.ModuleName, NewModuleDescriptorInst.ModuleVersion);
+					if(NewModuleDescriptorInst != null)
+					{
+						if(!ModuleNamesToAvailableVersions.ContainsKey(CurrentModule.ModuleName))
+						{
+							ModuleNamesToAvailableVersions.Add(CurrentModule.ModuleName, NewModuleDescriptorInst.ModuleVersion);
+						}
+					}
+				}
 
-								foreach(string Dependency in NewModuleDescriptorInst.ModuleDependencies)
-								{
-									if(!DependencyToDependentModules.ContainsKey(Dependency))
-									{
-										List<string> NewList = new List<string>();
+				if(CurrentModuleDescriptorInst != null || NewModuleDescriptorInst != null)
+				{
+					IgorModuleDescriptor ValidDescriptor = NewModuleDescriptorInst;
 
-										NewList.Add(CurrentModule.ModuleName);
+					if(ValidDescriptor == null)
+					{
+						ValidDescriptor = CurrentModuleDescriptorInst;
+					}
 
-										DependencyToDependentModules.Add(Dependency, NewList);
-									}
-									else
-									{
-										DependencyToDependentModules[Dependency].Add(CurrentModule.ModuleName);
-									}
-								}
-							}
+					foreach(string Dependency in ValidDescriptor.ModuleDependencies)
+					{
+						if(!DependencyToDependentModules.ContainsKey(Dependency))
+						{
+							List<string> NewList = new List<string>();
+
+							NewList.Add(CurrentModule.ModuleName);
+
+							DependencyToDependentModules.Add(Dependency, NewList);
+						}
+						else
+						{
+							DependencyToDependentModules[Dependency].Add(CurrentModule.ModuleName);
 						}
 					}
 				}
@@ -390,14 +429,22 @@ namespace Igor
 		                            }
 
 		                            string VersionString = "";
+		                            bool bNeedsDash = true;
 
 		                            if(ModuleNamesToCurrentVersions.ContainsKey(MergedName))
 		                            {
 		                                VersionString += " - Inst (" + ModuleNamesToCurrentVersions[MergedName] + ")";
+
+		                                bNeedsDash = false;
 		                            }
 
 		                            if(ModuleNamesToAvailableVersions.ContainsKey(MergedName))
 		                            {
+		                            	if(bNeedsDash)
+		                            	{
+		                            		VersionString += " -";
+		                            	}
+
 		                                VersionString += " Avail (" + ModuleNamesToAvailableVersions[MergedName] + ")";
 		                            }
 

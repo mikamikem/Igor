@@ -11,5 +11,7 @@
     <Module ModuleName="Package.Zip" ModuleDescriptorRelativePath="Package/Zip/Zip.xml" />
     <Module ModuleName="Distribution.JenkinsFTP" ModuleDescriptorRelativePath="Distribution/JenkinsFTP/JenkinsFTP.xml" />
     <Module ModuleName="Distribution.BitTorrentSync" ModuleDescriptorRelativePath="Distribution/BitTorrentSync/BitTorrentSync.xml" />
+    <Module ModuleName="3rdParty.FacebookiOSHats" ModuleDescriptorRelativePath="3rdParty/FacebookiOSHats/IgorFacebookiOSHats.xml" />
+    <Module ModuleName="3rdParty.StoreKitiOS" ModuleDescriptorRelativePath="3rdParty/StoreKitiOS/IgorStoreKitiOS.xml" />
   </Modules>
 </IgorModuleList>
