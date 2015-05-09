@@ -402,12 +402,14 @@ namespace Igor
 	 		if(File.Exists(path))
 			{
 				File.SetAttributes(path, System.IO.FileAttributes.Normal);
-			}
-
-	 		using(var stream = new FileStream(path, FileMode.Open))
-	 		{
-	 			return serializer.Deserialize(stream) as IgorModuleList;
-	 		}
+			
+	 		    using(var stream = new FileStream(path, FileMode.Open))
+	 		    {
+	 			    return serializer.Deserialize(stream) as IgorModuleList;
+	 		    }
+            }
+            
+            return null;
 	 	}
 	}
 
@@ -722,7 +724,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 14;
+		private const int Version = 15;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.

@@ -168,7 +168,7 @@ namespace Igor
 #if UNITY_EDITOR_OSX
 			UnzipFileMac(ModuleInst, ZipFilename, DirectoryToUnzipTo);
 #else
-			UnzipFilesWindows(ModuleInst, ZipFilename, DirectoryToUnzipTo);
+			UnzipFileWindows(ModuleInst, ZipFilename, DirectoryToUnzipTo);
 #endif // UNITY_EDITOR_OSX
 		}
 
