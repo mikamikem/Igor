@@ -14,7 +14,6 @@ namespace Igor
 	public interface IIgorCore
 	{
 		List<string> GetEnabledModuleNames();
-		string GetLocalUpdatePrefix();
 
 		void RunJobInst();
 	}
@@ -164,7 +163,7 @@ namespace Igor
 				if((IgorUpdater.bLocalDownload || IgorUpdater.bDontUpdate) && AbsolutePath == "")
 				{
 					string ParentDirectory = Directory.GetCurrentDirectory();
-					string NewLocalPrefix = IgorUpdater.GetLocalPrefix();
+					string NewLocalPrefix = IgorUpdater.LocalPrefix;
 
 					while(NewLocalPrefix.StartsWith(".."))
 					{
@@ -690,7 +689,8 @@ namespace Igor
 		{
 			bDontUpdate = EditorGUILayout.Toggle(new GUIContent("Don't auto-update", "No updating Igor files from local or remote sources"), bDontUpdate);
 			bAlwaysUpdate = EditorGUILayout.Toggle(new GUIContent("Always update", "Update even if the versions match"), bAlwaysUpdate);
-			bLocalDownload = EditorGUILayout.Toggle(new GUIContent("Local update", "Update from local directory 'TestDeploy' instead of remotely from GitHub"), bLocalDownload);
+			bLocalDownload = EditorGUILayout.Toggle(new GUIContent("Local update", "Update from local directory instead of remotely from GitHub"), bLocalDownload);
+			LocalPrefix = EditorGUILayout.TextField(new GUIContent("Local Update Directory", "This is the local directory (relative to the project root) to pull from when Local Update is enabled."), LocalPrefix);
 		}
 
 		public static bool bDontUpdate
@@ -711,6 +711,12 @@ namespace Igor
 			set { EditorPrefs.SetBool(kPrefix + "bLocalDownload", value); }
 		}
 
+		public static string LocalPrefix
+		{
+			get { return EditorPrefs.GetString(kPrefix + "LocalPrefix", ""); }
+			set { EditorPrefs.SetString(kPrefix + "LocalPrefix", value); }
+		}
+
 		static IgorUpdater()
 		{
 			ServicePointManager.ServerCertificateValidationCallback +=
@@ -727,8 +733,6 @@ namespace Igor
 		private const int Version = 15;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
-		private static string LocalPrefix = ""; // This has been moved to the IgorConfig.xml file.
-        public static string ExplicitLocalPrefix = "TestDeploy/";
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
 		public static string TempLocalDirectory = "IgorTemp/";
 
@@ -748,30 +752,12 @@ namespace Igor
         private static List<string> UpdatedContent = new List<string>(); 
 		private static List<string> UpdatedModules = new List<string>();
 
-		public static string GetLocalPrefix()
-		{
-			if(LocalPrefix == "")
-			{
-				FindCore();
-
-				if(Core != null)
-				{
-					LocalPrefix = Core.GetLocalUpdatePrefix();
-				}
-
-				if(LocalPrefix == "")
-				{
-					LocalPrefix = ExplicitLocalPrefix;
-				}
-			}
-			
-			return LocalPrefix;
-		}
+		public static bool bTriggerConfigWindowRefresh = false;
 
 		[MenuItem("Window/Igor/Check For Updates %i", false, 2)]
 		public static void MenuCheckForUpdates()
 		{
-			LocalPrefix = "";
+			bTriggerConfigWindowRefresh = true;
 			
 			CheckForUpdates(true, true);
 		}
@@ -794,9 +780,32 @@ namespace Igor
 				{
 					IgorJobConfig.SetBoolParam("restartingfromupdate", true);
 
-                    Debug.Log("The following Igor content was updated, refreshing AssetDatabase:");
+                    string UpdatedContentString = "The following Igor content was ";
+
+                    if(bAlwaysUpdate)
+                    {
+                    	UpdatedContentString += "forcibly ";
+                    }
+
+                    UpdatedContentString += "updated via ";
+
+                    if(bLocalDownload)
+                    {
+                    	UpdatedContentString += "local copy from " + LocalPrefix;
+                    }
+                    else
+                    {
+                    	UpdatedContentString += "remote copy from GitHub";
+                    }
+
+                    UpdatedContentString += ", refreshing AssetDatabase:\n";
+
                     foreach(var content in UpdatedContent)
-                        Debug.Log(content);
+                    {
+                        UpdatedContentString += content + "\n";
+                    }
+
+                    Debug.Log(UpdatedContentString);
 
                     ImportAssetOptions options = bSynchronous ? ImportAssetOptions.ForceSynchronousImport : ImportAssetOptions.Default;
 					AssetDatabase.Refresh(options);

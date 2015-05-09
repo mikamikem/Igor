@@ -96,9 +96,11 @@ namespace Igor
 		{
 			bool bQueueRepaint = false;
 
-			if(!bInitialized || IgorCore.bTriggerConfigWindowRefresh)
+			if(!bInitialized || IgorUpdater.bTriggerConfigWindowRefresh)
 			{
-				IgorCore.bTriggerConfigWindowRefresh = false;
+				IgorConfig.ReGetInstance();
+				
+				IgorUpdater.bTriggerConfigWindowRefresh = false;
 
 				Initialize();
 

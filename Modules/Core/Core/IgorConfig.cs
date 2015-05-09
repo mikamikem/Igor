@@ -109,8 +109,6 @@ namespace Igor
 		[XmlArrayItem("Job")]
 		public List<IgorPersistentJobConfig> JobConfigs = new List<IgorPersistentJobConfig>();
 
-		public string LocalUpdatePrefix = "";
-
 		public virtual List<string> GetEnabledModuleNames()
 		{
 			return EnabledModules;
