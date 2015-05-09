@@ -78,7 +78,9 @@ namespace Igor
 			{
 				string ProjectPath = Path.Combine(BuildProducts[0], "Unity-IPhone.xcodeproj");
 
-				IgorXCodeProjUtils.AddNewFileReference(this, ProjectPath, "FacebookIntegration.h", TreeEnum.GROUP);
+				string FacebookIntegrationGUID = IgorXCodeProjUtils.AddNewFileReference(this, ProjectPath, "FacebookIntegration.h", TreeEnum.GROUP);
+
+				IgorXCodeProjUtils.SortGUIDIntoGroup(this, ProjectPath, FacebookIntegrationGUID, "Libraries");
 
 				IgorXCodeProjUtils.AddFramework(this, ProjectPath, "FacebookSDK.framework", TreeEnum.GROUP, "Libraries/FacebookSDK.framework", -1, "wrapper.framework", "FacebookSDK.framework");
 
@@ -93,6 +95,14 @@ namespace Igor
 				IgorPlistUtils.AddBundleURLType(this, PlistPath, "fb" + FacebookID);
 
 				IgorZip.UnzipArchiveCrossPlatform(this, Path.Combine(Path.GetFullPath("."), Path.Combine("Assets", Path.Combine("Plugins", Path.Combine("iOS", Path.Combine("FacebookSDK", "FacebookSDK.framework.zip"))))), Path.Combine(BuildProducts[0], "Libraries"));
+
+				IgoriOSSourceUtils.AddHeaderToAppControllerSource(this, BuildProducts[0], "../Libraries/FacebookIntegration.h");
+
+				IgoriOSSourceUtils.AddFunctionToAppControllerSource(this, BuildProducts[0], "/* Pre iOS 4.2 support */\n- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url\n{\n\treturn [FBSession.activeSession handleOpenURL:url];\n}\n");
+
+				IgorUtils.ReplaceStringsInFile(this, Path.Combine(BuildProducts[0], Path.Combine("Classes", "UnityAppController.mm")), "AppController_SendNotificationWithArg(kUnityOnOpenURL, notifData);\n\treturn YES;", "AppController_SendNotificationWithArg(kUnityOnOpenURL, notifData); return [FBSession.activeSession handleOpenURL:url];");
+
+				IgoriOSSourceUtils.AddSourceToApplicationDidBecomeActive(this, BuildProducts[0], "[FBSession.activeSession handleDidBecomeActive];");
 			}
 
 			return true;

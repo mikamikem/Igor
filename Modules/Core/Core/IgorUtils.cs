@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Igor
 {
@@ -168,6 +169,27 @@ namespace Igor
 	                }
 	            }
 	        }
+	    }
+
+	    public static void ReplaceStringsInFile(IIgorModule ModuleInst, string FilePath, string OriginalString, string NewString)
+	    {
+	    	string FullFilePath = FilePath;
+
+	    	if(!File.Exists(FullFilePath))
+	    	{
+	    		FullFilePath = Path.Combine(Path.GetFullPath("."), FilePath);
+	    	}
+
+	    	if(IgorAssert.EnsureTrue(ModuleInst, File.Exists(FullFilePath), "Replace string in file failed because " + FullFilePath + " doesn't exist."))
+	    	{
+				string FileContents = File.ReadAllText(FilePath);
+
+				FileContents = FileContents.Replace(OriginalString, NewString);
+
+				IgorUtils.DeleteFile(FileContents);
+
+				File.WriteAllText(FilePath, FileContents);
+	    	}
 	    }
 	}
 }

@@ -361,5 +361,63 @@ namespace Igor
 				}
 			}
 		}
+
+		public static void SortGUIDIntoGroup(IIgorModule ModuleInst, string ProjectPath, string FileGUID, string GroupPath)
+		{
+			if(IgorAssert.EnsureTrue(ModuleInst, Directory.Exists(ProjectPath), "XCodeProj doesn't exist at path " + ProjectPath))
+			{
+				XCProject CurrentProject = new XCProject(ProjectPath);
+
+				CurrentProject.Backup();
+
+				if(IgorAssert.EnsureTrue(ModuleInst, CurrentProject != null, "XCodeProj couldn't be loaded."))
+				{
+					bool bFoundGroup = false;
+
+					foreach(KeyValuePair<string, PBXGroup> CurrentGroup in CurrentProject.groups)
+					{
+						if(CurrentGroup.Value.path == GroupPath)
+						{
+							if(IgorAssert.EnsureTrue(ModuleInst, CurrentGroup.Value.ContainsKey("children"), "XCodeProj PBXGroup " + GroupPath + " doesn't have a children array."))
+							{
+								object GroupChildrenObj = CurrentGroup.Value.data["children"];
+
+								if(IgorAssert.EnsureTrue(ModuleInst, GroupChildrenObj != null, "XCodeProj PBXGroup " + GroupPath + " has a children key, but it can't be retrieved."))
+								{
+									if(IgorAssert.EnsureTrue(ModuleInst, typeof(PBXList).IsAssignableFrom(GroupChildrenObj.GetType()), "XCodeProj PBXGroup " + GroupPath + " has a children key, but it can't be cast to PBXList."))
+									{
+										PBXList GroupChildrenList = (PBXList)GroupChildrenObj;
+
+										if(IgorAssert.EnsureTrue(ModuleInst, GroupChildrenList != null, "XCodeProj casted Children List is null."))
+										{
+											if(GroupChildrenList.Contains(FileGUID))
+											{
+												IgorCore.Log(ModuleInst, "FileGUID " + FileGUID + " has already been added to the Group " + CurrentGroup.Key + ".");
+											}
+											else
+											{
+												GroupChildrenList.Add(FileGUID);
+
+												CurrentGroup.Value.data["children"] = GroupChildrenList;
+
+												IgorCore.Log(ModuleInst, "Added the " + FileGUID + " file to the Group " + CurrentGroup.Key + ".");
+											}
+										}
+									}
+								}
+
+								bFoundGroup = true;
+
+								break;
+							}
+						}
+					}
+
+					IgorAssert.EnsureTrue(ModuleInst, bFoundGroup, "Couldn't find a PBXGroup with path " + GroupPath + " in the XCodeProj.");
+
+					CurrentProject.Save();
+				}
+			}
+		}
 	}
 }
