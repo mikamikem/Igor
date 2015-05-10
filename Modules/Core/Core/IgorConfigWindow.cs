@@ -75,6 +75,7 @@ namespace Igor
 		protected FoldoutState ParamsModuleCategoryExpanded = new FoldoutState();
 		protected FoldoutState IsModuleExpanded = new FoldoutState(); 
 		protected bool bShowParams = true;
+		protected bool bTriggerJobByName = false;
 
 		protected bool bJobStepsExpanded = false;
 		protected Dictionary<StepID, List<string>> StepIDToFunctions = new Dictionary<StepID, List<string>>();
@@ -510,7 +511,7 @@ namespace Igor
 
 		        if(GUILayout.Button("Reload Configuration") && !EditorUtility.DisplayDialog("Reload Igor's Configuration?", "This will reset any unsaved changes for the global values AND ALL JOBS!  Are you sure you want to reload?", "I'm not ready yet...", "Yup clobber my unsaved changes!"))
 		        {
-		            GetValuesFromConfig();
+		        	IgorUpdater.bTriggerConfigWindowRefresh = true;
 		        }
 
 		        if(GUILayout.Button("Save Configuration"))
@@ -558,6 +559,8 @@ namespace Igor
 
 				bShowParams = GUILayout.SelectionGrid(bShowParams ? 0 : 1, new string[] { "Parameters", "Jenkins Job" }, 2) == 0;
 
+				bTriggerJobByName = EditorGUILayout.Toggle("Trigger Job By Name", bTriggerJobByName);
+
 				GUIStyle TextAreaStyle = new GUIStyle(
 #if GREATER_THAN_4_3
                     EditorStyles.textArea
@@ -569,11 +572,11 @@ namespace Igor
 
 				if(bShowParams)
 				{
-					EditorGUILayout.TextArea(CurrentJobInst.JobCommandLineParams, TextAreaStyle);
+					EditorGUILayout.TextArea(GenerateCommandLineParams(CurrentJobInst.JobCommandLineParams, CurrentJobInst.JobName), TextAreaStyle);
 				}
 				else
 				{
-					EditorGUILayout.TextArea(GenerateJenkinsJobForParams(CurrentJobInst.JobCommandLineParams), TextAreaStyle);
+					EditorGUILayout.TextArea(GenerateJenkinsJobForParams(CurrentJobInst.JobCommandLineParams, CurrentJobInst.JobName), TextAreaStyle);
 				}
 
 				EditorGUILayout.EndVertical();
@@ -649,6 +652,38 @@ namespace Igor
 
 						EditorGUILayout.EndVertical();
 					}
+
+					EditorGUI.indentLevel -= 1;
+				}
+
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.Separator();
+
+				EditorGUILayout.BeginVertical("box");
+
+				string GlobalOptionsKey = "Global Options";
+
+				bool bGlobalOptionsExpanded = ParamsModuleCategoryExpanded.ContainsKey(GlobalOptionsKey) && ParamsModuleCategoryExpanded[GlobalOptionsKey];
+
+				bGlobalOptionsExpanded = EditorGUILayout.Foldout(bGlobalOptionsExpanded, "Global Options");
+
+				if(!ParamsModuleCategoryExpanded.ContainsKey(GlobalOptionsKey))
+				{
+					ParamsModuleCategoryExpanded.Add(GlobalOptionsKey, bGlobalOptionsExpanded);
+				}
+
+				ParamsModuleCategoryExpanded[GlobalOptionsKey] = bGlobalOptionsExpanded;
+
+				if(bGlobalOptionsExpanded)
+				{
+					EditorGUI.indentLevel += 1;
+
+					bool bIsEnabled = IgorUtils.IsBoolParamSet(CurrentJobInst.JobCommandLineParams, IgorCore.SkipUnityUpdateFlag);
+
+					bIsEnabled = EditorGUILayout.Toggle("Disable Igor updating when running as a job", bIsEnabled);
+
+					CurrentJobInst.JobCommandLineParams = IgorUtils.SetBoolParam(CurrentJobInst.JobCommandLineParams, IgorCore.SkipUnityUpdateFlag, bIsEnabled);
 
 					EditorGUI.indentLevel -= 1;
 				}
@@ -847,13 +882,41 @@ namespace Igor
 			bModulesChanged = false;
 		}
 
+		public virtual string FilterOutNonTriggerByNameFlags(string OriginalParams)
+		{
+			string NewParams = "";
+
+			if(IgorUtils.IsBoolParamSet(OriginalParams, IgorCore.SkipUnityUpdateFlag))
+			{
+				NewParams = IgorUtils.SetBoolParam(NewParams, IgorCore.SkipUnityUpdateFlag, true);
+			}
+
+			return NewParams;
+		}
+
 		public static string IgorRunner = "IgorRun.py";
 
-		public virtual string GenerateJenkinsJobForParams(string Params)
+		public virtual string GenerateJenkinsJobForParams(string Params, string JobName)
 		{
-            var path = Path.Combine(Path.Combine("Assets", "Editor"), IgorRunner);
+            var path = Path.Combine("Assets", Path.Combine("Editor", Path.Combine("Igor", IgorRunner)));
+
+            if(bTriggerJobByName)
+            {
+            	Params = "--" + IgorCore.NamedJobFlag + "=\"" + JobName + "\"" + FilterOutNonTriggerByNameFlags(Params);
+            }
+
 			string JenkinsString = "python " + path + " " + Params;
 		    return JenkinsString;
+		}
+
+		public virtual string GenerateCommandLineParams(string Params, string JobName)
+		{
+            if(bTriggerJobByName)
+            {
+            	Params = "--" + IgorCore.NamedJobFlag + "=\"" + JobName + "\"" + FilterOutNonTriggerByNameFlags(Params);
+            }
+
+		    return Params;
 		}
 
 		protected string EditorMenuOptionsFilePath = Path.Combine(IgorUpdater.LocalModuleRoot, Path.Combine("Core", Path.Combine("Core", "IgorMenuOptions.cs")));

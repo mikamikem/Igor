@@ -50,6 +50,9 @@ namespace Igor
 		public static List<IIgorModule> ActiveModulesForJob = new List<IIgorModule>();
 		public static Dictionary<StepID, List<JobStep>> JobSteps = new Dictionary<StepID, List<JobStep>>();
 
+		public static string NamedJobFlag = "ExecuteJob";
+		public static string SkipUnityUpdateFlag = "nounityupdate";
+
 		public List<string> GetEnabledModuleNames()
 		{
 			return IgorConfig.GetInstance().GetEnabledModuleNames();
@@ -177,6 +180,8 @@ namespace Igor
 				if(!IgorJobConfig.GetIsRunning())
 				{
 					Log("Job is starting!");
+
+					CheckForNamedJobFlag();
 				}
 
 				if(IgorJobConfig.GetWasMenuTriggered())
@@ -391,6 +396,32 @@ namespace Igor
 			}
 
 			return true;
+		}
+
+		public static void CheckForNamedJobFlag()
+		{
+			if(IgorJobConfig.IsStringParamSet(NamedJobFlag))
+			{
+				string JobToStart = IgorJobConfig.GetStringParam(NamedJobFlag);
+
+				foreach(IgorPersistentJobConfig Job in IgorConfig.GetInstance().JobConfigs)
+				{
+					if(Job.JobName == JobToStart)
+					{
+						IgorJobConfig ConfigInst = IgorJobConfig.GetConfig();
+						
+						ConfigInst.Persistent = Job;
+
+						ConfigInst.Save(IgorJobConfig.IgorJobConfigPath);
+
+						Log("Starting named job " + JobToStart + ".");
+
+						return;
+					}
+				}
+
+				LogError("Couldn't find named job " + JobToStart + "!");
+			}
 		}
 
 		protected static void Log(string Message)
