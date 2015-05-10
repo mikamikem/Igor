@@ -730,7 +730,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 15;
+		private const int Version = 16;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
