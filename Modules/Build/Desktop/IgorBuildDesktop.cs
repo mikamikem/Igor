@@ -120,7 +120,7 @@ namespace Igor
 
 			string Platform = IgorUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
 
-			DrawStringConfigParam(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, GetBuiltNameConfigKeyForPlatform(Platform));
+			DrawStringConfigParamDifferentOverride(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, GetBuiltNameConfigKeyForPlatform(Platform));
 
 			return EnabledParams;
 		}

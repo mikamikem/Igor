@@ -57,47 +57,9 @@ namespace Igor
 					StepHandler.RegisterJobStep(FixupXCodeProjStep, this, FixupXCodeProj);
 					StepHandler.RegisterJobStep(BuildXCodeProjStep, this, BuildXCodeProj);
 
-					if(IgorJobConfig.IsStringParamSet(iOSDevTeamIDFlag))
-					{
-						DevTeamID = IgorJobConfig.GetStringParam(iOSDevTeamIDFlag);
-					}
-					else
-					{
-						DevTeamID = IgorConfig.GetModuleString(this, iOSDevTeamIDFlag);
-					}
-
-					if(DevTeamID == "")
-					{
-						LogWarning("Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
-					}
-
-					if(IgorJobConfig.IsStringParamSet(iOSProvisionProfileFlag))
-					{
-						SigningIdentity = IgorJobConfig.GetStringParam(iOSProvisionProfileFlag);
-					}
-					else
-					{
-						SigningIdentity = IgorConfig.GetModuleString(this, iOSProvisionProfileFlag);
-					}
-
-					if(SigningIdentity == "")
-					{
-						LogWarning("Your Signing Identity hasn't been set!  Your build may not sign correctly.");
-					}
-
-					if(IgorJobConfig.IsStringParamSet(iOSMobileProvisionFlag))
-					{
-						ProvisionPath = IgorJobConfig.GetStringParam(iOSMobileProvisionFlag);
-					}
-					else
-					{
-						ProvisionPath = IgorConfig.GetModuleString(this, iOSMobileProvisionFlag);
-					}
-
-					if(ProvisionPath == "")
-					{
-						LogWarning("Your Mobile Provision path hasn't been set!  Your build may not sign correctly.");
-					}
+					DevTeamID = GetParamOrConfigString(iOSDevTeamIDFlag, "Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
+					SigningIdentity = GetParamOrConfigString(iOSProvisionProfileFlag, "Your Signing Identity hasn't been set!  Your build may not sign correctly.");
+					ProvisionPath = GetParamOrConfigString(iOSMobileProvisionFlag, "Your Mobile Provision path hasn't been set!  Your build may not sign correctly.");
 
 					bEnableGamekit = IgorJobConfig.IsBoolParamSet(EnableGameKitFlag);
 				}
@@ -108,13 +70,13 @@ namespace Igor
 		{
 			string EnabledParams = CurrentParams;
 
-			DrawStringConfigParam(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, iOSBuiltNameFlag);
+			DrawStringConfigParamDifferentOverride(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, iOSBuiltNameFlag);
 
-			DrawStringConfigParam(ref EnabledParams, "iOS Dev Team ID", iOSDevTeamIDFlag, iOSDevTeamIDFlag);
+			DrawStringConfigParam(ref EnabledParams, "iOS Dev Team ID", iOSDevTeamIDFlag);
 
-			DrawStringConfigParam(ref EnabledParams, "iOS Signing Provision Profile Name", iOSProvisionProfileFlag, iOSProvisionProfileFlag);
+			DrawStringConfigParam(ref EnabledParams, "iOS Signing Provision Profile Name", iOSProvisionProfileFlag);
 
-			DrawStringConfigParam(ref EnabledParams, "iOS Mobile Provision Path", iOSMobileProvisionFlag, iOSMobileProvisionFlag);
+			DrawStringConfigParam(ref EnabledParams, "iOS Mobile Provision Path", iOSMobileProvisionFlag);
 
 			DrawBoolParam(ref EnabledParams, "Enable Gamekit", EnableGameKitFlag);
 

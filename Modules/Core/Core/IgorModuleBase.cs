@@ -155,7 +155,12 @@ namespace Igor
 			return LabelFieldBGGreen;
 		}
 
-		public virtual void DrawStringConfigParam(ref string CurrentParams, string StringLabel, string StringOverrideParam, string ConfigKey)
+		public virtual void DrawStringConfigParam(ref string CurrentParams, string StringLabel, string StringOverrideAndConfigKey)
+		{
+			DrawStringConfigParamDifferentOverride(ref CurrentParams, StringLabel, StringOverrideAndConfigKey, StringOverrideAndConfigKey);
+		}
+
+		public virtual void DrawStringConfigParamDifferentOverride(ref string CurrentParams, string StringLabel, string StringOverrideParam, string ConfigKey)
 		{
 			string CurrentStringValue = "";
 			string CurrentConfigValue = IgorConfig.GetModuleString(this, ConfigKey);
@@ -331,6 +336,27 @@ namespace Igor
 		public virtual void CriticalError(string Message)
 		{
 			IgorCore.CriticalError(this, Message);
+		}
+
+		public virtual string GetParamOrConfigString(string StringKey, string EmptyStringWarningMessage, string DefaultValue = "", bool bCheckForEmpty = true)
+		{
+			string StringValue = DefaultValue;
+
+			if(IgorJobConfig.IsStringParamSet(StringKey))
+			{
+				StringValue = IgorJobConfig.GetStringParam(StringKey);
+			}
+			else
+			{
+				StringValue = IgorConfig.GetModuleString(this, StringKey);
+			}
+
+			if(StringValue == DefaultValue && bCheckForEmpty)
+			{
+				LogWarning(EmptyStringWarningMessage);
+			}
+
+			return StringValue;
 		}
 
 		public virtual bool GetConfigBool(string BoolKey, bool bDefaultValue = false)

@@ -46,11 +46,11 @@ namespace Igor
 		{
 			string EnabledParams = CurrentParams;
 
-			DrawStringParam(ref EnabledParams, "Destination Filename", CopyToSyncFilenameFlag);
+			DrawStringConfigParam(ref EnabledParams, "Destination Filename", CopyToSyncFilenameFlag);
 			DrawBoolParam(ref EnabledParams, "Use Explicit Base Path", CopyToSyncExpEnabledFlag);
-			DrawStringParam(ref EnabledParams, "Explicit Base Path", CopyToSyncExplicitFlag);
+			DrawStringConfigParam(ref EnabledParams, "Explicit Base Path", CopyToSyncExplicitFlag);
 			DrawBoolParam(ref EnabledParams, "Use Environment Variable Base Path", CopyToSyncEnvEnabledFlag);
-			DrawStringParam(ref EnabledParams, "Environment Base Path Variable Name", CopyToSyncEnvFlag);
+			DrawStringConfigParam(ref EnabledParams, "Environment Base Path Variable Name", CopyToSyncEnvFlag);
 
 			return EnabledParams;
 		}
@@ -77,17 +77,15 @@ namespace Igor
 
 				if(IgorJobConfig.IsBoolParamSet(CopyToSyncExpEnabledFlag))
 				{
-					DestinationFile = IgorJobConfig.GetStringParam(CopyToSyncExplicitFlag);
+					DestinationFile = GetParamOrConfigString(CopyToSyncExplicitFlag, "BitTorrent Sync copy to sync explicit is enabled, but the path isn't set.");
 				}
 
 				if(DestinationFile == "" && IgorJobConfig.IsBoolParamSet(CopyToSyncEnvEnabledFlag))
 				{
-					string EnvVariable = IgorJobConfig.GetStringParam(CopyToSyncEnvFlag);
+					string EnvVariable = GetParamOrConfigString(CopyToSyncEnvFlag, "BitTorrent Sync copy to sync based on environment variable is enabled, but the env variable name isn't set.");
 
 					if(EnvVariable == "")
 					{
-						LogError("The name of the BitTorrent Sync in the job config isn't set.");
-
 						return true;
 					}
 
@@ -101,14 +99,14 @@ namespace Igor
 					}
 				}
 
-				if(IgorJobConfig.GetStringParam(CopyToSyncFilenameFlag) == "")
-				{
-					LogError("You need to set the BitTorrent Sync destination filename.");
+				string DestinationFilename = GetParamOrConfigString(CopyToSyncFilenameFlag, "BitTorrent Sync copy to sync destination filename isn't set.");
 
+				if(DestinationFilename == "")
+				{
 					return true;
 				}
 
-				DestinationFile = Path.Combine(DestinationFile, IgorJobConfig.GetStringParam(CopyToSyncFilenameFlag));
+				DestinationFile = Path.Combine(DestinationFile, DestinationFilename);
 
 				if(File.Exists(DestinationFile))
 				{

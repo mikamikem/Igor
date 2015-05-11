@@ -36,23 +36,8 @@ namespace Igor
 
 				StepHandler.RegisterJobStep(IgorBuildiOS.CustomFixupXCodeProjStep, this, UpdateXCodeProj);
 
-				if(IgorJobConfig.IsStringParamSet(FacebookIDFlag))
-				{
-					FacebookID = IgorJobConfig.GetStringParam(FacebookIDFlag);
-				}
-				else
-				{
-					FacebookID = IgorConfig.GetModuleString(this, FacebookIDFlag);
-				}
-
-				if(IgorJobConfig.IsStringParamSet(FacebookDisplayNameFlag))
-				{
-					FacebookDisplayName = IgorJobConfig.GetStringParam(FacebookDisplayNameFlag);
-				}
-				else
-				{
-					FacebookDisplayName = IgorConfig.GetModuleString(this, FacebookDisplayNameFlag);
-				}
+				FacebookID = GetParamOrConfigString(FacebookIDFlag, "Your Facebook ID hasn't been set!  Facebook functionality will probably not work correctly.");
+				FacebookDisplayName = GetParamOrConfigString(FacebookDisplayNameFlag, "Your Facebook Display Name hasn't been set!  Facebook functionality will probably not work correctly.");
 			}
 		}
 
@@ -61,8 +46,8 @@ namespace Igor
 			string EnabledParams = CurrentParams;
 
 			DrawBoolParam(ref EnabledParams, "Use Facebook iOS Hats", EnableFacebookiOSHatsFlag);
-			DrawStringConfigParam(ref EnabledParams, "Facebook Dev ID", FacebookIDFlag, FacebookIDFlag);
-			DrawStringConfigParam(ref EnabledParams, "Facebook Display Name", FacebookDisplayNameFlag, FacebookDisplayNameFlag);
+			DrawStringConfigParam(ref EnabledParams, "Facebook Dev ID", FacebookIDFlag);
+			DrawStringConfigParam(ref EnabledParams, "Facebook Display Name", FacebookDisplayNameFlag);
 
 			return EnabledParams;
 		}

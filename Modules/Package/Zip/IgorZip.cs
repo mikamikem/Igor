@@ -39,9 +39,10 @@ namespace Igor
 			string EnabledParams = CurrentParams;
 
 			var bZip = DrawBoolParam(ref EnabledParams, "Zip the built files", ZipFlag);
+
             if(bZip)
             {
-			    DrawStringParam(ref EnabledParams, "Zip filename", ZipFilenameFlag);
+			    DrawStringConfigParam(ref EnabledParams, "Zip filename", ZipFilenameFlag);
             }
             else
             {
@@ -53,7 +54,9 @@ namespace Igor
 
 		public virtual bool CreateZip()
 		{
-			string LogDetails = "Creating zip file with name " + IgorJobConfig.GetStringParam(ZipFilenameFlag) + " from files:";
+			string ZipFilename = GetParamOrConfigString(ZipFilenameFlag, "Zip destination filename is not set.");
+
+			string LogDetails = "Creating zip file with name " + ZipFilenameFlag + " from files:";
 
 			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
 
@@ -64,7 +67,7 @@ namespace Igor
 
 			Log(LogDetails);
 
-			ZipFilesCrossPlatform(this, BuiltProducts, IgorJobConfig.GetStringParam(ZipFilenameFlag));
+			ZipFilesCrossPlatform(this, BuiltProducts, ZipFilenameFlag);
 
 			return true;
 		}

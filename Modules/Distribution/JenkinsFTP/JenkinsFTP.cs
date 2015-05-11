@@ -59,15 +59,15 @@ namespace Igor
 			string EnabledParams = CurrentParams;
 
 			DrawBoolParam(ref EnabledParams, "Always Upload", UploadToFTPNoEnvFlag);
-			DrawStringParam(ref EnabledParams, "FTP Filename", UploadToFTPFlag);
-			DrawStringParam(ref EnabledParams, "Environment Variable Toggle", UploadToFTPEnvToggleFlag);
+			DrawStringConfigParam(ref EnabledParams, "FTP Filename", UploadToFTPFlag);
+			DrawStringConfigParam(ref EnabledParams, "Environment Variable Toggle", UploadToFTPEnvToggleFlag);
 
 			return EnabledParams;
 		}
 
 		public virtual bool Cleanup()
 		{
-			string DestinationFile = IgorJobConfig.GetStringParam(UploadToFTPFlag);
+			string DestinationFile = GetParamOrConfigString(UploadToFTPFlag, "Destination file for JenkinsFTP isn't set so we can't clean it up.");
 
 			if(File.Exists(DestinationFile))
 			{
@@ -97,7 +97,7 @@ namespace Igor
 			{
 				Cleanup();
 
-				File.Copy(FileToCopy, IgorJobConfig.GetStringParam(UploadToFTPFlag));
+				File.Copy(FileToCopy, GetParamOrConfigString(UploadToFTPFlag, "Destination file for JenkinsFTP isn't set so we can't copy it to the right location."));
 
 				Log("File copied to requested location for Jenkins post build FTP uploading.");
 			}
