@@ -338,7 +338,25 @@ namespace Igor
                     EndingPos = StartSubstring.Length;
  				
                 Result = StartSubstring.Substring(0, EndingPos);
-                Result = Result.Trim(new char[] {' ', '"'});
+
+                // Manually trim. We want to remove all space to the left/right of quotation marks, AND the quotation
+                // marks themselves, but not the space within the quotation marks.
+
+                while(Result.Length > 0 && (Result[Result.Length - 1] == ' ' || Result[Result.Length - 1] == '"'))
+                {
+                    bool bIsQuotation = Result[Result.Length - 1] == '"';
+                    Result = Result.Remove(Result.Length - 1, 1);
+                    if(bIsQuotation)
+                        break;
+                }
+
+                while(Result.Length > 0 && (Result[0] == ' ' || Result[0] == '"'))
+                {
+                    bool bIsQuotation = Result[0] == '"';
+                    Result = Result.Remove(0, 1);
+                    if(bIsQuotation)
+                        break;
+                }
  			}
 
  			return Result;
@@ -730,7 +748,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 16;
+		private const int Version = 17;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";

@@ -53,16 +53,18 @@ namespace Igor
 		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
+            
+            bool AddVersioning = IgorUtils.IsStringParamSet(EnabledParams, PathToVersioning);
 
-            if(!IgorUtils.IsStringParamSet(EnabledParams, PathToVersioning))
+            AddVersioning = EditorGUILayout.Toggle("Add versioning info", AddVersioning);
+            if(AddVersioning)
             {
-                EnabledParams = IgorUtils.SetStringParam(EnabledParams, PathToVersioning, DefaultPathForVersioningOutput);
-            }
+                if(!IgorUtils.IsStringParamSet(EnabledParams, PathToVersioning))
+                {
+                    EnabledParams = IgorUtils.SetStringParam(EnabledParams, PathToVersioning, DefaultPathForVersioningOutput);
+                }
+                DrawStringParam(ref EnabledParams, "Version Info Output Path", PathToVersioning);
             
-            DrawStringParam(ref EnabledParams, "Version Info Output Path", PathToVersioning);
-            
-            if(!string.IsNullOrEmpty(IgorUtils.GetStringParam(EnabledParams, PathToVersioning)))
-            {
                 EnsureVersionInfoCached();
 
                 int MajorVersion = CurrentMajorVersion.GetValueOrDefault();
@@ -78,6 +80,10 @@ namespace Igor
                     }
                 }
                 GUILayout.EndHorizontal();
+            }
+            else
+            {
+                EnabledParams = IgorUtils.ClearParam(EnabledParams, PathToVersioning);
             }
 
 			return EnabledParams;
