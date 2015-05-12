@@ -55,6 +55,44 @@ namespace Igor
 			}
 		}
 
+		public static string GetStringValue(IIgorModule ModuleInst, string PlistPath, string StringKey)
+		{
+			if(IgorAssert.EnsureTrue(ModuleInst, File.Exists(PlistPath), "Plist " + PlistPath + " doesn't exist!"))
+			{
+				FileInfo PlistFileInfo = new FileInfo(PlistPath);
+
+				NSObject PlistRoot = PropertyListParser.Parse(PlistFileInfo);
+
+				if(IgorAssert.EnsureTrue(ModuleInst, PlistRoot != null, "Plist " + PlistPath + " could not be parsed!"))
+				{
+					if(IgorAssert.EnsureTrue(ModuleInst, typeof(NSDictionary).IsAssignableFrom(PlistRoot.GetType()), "Plist " + PlistPath + " root object is not a dictionary."))
+					{
+						NSDictionary RootDictionary = (NSDictionary)PlistRoot;
+
+						if(IgorAssert.EnsureTrue(ModuleInst, RootDictionary != null, "Plist root is not a dictionary."))
+						{
+							if(IgorAssert.EnsureTrue(ModuleInst, RootDictionary.ContainsKey(StringKey), "Plist does not contain " + StringKey + " in root dictionary."))
+							{
+								NSObject StringObj = RootDictionary.ObjectForKey(StringKey);
+
+								if(IgorAssert.EnsureTrue(ModuleInst, typeof(NSString).IsAssignableFrom(StringObj.GetType()), "Plist key " + StringKey + " is not a string type."))
+								{
+									NSString StringValue = (NSString)StringObj;
+
+									if(IgorAssert.EnsureTrue(ModuleInst, StringValue != null, "Plist key " + StringKey + " could not be cast to an NSString."))
+									{
+										return StringValue.GetContent();
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			return "";
+		}
+
 		public static void SetStringValue(IIgorModule ModuleInst, string PlistPath, string StringKey, string Value)
 		{
 			if(IgorAssert.EnsureTrue(ModuleInst, File.Exists(PlistPath), "Plist " + PlistPath + " doesn't exist!"))

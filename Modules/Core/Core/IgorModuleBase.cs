@@ -338,7 +338,7 @@ namespace Igor
 			IgorCore.CriticalError(this, Message);
 		}
 
-		public virtual string GetParamOrConfigString(string StringKey, string EmptyStringWarningMessage, string DefaultValue = "", bool bCheckForEmpty = true)
+		public virtual string GetParamOrConfigString(string StringKey, string EmptyStringWarningMessage = "", string DefaultValue = "", bool bCheckForEmpty = true)
 		{
 			string StringValue = DefaultValue;
 
@@ -351,7 +351,7 @@ namespace Igor
 				StringValue = IgorConfig.GetModuleString(this, StringKey);
 			}
 
-			if(StringValue == DefaultValue && bCheckForEmpty)
+			if(StringValue == DefaultValue && bCheckForEmpty && EmptyStringWarningMessage != "")
 			{
 				LogWarning(EmptyStringWarningMessage);
 			}

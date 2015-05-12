@@ -217,9 +217,9 @@ namespace Igor
 
 				IgorXCodeProjUtils.SetDevTeamID(this, ProjectPath, DevTeamID);
 
-				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_IDENTITY", "iPhone Developer");
+				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_IDENTITY", SigningIdentity);
 
-				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_IDENTITY[sdk=iphoneos*]", "iPhone Developer");
+				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_IDENTITY[sdk=iphoneos*]", SigningIdentity);
 
 				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_RESOURCE_RULES_PATH", "$(SDKROOT)/ResourceRules.plist");
 
@@ -278,8 +278,14 @@ namespace Igor
 					return true;
 				}
 
-				Log("Packaging the application succeeded!\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
+				List<string> NewBuildProducts = new List<string>();
 
+				NewBuildProducts.Add(Path.Combine(BuildProducts[0], BuiltName + ".ipa"));
+				NewBuildProducts.Add(BuildProducts[0]);
+
+				IgorBuildCommon.SetNewBuildProducts(NewBuildProducts);
+
+				Log("Packaging the application succeeded!\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
 			}
 
 			return true;

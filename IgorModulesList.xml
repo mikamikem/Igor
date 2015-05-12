@@ -15,5 +15,7 @@
     <Module ModuleName="Distribution.BitTorrentSync" ModuleDescriptorRelativePath="Distribution/BitTorrentSync/BitTorrentSync.xml" />
     <Module ModuleName="3rdParty.FacebookiOSHats" ModuleDescriptorRelativePath="3rdParty/FacebookiOSHats/IgorFacebookiOSHats.xml" />
     <Module ModuleName="3rdParty.StoreKitiOS" ModuleDescriptorRelativePath="3rdParty/StoreKitiOS/IgorStoreKitiOS.xml" />
+    <Module ModuleName="Package.iOSOTA" ModuleDescriptorRelativePath="Package/iOSOTA/iOSOTA.xml" />
+    <Module ModuleName="Distribution.IgorFTP" ModuleDescriptorRelativePath="Distribution/IgorFTP/IgorFTP.xml" />
   </Modules>
 </IgorModuleList>
