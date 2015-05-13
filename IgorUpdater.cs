@@ -193,7 +193,16 @@ namespace Igor
 				    WWW www = new WWW(PathToSource);
                     while(!www.isDone)
                     { }
-				    File.WriteAllText(DestFilePath, www.text);
+
+                    if(www.error != null && www.error != "")
+                    {
+                    	Debug.LogError("Downloading " + PathToSource + " failed.  Error is \"" + www.error + "\"");
+                    }
+                    else
+                    {
+					    File.WriteAllText(DestFilePath, www.text);
+                    }
+
                     www.Dispose();
 				}
 			}
@@ -748,7 +757,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 17;
+		private const int Version = 18;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";

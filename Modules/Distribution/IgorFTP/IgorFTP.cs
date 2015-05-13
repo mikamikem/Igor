@@ -98,11 +98,6 @@ namespace Igor
 
 				foreach(string CurrentProduct in BuiltProducts)
 				{
-					if(CurrentProduct.EndsWith(".ipa"))
-					{
-						continue;
-					}
-
 					string DestinationFilename = FTPRoot + FTPDirectory + Path.GetFileName(CurrentProduct);
 		            // Get the object used to communicate with the server.
 		            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(DestinationFilename);
@@ -112,9 +107,7 @@ namespace Igor
 		            request.Credentials = new NetworkCredential (FTPUsername, FTPPassword);
 		            
 		            // Copy the contents of the file to the request stream.
-		            StreamReader sourceStream = new StreamReader(CurrentProduct);
-		            byte [] fileContents = Encoding.UTF8.GetBytes(sourceStream.ReadToEnd());
-		            sourceStream.Close();
+		            byte [] fileContents = File.ReadAllBytes(CurrentProduct);
 		            request.ContentLength = fileContents.Length;
 
 		            Stream requestStream = request.GetRequestStream();

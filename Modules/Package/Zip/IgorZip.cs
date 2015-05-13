@@ -177,11 +177,11 @@ namespace Igor
 
 		public static void UnzipFileMac(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo)
 		{
-			string ZipParams = ZipFilename;
+			string ZipParams = "\"" + ZipFilename + "\"";
 
 			if(DirectoryToUnzipTo != "")
 			{
-				ZipParams += " -d " + DirectoryToUnzipTo;
+				ZipParams += " -d \"" + DirectoryToUnzipTo + "\"";
 			}
 
 			string ZipOutput = "";
