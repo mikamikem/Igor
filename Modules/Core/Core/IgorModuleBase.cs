@@ -155,25 +155,44 @@ namespace Igor
 			return LabelFieldBGGreen;
 		}
 
+		public virtual void DrawStringConfigParamUseValue(ref string CurrentParams, string StringLabel, string StringOverrideAndConfigKey, string CurrentValue)
+		{
+			DrawStringConfigParamDifferentOverride(ref CurrentParams, StringLabel, StringOverrideAndConfigKey, StringOverrideAndConfigKey, CurrentValue);
+		}
+
 		public virtual void DrawStringConfigParam(ref string CurrentParams, string StringLabel, string StringOverrideAndConfigKey)
 		{
 			DrawStringConfigParamDifferentOverride(ref CurrentParams, StringLabel, StringOverrideAndConfigKey, StringOverrideAndConfigKey);
 		}
 
-		public virtual void DrawStringConfigParamDifferentOverride(ref string CurrentParams, string StringLabel, string StringOverrideParam, string ConfigKey)
+		public virtual void DrawStringConfigParamDifferentOverride(ref string CurrentParams, string StringLabel, string StringOverrideParam, string ConfigKey, string OverrideCurrentValue = null)
 		{
 			string CurrentStringValue = "";
 			string CurrentConfigValue = IgorConfig.GetModuleString(this, ConfigKey);
 
 			bool bDisplayConfigValue = false;
 
-			if(IgorUtils.IsStringParamSet(CurrentParams, StringOverrideParam))
+			if(OverrideCurrentValue == null)
 			{
-				CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringOverrideParam);
+				if(IgorUtils.IsStringParamSet(CurrentParams, StringOverrideParam))
+				{
+					CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringOverrideParam);
+				}
+				else
+				{
+					bDisplayConfigValue = true;
+				}
 			}
 			else
 			{
-				bDisplayConfigValue = true;
+				if(CurrentConfigValue == OverrideCurrentValue)
+				{
+					bDisplayConfigValue = true;
+				}
+				else
+				{
+					CurrentStringValue = OverrideCurrentValue;
+				}
 			}
 
 			EditorGUILayout.BeginHorizontal();
@@ -340,6 +359,13 @@ namespace Igor
 
 		public virtual string GetParamOrConfigString(string StringKey, string EmptyStringWarningMessage = "", string DefaultValue = "", bool bCheckForEmpty = true)
 		{
+#if UNITY_EDITOR
+			if(IgorConfigWindow.bIsDrawingInspector)
+			{
+				LogError("Don't call this from within a DrawJobInspectorAndGetEnabledParams implementation!  This isn't accessing the right job config value since it hasn't been saved to disk yet.");
+			}
+#endif // UNITY_EDITOR
+
 			string StringValue = DefaultValue;
 
 			if(IgorJobConfig.IsStringParamSet(StringKey))

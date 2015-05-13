@@ -28,12 +28,124 @@ RemotePythonFile = "https://raw.githubusercontent.com/mikamikem/Igor/master/Modu
 LocalXMLFile = "TestDeploy/Modules/Core/Core/Core.xml"
 LocalPythonFile = "TestDeploy/Modules/Core/Core/IgorRun.py"
 JobConfigFilename = "IgorJob.xml"
+MinVersionString = ""
+MaxVersionString = ""
+UnityDirectory = ""
 
 UnityAutomatorFilename = "IgorRun.py"
 
+def num(s):
+	try:
+		return int(s)
+	except ValueError:
+		return float(s)
+
+def GetPlatformStringFromPath(UnityEnvName):
+	EnvNameSplit = UnityEnvName.split('_')
+
+	if len(EnvNameSplit) > 0:
+		return EnvNameSplit[0]
+
+	return "UNITY"
+
+def GetVersionNumbersForPath(UnityEnvName):
+	VersionNums = [ 100, 100, 100, 100 ]
+	EnvNameSplit = UnityEnvName.split('_')
+
+	if len(EnvNameSplit) > 1:
+		if EnvNameSplit[1] != "LATEST":
+			try:
+				VersionNums[0] = num(EnvNameSplit[1])
+			except ValueError:
+				VersionNums[0] = 100
+
+		if len(EnvNameSplit) > 2:
+			if EnvNameSplit[2] != "LATEST":
+				try:
+					VersionNums[1] = num(EnvNameSplit[2])
+				except ValueError:
+					VersionNums[1] = 100
+
+			if len(EnvNameSplit) > 3:
+				if EnvNameSplit[3] != "LATEST":
+					try:
+						VersionNums[2] = num(EnvNameSplit[3])
+					except ValueError:
+						VersionNums[2] = 100
+
+				if len(EnvNameSplit) > 4:
+					if EnvNameSplit[4] != "LATEST":
+						try:
+							VersionNums[3] = num(EnvNameSplit[4])
+						except ValueError:
+							VersionNums[3] = 100
+
+	return VersionNums
+
+def GetBestMatchingUnityPath(PlatformString, MinMajorVersion, MinMinorVersion, MinReleaseVersion, MinPatchVersion, MaxMajorVersion, MaxMinorVersion, MaxReleaseVersion, MaxPatchVersion, bDebug):
+	if bDebug == True:
+		print("Checking for best matching path with requested version minimum " + str(MinMajorVersion) + "." + str(MinMinorVersion) + "." + str(MinReleaseVersion) + "." + str(MinPatchVersion) + " and maximum " + str(MaxMajorVersion) + "." + str(MaxMinorVersion) + "." + str(MaxReleaseVersion) + "." + str(MaxPatchVersion))
+
+	BestMatchNums = [ -1, -1, -1, -1 ]
+	BestMatch = ""
+	LatestLatest = ""
+	UnityEnvNames = []
+	for key in os.environ.keys():
+		if key.startswith(PlatformString + "_"):
+			UnityEnvNames.append(key)
+
+			if bDebug == True:
+				print("Possible Unity path env variable " + key + " with path " + os.environ[key])
+
+	for CurrentPath in UnityEnvNames:
+		CurrentVersionNums = GetVersionNumbersForPath(CurrentPath)
+		if bDebug == True:
+			print("Current version check is " + CurrentPath + " and " + str(CurrentVersionNums) + " with the current best being " + BestMatch)
+
+		if CurrentVersionNums[0] == 100:
+			LatestLatest = CurrentPath
+		else:
+			if MinMajorVersion == CurrentVersionNums[0] and BestMatchNums[1] <= CurrentVersionNums[1] and BestMatchNums[2] <= CurrentVersionNums[2] and BestMatchNums[3] <= CurrentVersionNums[3]:
+				if MinMinorVersion <= CurrentVersionNums[1] or MinMinorVersion == 100:
+					if MinReleaseVersion <= CurrentVersionNums[2] or MinReleaseVersion == 100:
+						if MinPatchVersion <= CurrentVersionNums[3] or MinPatchVersion == 100:
+							if MaxMinorVersion >= CurrentVersionNums[1] or MaxMinorVersion == 100:
+								if MaxReleaseVersion >= CurrentVersionNums[2] or MaxReleaseVersion == 100:
+									if MaxPatchVersion >= CurrentVersionNums[3] or MaxPatchVersion == 100:
+										BestMatchNums[0] = CurrentVersionNums[0]
+										BestMatchNums[1] = CurrentVersionNums[1]
+										BestMatchNums[2] = CurrentVersionNums[2]
+										BestMatchNums[3] = CurrentVersionNums[3]
+										BestMatch = CurrentPath
+
+	if bDebug == True:
+		print("Best match after loop is " + BestMatch + " with LatestLatest " + LatestLatest)
+
+	if BestMatch == "":
+		BestMatch = LatestLatest
+
+	if BestMatch != "":
+		if bDebug == True:
+			print("Returning BestMatch " + BestMatch + " with path " + os.environ[BestMatch])
+		return os.environ[BestMatch]
+
+	if bDebug == True:
+		print("No env variables found at all.  Defaulting to hard coded paths.")
+
+	return ""
+
 def GetUnityPath():
-	unity_directory = os.environ.get('UNITY_DIR')
-	if(str(unity_directory) == "None"):
+	global UnityDirectory, MinVersionString, MaxVersionString
+
+	if UnityDirectory == "" and MinVersionString != "":
+		MinVersions = GetVersionNumbersForPath(MinVersionString)
+
+		if MaxVersionString == None:
+			MaxVersionString = ""
+
+		MaxVersions = GetVersionNumbersForPath(MaxVersionString)
+		UnityDirectory = GetBestMatchingUnityPath(GetPlatformStringFromPath(MinVersionString), MinVersions[0], MinVersions[1], MinVersions[2], MinVersions[3], MaxVersions[0], MaxVersions[1], MaxVersions[2], MaxVersions[3], False)
+	if(str(UnityDirectory) == ""):
 		if _platform == "linux" or _platform == "linux2":
 			return ""
 		elif _platform == "darwin":
@@ -43,7 +155,12 @@ def GetUnityPath():
 				return "\"C:\\Program Files\\Unity\\Editor\\Unity.exe\""
 			return "\"C:\\Program Files (x86)\\Unity\\Editor\\Unity.exe\""
 	else:
-		return "\"" + str(unity_directory) + "\"";
+		if _platform == "linux" or _platform == "linux2":
+			return ""
+		elif _platform == "darwin":
+			return "\"" + str(UnityDirectory) + "/Contents/MacOS/Unity" + "\"";
+		elif _platform == "win32":
+			return "\"" + str(UnityDirectory) + "\\Editor\\Unity.exe\"";
 	
 	return ""
 
@@ -55,12 +172,6 @@ def GetCommitInfo():
 	else:
 		return "--appendcommitinfo=\"" + info + "\"";
 	
-def num(s):
-	try:
-		return int(s)
-	except ValueError:
-		return float(s)
-
 def SetFileWritable(Filename):
 	Stats = os.stat(Filename)
 	os.chmod(Filename, Stats.st_mode | stat.S_IWRITE)
@@ -205,8 +316,16 @@ parser.add_argument('--nounityupdate', action='store_true')
 parser.add_argument('--finalbootstrap')
 parser.add_argument('--appendcommitinfo', action='store_true')
 parser.add_argument('--bootstrap')
+parser.add_argument('--minunityversion')
+parser.add_argument('--maxunityversion')
 
 testargs, passthrough = parser.parse_known_args()
+
+if testargs.minunityversion != None and testargs.minunityversion != "":
+	MinVersionString = testargs.minunityversion
+
+if testargs.maxunityversion != None and testargs.maxunityversion != "":
+	MaxVersionString = testargs.maxunityversion
 
 #if testargs.noselfupdate == False and testargs.finalbootstrap == None and testargs.bootstrap == None:
 #	SelfUpdate()

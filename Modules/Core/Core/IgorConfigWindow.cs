@@ -72,6 +72,8 @@ namespace Igor
             set { _currentJobIndex = Mathf.Clamp(value, 0, Jobs.Count - 1); }
 	    }
 
+	    public static bool bIsDrawingInspector = false;
+
 		protected FoldoutState ParamsModuleCategoryExpanded = new FoldoutState();
 		protected FoldoutState IsModuleExpanded = new FoldoutState(); 
 		protected bool bShowParams = true;
@@ -81,7 +83,7 @@ namespace Igor
 		protected Dictionary<StepID, List<string>> StepIDToFunctions = new Dictionary<StepID, List<string>>();
 		protected FoldoutState StepIDExpanded = new FoldoutState();
 
-	    protected Vector2 ScrollPosition ;
+	    protected Vector2 ScrollPosition;
 
 	    public IgorPersistentJobConfig CurrentJobInst
 	    {
@@ -355,6 +357,8 @@ namespace Igor
 
 		protected virtual void DrawConfiguration()
 		{
+			bIsDrawingInspector = true;
+
 			ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition);
 
 		    EditorGUILayout.BeginVertical("box");
@@ -570,21 +574,6 @@ namespace Igor
                 );
 				TextAreaStyle.wordWrap = true;
 
-				if(bShowParams)
-				{
-					EditorGUILayout.TextArea(GenerateCommandLineParams(CurrentJobInst.JobCommandLineParams, CurrentJobInst.JobName), TextAreaStyle);
-				}
-				else
-				{
-					EditorGUILayout.TextArea(GenerateJenkinsJobForParams(CurrentJobInst.JobCommandLineParams, CurrentJobInst.JobName), TextAreaStyle);
-				}
-
-				EditorGUILayout.EndVertical();
-
-				EditorGUILayout.Separator();
-
-				EditorGUILayout.BeginVertical("box");
-
 				Dictionary<string, IIgorModule> ModuleNameToInst = new Dictionary<string, IIgorModule>();
 				List<string> EnabledModuleNames = new List<string>();
 
@@ -593,6 +582,43 @@ namespace Igor
 					ModuleNameToInst.Add(CurrentModule.GetModuleName(), CurrentModule);
 					EnabledModuleNames.Add(CurrentModule.GetModuleName());
 				}
+
+				{
+					string DisplayParams = CurrentJobInst.JobCommandLineParams;
+
+					if(ModuleNameToInst.ContainsKey("Core.Core"))
+					{
+						IIgorModule CurrentModule = ModuleNameToInst["Core.Core"];
+
+						if(CurrentModule != null)
+						{
+							if(!IgorUtils.IsStringParamSet(DisplayParams, IgorCoreModule.MinUnityVersionFlag))
+							{
+								DisplayParams = IgorUtils.SetStringParam(DisplayParams, IgorCoreModule.MinUnityVersionFlag, IgorConfig.GetModuleString(CurrentModule, IgorCoreModule.MinUnityVersionFlag));
+							}
+
+							if(!IgorUtils.IsStringParamSet(DisplayParams, IgorCoreModule.MaxUnityVersionFlag))
+							{
+								DisplayParams = IgorUtils.SetStringParam(DisplayParams, IgorCoreModule.MaxUnityVersionFlag, IgorConfig.GetModuleString(CurrentModule, IgorCoreModule.MaxUnityVersionFlag));
+							}
+						}
+					}
+
+					if(bShowParams)
+					{
+						EditorGUILayout.TextArea(GenerateCommandLineParams(DisplayParams, CurrentJobInst.JobName), TextAreaStyle);
+					}
+					else
+					{
+						EditorGUILayout.TextArea(GenerateJenkinsJobForParams(DisplayParams, CurrentJobInst.JobName), TextAreaStyle);
+					}
+				}
+
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.Separator();
+
+				EditorGUILayout.BeginVertical("box");
 
 				Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(EnabledModuleNames);
 
@@ -679,11 +705,15 @@ namespace Igor
 				{
 					EditorGUI.indentLevel += 1;
 
-					bool bIsEnabled = IgorUtils.IsBoolParamSet(CurrentJobInst.JobCommandLineParams, IgorCore.SkipUnityUpdateFlag);
+					if(ModuleNameToInst.ContainsKey("Core.Core"))
+					{
+						IIgorModule CurrentModule = ModuleNameToInst["Core.Core"];
 
-					bIsEnabled = EditorGUILayout.Toggle("Disable Igor updating when running as a job", bIsEnabled);
-
-					CurrentJobInst.JobCommandLineParams = IgorUtils.SetBoolParam(CurrentJobInst.JobCommandLineParams, IgorCore.SkipUnityUpdateFlag, bIsEnabled);
+						if(CurrentModule != null)
+						{
+							CurrentJobInst.JobCommandLineParams = CurrentModule.DrawJobInspectorAndGetEnabledParams(CurrentJobInst.JobCommandLineParams);
+						}
+					}
 
 					EditorGUI.indentLevel -= 1;
 				}
@@ -792,6 +822,8 @@ namespace Igor
             EditorGUILayout.EndVertical();
 			
             EditorGUILayout.EndScrollView();
+
+            bIsDrawingInspector = false;
 		}
 
 		public virtual void SaveConfiguration()
@@ -882,14 +914,17 @@ namespace Igor
 			bModulesChanged = false;
 		}
 
-		public virtual string FilterOutNonTriggerByNameFlags(string OriginalParams)
+		public virtual string FilterOutNonPythonFlags(string OriginalParams)
 		{
 			string NewParams = "";
 
-			if(IgorUtils.IsBoolParamSet(OriginalParams, IgorCore.SkipUnityUpdateFlag))
-			{
-				NewParams = IgorUtils.SetBoolParam(NewParams, IgorCore.SkipUnityUpdateFlag, true);
-			}
+			bool bSkipUnityUpdate = IgorUtils.IsBoolParamSet(OriginalParams, IgorCoreModule.SkipUnityUpdateFlag);
+			string MinUnityVersion = IgorUtils.GetStringParam(OriginalParams, IgorCoreModule.MinUnityVersionFlag);
+			string MaxUnityVersion = IgorUtils.GetStringParam(OriginalParams, IgorCoreModule.MaxUnityVersionFlag);
+
+			NewParams = IgorUtils.SetBoolParam(NewParams, IgorCoreModule.SkipUnityUpdateFlag, bSkipUnityUpdate);
+			NewParams = IgorUtils.SetStringParam(NewParams, IgorCoreModule.MinUnityVersionFlag, MinUnityVersion);
+			NewParams = IgorUtils.SetStringParam(NewParams, IgorCoreModule.MaxUnityVersionFlag, MaxUnityVersion);
 
 			return NewParams;
 		}
@@ -902,7 +937,7 @@ namespace Igor
 
             if(bTriggerJobByName)
             {
-            	Params = "--" + IgorCore.NamedJobFlag + "=\"" + JobName + "\"" + FilterOutNonTriggerByNameFlags(Params);
+            	Params = "--" + IgorCore.NamedJobFlag + "=\"" + JobName + "\"" + FilterOutNonPythonFlags(Params);
             }
 
 			string JenkinsString = "python " + path + " " + Params;
@@ -913,7 +948,7 @@ namespace Igor
 		{
             if(bTriggerJobByName)
             {
-            	Params = "--" + IgorCore.NamedJobFlag + "=\"" + JobName + "\"" + FilterOutNonTriggerByNameFlags(Params);
+            	Params = "--" + IgorCore.NamedJobFlag + "=\"" + JobName + "\"" + FilterOutNonPythonFlags(Params);
             }
 
 		    return Params;

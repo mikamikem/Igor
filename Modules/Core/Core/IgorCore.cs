@@ -51,7 +51,6 @@ namespace Igor
 		public static Dictionary<StepID, List<JobStep>> JobSteps = new Dictionary<StepID, List<JobStep>>();
 
 		public static string NamedJobFlag = "ExecuteJob";
-		public static string SkipUnityUpdateFlag = "nounityupdate";
 
 		public List<string> GetEnabledModuleNames()
 		{

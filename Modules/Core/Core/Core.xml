@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Core.Core</ModuleName>
-  <ModuleVersion>27</ModuleVersion>
+  <ModuleVersion>28</ModuleVersion>
   <ModuleFiles>
     <File>IgorCore.cs</File>
     <File>IgorConfig.cs</File>
@@ -16,5 +16,6 @@
     <File>../../../IgorRun.py</File>
     <File>jobs_done.wav</File>
     <File>IgorAssert.cs</File>
+    <File>IgorCoreModule.cs</File>
   </ModuleFiles>
 </IgorModuleDescriptor>
