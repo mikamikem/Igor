@@ -32,10 +32,10 @@ namespace Igor
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
-			if(((IgorJobConfig.IsBoolParamSet(CopyToSyncExpEnabledFlag) && IgorJobConfig.GetStringParam(CopyToSyncExplicitFlag) != "") ||
+			if(((IgorJobConfig.IsBoolParamSet(CopyToSyncExpEnabledFlag) && GetParamOrConfigString(CopyToSyncExplicitFlag) != "") ||
 			    (IgorJobConfig.IsBoolParamSet(CopyToSyncEnvEnabledFlag) &&
-			   	 (IgorJobConfig.GetStringParam(CopyToSyncEnvFlag) != "" && IgorUtils.GetEnvVariable(IgorJobConfig.GetStringParam(CopyToSyncEnvFlag)) != ""))) &&
-				IgorJobConfig.GetStringParam(CopyToSyncFilenameFlag) != "")
+			   	 (GetParamOrConfigString(CopyToSyncEnvFlag) != "" && IgorUtils.GetEnvVariable(GetParamOrConfigString(CopyToSyncEnvFlag)) != ""))) &&
+				GetParamOrConfigString(CopyToSyncFilenameFlag) != "")
 			{
 				IgorCore.SetModuleActiveForJob(this);
 				StepHandler.RegisterJobStep(CopyToSyncStep, this, CopyToSync);
