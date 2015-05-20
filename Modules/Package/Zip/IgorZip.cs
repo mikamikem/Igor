@@ -67,13 +67,18 @@ namespace Igor
 
 			Log(LogDetails);
 
-			ZipFilesCrossPlatform(this, BuiltProducts, ZipFilenameFlag);
+			ZipFilesCrossPlatform(this, BuiltProducts, ZipFilename);
 
 			return true;
 		}
 
 		public static void ZipFilesCrossPlatform(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts = true)
 		{
+			if(File.Exists(ZipFilename))
+			{
+				IgorUtils.DeleteFile(ZipFilename);
+			}
+
 #if UNITY_EDITOR_OSX
 			ZipFilesMac(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts);
 #else

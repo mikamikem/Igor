@@ -162,16 +162,6 @@ namespace Igor
 
 			EditorUserBuildSettings.SwitchActiveBuildTarget(JobBuildTarget);
 
-#if DUMMY
-			string XCodeProjDirectory = "iOS";
-
-			List<string> BuiltFiles = new List<string>();
-
-			BuiltFiles.Add(XCodeProjDirectory);
-
-			IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
-#endif
-
 			return true;
 		}
 
