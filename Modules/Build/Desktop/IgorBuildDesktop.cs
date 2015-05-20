@@ -267,6 +267,20 @@ namespace Igor
 		public virtual bool Build()
 		{
 			string BuiltName = GetBuiltNameForTarget(JobBuildTarget);
+			string DataFolderName = BuiltName.Substring(0, BuiltName.LastIndexOf('.')) + "_Data";
+
+			if(File.Exists(BuiltName))
+			{
+				IgorUtils.DeleteFile(BuiltName);
+			}
+
+			if(IsPlatformWindows(JobBuildTarget))
+			{
+				if(Directory.Exists(DataFolderName))
+				{
+					IgorUtils.DeleteDirectory(DataFolderName);
+				}
+			}
 
 #if !UNITY_4_3
             BuiltName = System.IO.Path.Combine(System.IO.Path.GetFullPath("."), BuiltName);	
@@ -277,11 +291,17 @@ namespace Igor
 
 			List<string> BuiltFiles = new List<string>();
 
-			BuiltFiles.Add(BuiltName);
+			if(IgorAssert.EnsureTrue(this, File.Exists(BuiltName), "The built file " + BuiltName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+			{
+				BuiltFiles.Add(BuiltName);
+			}
 
 			if(IsPlatformWindows(JobBuildTarget))
 			{
-				BuiltFiles.Add(BuiltName.Substring(0, BuiltName.LastIndexOf('.')) + "_Data");
+				if(IgorAssert.EnsureTrue(this, Directory.Exists(DataFolderName), "The built data directory for the Windows build " + DataFolderName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+				{
+					BuiltFiles.Add(DataFolderName);
+				}
 			}
 
 			IgorBuildCommon.SetNewBuildProducts(BuiltFiles);

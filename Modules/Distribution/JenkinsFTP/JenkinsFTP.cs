@@ -81,10 +81,7 @@ namespace Igor
 		{
 			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
 
-			if(BuiltProducts.Count != 1)
-			{
-				LogError("This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
-			}
+			IgorAssert.EnsureTrue(this, BuiltProducts.Count == 1, "This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
 
 			string FileToCopy = "";
 
@@ -93,7 +90,7 @@ namespace Igor
 				FileToCopy = BuiltProducts[0];
 			}
 
-			if(File.Exists(FileToCopy))
+			if(IgorAssert.EnsureTrue(this, File.Exists(FileToCopy), "JenkinsFTP upload was looking for the file " + FileToCopy + " to upload, but the file couldn't be found."))
 			{
 				Cleanup();
 

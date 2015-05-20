@@ -180,6 +180,8 @@ namespace Igor
 				{
 					Log("Job is starting!");
 
+					IgorAssert.StartJob();
+
 					CheckForNamedJobFlag();
 				}
 
@@ -229,7 +231,14 @@ namespace Igor
 
 			if(bDone)
 			{
-				Log("Job's done!");
+				if(IgorAssert.HasJobFailed())
+				{
+					LogError("Job failed!");
+				}
+				else
+				{
+					Log("Job's done!");
+				}
 			    
                 float time = IgorUtils.PlayJobsDoneSound();
 			    System.Threading.Thread t = new System.Threading.Thread(() => WaitToExit(time));
@@ -241,7 +250,7 @@ namespace Igor
 
 			if(!bWasStartedInEditor && (bThrewException || bDone))
 			{
-				if(bThrewException)
+				if(bThrewException || IgorAssert.HasJobFailed())
 				{
 					EditorApplication.Exit(-1);
 				}
@@ -356,6 +365,11 @@ namespace Igor
 
 		public static bool ExecuteSteps()
 		{
+			if(IgorAssert.HasJobFailed())
+			{
+				LogError("Job failed so we are bailing out early and not finishing the remaining steps!");
+			}
+
 			List<StepID> SortedSteps = new List<StepID>(JobSteps.Keys);
 
 			SortedSteps.Sort();
@@ -431,7 +445,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.Log(Message);
+				Debug.Log("Igor Log: " + Message);
 			}
 		}
 
@@ -443,7 +457,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.Log(Module + " : " + Message);
+				Debug.Log("Igor Log: " + Module + " : " + Message);
 			}
 		}
 
@@ -455,7 +469,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.LogWarning(Message);
+				Debug.LogWarning("Igor Warning: " + Message);
 			}
 		}
 
@@ -467,7 +481,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.LogWarning(Module + " : " + Message);
+				Debug.LogWarning("Igor Warning: " + Module + " : " + Message);
 			}
 		}
 
@@ -479,7 +493,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.LogError(Message);
+				Debug.LogError("Igor Error: " + Message);
 			}
 		}
 
@@ -491,7 +505,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.LogError(Module + " : " + Message);
+				Debug.LogError("Igor Error: " + Module + " : " + Message);
 			}
 		}
 
@@ -503,7 +517,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.LogError(Message);
+				Debug.LogError("Igor Error: " + Message);
 
 				throw new UnityException(Message);
 			}
@@ -517,7 +531,7 @@ namespace Igor
 			}
 			else
 			{
-				Debug.LogError(Module + " : " + Message);
+				Debug.LogError("Igor Error: " + Module + " : " + Message);
 
 				throw new UnityException(Module + " : " + Message);
 			}

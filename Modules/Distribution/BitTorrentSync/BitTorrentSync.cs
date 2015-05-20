@@ -59,10 +59,7 @@ namespace Igor
 		{
 			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
 
-			if(BuiltProducts.Count != 1)
-			{
-				LogError("This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
-			}
+			IgorAssert.EnsureTrue(this, BuiltProducts.Count == 1, "This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
 
 			string FileToCopy = "";
 
@@ -71,7 +68,7 @@ namespace Igor
 				FileToCopy = BuiltProducts[0];
 			}
 
-			if(File.Exists(FileToCopy))
+			if(IgorAssert.EnsureTrue(this, File.Exists(FileToCopy), "BitTorrent Sync copy was told to copy file " + FileToCopy + ", but the file doesn't exist!"))
 			{
 				string DestinationFile = "";
 
@@ -91,10 +88,8 @@ namespace Igor
 
 					DestinationFile = IgorUtils.GetEnvVariable(EnvVariable);
 
-					if(DestinationFile == "")
+					if(!IgorAssert.EnsureTrue(this, DestinationFile != "", "The BitTorrent Sync root path environment variable " + EnvVariable + " isn't set."))
 					{
-						LogError("The BitTorrent Sync root path environment variable " + EnvVariable + " isn't set.");
-
 						return true;
 					}
 				}
@@ -115,7 +110,7 @@ namespace Igor
 
 				File.Copy(FileToCopy, DestinationFile);
 
-				Log("File copied to requested location for BitTorrent Sync uploading.");
+				Log("File " + FileToCopy + " copied to requested location " + DestinationFile + " for BitTorrent Sync uploading.");
 			}
 
 			return true;

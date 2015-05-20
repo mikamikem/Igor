@@ -7,6 +7,7 @@ import shutil;
 import stat;
 import subprocess;
 import xml.etree.ElementTree as ET
+import time;
 
 
 from contextlib import closing
@@ -295,16 +296,36 @@ def RunUnity(Function):
 
 	print("Starting job with: " + BuildCommand)
 
-	BuildRC = subprocess.call(BuildCommand, shell=True)
+	logHandle = None
 
 	if os.path.exists("Igor.log"):
-		with open("Igor.log", 'r') as fin:
-			print(fin.read())
+		os.remove("Igor.log")
+
+	BuildProc = subprocess.Popen(BuildCommand, shell=True)
+
+	while BuildProc.poll() is None:
+		if logHandle == None and os.path.exists("Igor.log"):
+			logHandle = open("Igor.log", 'r')
+
+		if logHandle != None:
+			where = logHandle.tell()
+			line = logHandle.readline()
+			if not line:
+				time.sleep(10)
+				logHandle.seek(where)
+			else:
+				sys.stdout.write(line)
+
+	sys.stdout.write(logHandle.read())
+
+	logHandle.close()
+
+	BuildRC = BuildProc.returncode
 
 	if BuildRC != 0:
-		print("Return code from Unity was not 0.  Something went wrong so check the logs.")
+		print("Return code from Unity was " + str(BuildRC) + " which is non-zero.  Something went wrong so check the logs.")
 
-		sys.exit(BuildRC)
+		sys.exit(1)
 
 	return
 

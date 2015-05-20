@@ -7,14 +7,14 @@ namespace Igor
 	{
 		public virtual void Log(string Message)
 		{
-			Debug.Log(Message);
+			Debug.Log("Igor Log: " + Message);
 		}
 
 		public virtual void Log(IIgorModule Module, string Message)
 		{
 			if(Module != null)
 			{
-				Debug.Log(Module.GetModuleName() + " : " + Message);
+				Debug.Log("Igor Log: " + Module.GetModuleName() + " : " + Message);
 			}
 			else
 			{
@@ -24,14 +24,14 @@ namespace Igor
 
 		public virtual void LogWarning(string Message)
 		{
-			Debug.LogWarning(Message);
+			Debug.LogWarning("Igor Warning: " + Message);
 		}
 
 		public virtual void LogWarning(IIgorModule Module, string Message)
 		{
 			if(Module != null)
 			{
-				Debug.LogWarning(Module.GetModuleName() + " : " + Message);
+				Debug.LogWarning("Igor Warning: " + Module.GetModuleName() + " : " + Message);
 			}
 			else
 			{
@@ -41,14 +41,14 @@ namespace Igor
 
 		public virtual void LogError(string Message)
 		{
-			Debug.LogError(Message);
+			Debug.LogError("Igor Error: " + Message);
 		}
 
 		public virtual void LogError(IIgorModule Module, string Message)
 		{
 			if(Module != null)
 			{
-				Debug.LogError(Module.GetModuleName() + " : " + Message);
+				Debug.LogError("Igor Error: " + Module.GetModuleName() + " : " + Message);
 			}
 			else
 			{
@@ -58,7 +58,7 @@ namespace Igor
 
 		public virtual void CriticalError(string Message)
 		{
-			Debug.LogError(Message);
+			Debug.LogError("Igor Error: " + Message);
 
 			throw new UnityException(Message);
 		}
@@ -67,7 +67,7 @@ namespace Igor
 		{
 			if(Module != null)
 			{
-				Debug.LogError(Module.GetModuleName() + " : " + Message);
+				Debug.LogError("Igor Error: " + Module.GetModuleName() + " : " + Message);
 
 				throw new UnityException(Message);
 			}

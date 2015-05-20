@@ -59,7 +59,7 @@ namespace Igor
 		{
 			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
 
-			if(BuildProducts.Count > 0)
+			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Attempting to update the XCode project, but one was not generated in the build phase!"))
 			{
 				string ProjectPath = Path.Combine(BuildProducts[0], "Unity-IPhone.xcodeproj");
 

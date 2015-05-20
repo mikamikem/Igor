@@ -8,11 +8,30 @@ namespace Igor
 {
 	public class IgorAssert
 	{
+		protected static bool bJobFailed = false;
+
+		public static void StartJob()
+		{
+			bJobFailed = false;
+		}
+
+		public static void JobFailed()
+		{
+			bJobFailed = true;
+		}
+
+		public static bool HasJobFailed()
+		{
+			return bJobFailed;
+		}
+
 		public static bool EnsureTrue(IIgorModule Module, bool bTrue, string FailMessage)
 		{
 			if(!bTrue)
 			{
 				IgorCore.LogWarning(Module, FailMessage);
+
+				JobFailed();
 
 				Debug.Break();
 			}
@@ -26,6 +45,8 @@ namespace Igor
 			if(!bTrue)
 			{
 				IgorCore.LogError(Module, FailMessage);
+
+				JobFailed();
 
 				Debug.Break();
 			}

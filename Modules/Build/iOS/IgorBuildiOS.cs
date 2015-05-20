@@ -176,6 +176,11 @@ namespace Igor
 		{
 			string XCodeProjDirectory = "iOS";
 
+			if(Directory.Exists(XCodeProjDirectory))
+			{
+				IgorUtils.DeleteDirectory(XCodeProjDirectory);
+			}
+
 			Log("XCode project destination directory is: " + XCodeProjDirectory);
 
 			BuildOptions AllOptions = PlatformSpecificOptions;
@@ -190,7 +195,10 @@ namespace Igor
 
 			List<string> BuiltFiles = new List<string>();
 
-			BuiltFiles.Add(XCodeProjDirectory);
+			if(IgorAssert.EnsureTrue(this, Directory.Exists(XCodeProjDirectory), "The XCode project directory " + XCodeProjDirectory + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+			{
+				BuiltFiles.Add(XCodeProjDirectory);
+			}
 
 			IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
 
@@ -201,7 +209,7 @@ namespace Igor
 		{
 			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
 
-			if(BuildProducts.Count > 0)
+			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Trying to fix up the XCode project, but one was not generated in the build phase!"))
 			{
 				string ProjectPath = Path.Combine(BuildProducts[0], "Unity-IPhone.xcodeproj");
 
@@ -230,7 +238,7 @@ namespace Igor
 		{
 			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
 
-			if(BuildProducts.Count > 0)
+			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Trying to build the XCode project, but one was not generated in the build phase!"))
 			{
 				string BuiltName = GetBuiltNameForTarget(JobBuildTarget);
 				
@@ -242,10 +250,8 @@ namespace Igor
 				int BuildExitCode = IgorUtils.RunProcessCrossPlatform("/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
 					"-project Unity-iPhone.xcodeproj clean build", FullBuildProductPath, ref BuildOutput, ref BuildError);
 
-				if(BuildExitCode != 0)
+				if(!IgorAssert.EnsureTrue(this, BuildExitCode == 0, "XCode build failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError))
 				{
-					LogError("XCode build failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
-
 					return true;
 				}
 
@@ -261,17 +267,24 @@ namespace Igor
 					"\" --sign \"" + SigningIdentity + "\" --embed \"../" + ProvisionPath + "\"",
 					FullBuildProductPath, ref BuildOutput, ref BuildError);
 
-				if(BuildExitCode != 0)
+				if(!IgorAssert.EnsureTrue(this, BuildExitCode == 0, "Packaging the application failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError))
 				{
-					LogError("Packaging the application failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
-
 					return true;
 				}
 
 				List<string> NewBuildProducts = new List<string>();
 
-				NewBuildProducts.Add(Path.Combine(BuildProducts[0], BuiltName + ".ipa"));
-				NewBuildProducts.Add(BuildProducts[0]);
+				string BuiltIPAName = Path.Combine(BuildProducts[0], BuiltName + ".ipa");
+
+				if(IgorAssert.EnsureTrue(this, File.Exists(BuiltIPAName), "The built IPA " + BuiltIPAName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+				{
+					NewBuildProducts.Add(BuiltIPAName);
+				}
+
+				if(IgorAssert.EnsureTrue(this, Directory.Exists(BuildProducts[0]), "The XCode project directory " + BuildProducts[0] + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+				{
+					NewBuildProducts.Add(BuildProducts[0]);
+				}
 
 				IgorBuildCommon.SetNewBuildProducts(NewBuildProducts);
 

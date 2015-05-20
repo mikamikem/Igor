@@ -56,7 +56,7 @@ namespace Igor
 		{
 			string ZipFilename = GetParamOrConfigString(ZipFilenameFlag, "Zip destination filename is not set.");
 
-			string LogDetails = "Creating zip file with name " + ZipFilenameFlag + " from files:";
+			string LogDetails = "Creating zip file with name " + ZipFilename + " from files:";
 
 			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
 

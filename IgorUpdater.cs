@@ -196,7 +196,7 @@ namespace Igor
 
                     if(www.error != null && www.error != "")
                     {
-                    	Debug.LogError("Downloading " + PathToSource + " failed.  Error is \"" + www.error + "\"");
+                    	Debug.LogError("Igor Error: Downloading " + PathToSource + " failed.  Error is \"" + www.error + "\"");
                     }
                     else
                     {
@@ -208,7 +208,7 @@ namespace Igor
 			}
 			catch(Exception e)
 			{
-				Debug.LogError("Failed to download file " + RelativePath + " with error " + e.ToString());
+				Debug.LogError("Igor Error: Failed to download file " + RelativePath + " with error " + e.ToString());
 			}
 
 			return DestFilePath;
@@ -832,7 +832,7 @@ namespace Igor
                         UpdatedContentString += content + "\n";
                     }
 
-                    Debug.Log(UpdatedContentString);
+                    Debug.Log("Igor Log: " + UpdatedContentString);
 
                     ImportAssetOptions options = bSynchronous ? ImportAssetOptions.ForceSynchronousImport : ImportAssetOptions.Default;
 					AssetDatabase.Refresh(options);
@@ -921,7 +921,7 @@ namespace Igor
 			{
 				if(!File.Exists(InstalledFilePath))
 				{
-					Debug.LogError("Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
+					Debug.LogError("Igor Error: Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
 
 					bThrewException = true;
 
@@ -930,7 +930,7 @@ namespace Igor
 			}
 			catch(Exception e)
 			{
-				Debug.LogError("Caught exception while self-updating.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
+				Debug.LogError("Igor Error: Caught exception while self-updating.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
 
 				bThrewException = true;
 
@@ -941,7 +941,7 @@ namespace Igor
 			{
 				if(bThrewException)
 				{
-                    Debug.LogError("Exiting EditorApplication because an exception was thrown.");
+                    Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
 					EditorApplication.Exit(-1);
 				}
 			}
@@ -978,7 +978,7 @@ namespace Igor
 			{
 				if(!File.Exists(LocalModulesList))
 				{
-					Debug.LogError("Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
+					Debug.LogError("Igor Error: Caught exception while self-updating.  Exception is " + (to == null ? "NULL exception!" : to.ToString()));
 
 					bThrewException = true;
 
@@ -987,7 +987,7 @@ namespace Igor
 			}
 			catch(Exception e)
 			{
-				Debug.LogError("Caught exception while updating core.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
+				Debug.LogError("Igor Error: Caught exception while updating core.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
 
 				bThrewException = true;
 				
@@ -998,7 +998,7 @@ namespace Igor
 			{
 				if(bThrewException)
 				{
-                    Debug.LogError("Exiting EditorApplication because an exception was thrown.");
+                    Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
 					EditorApplication.Exit(-1);
 				}
 			}
@@ -1184,7 +1184,7 @@ namespace Igor
 			}
 			catch(Exception e)
 			{
-				Debug.LogError("Caught exception while updating modules.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
+				Debug.LogError("Igor Error: Caught exception while updating modules.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
 
 				bThrewException = true;
 
@@ -1195,7 +1195,7 @@ namespace Igor
 			{
 				if(bThrewException)
 				{
-                    Debug.LogError("Exiting EditorApplication because an exception was thrown.");
+                    Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
 					EditorApplication.Exit(-1);
 				}
 			}
@@ -1231,7 +1231,7 @@ namespace Igor
 		                        }
 		                        else
 		                        {
-		                            Debug.LogError("Something went really wrong.  We don't have Igor's core, but we've already finished updating everything.  Report this with your logs please!");
+		                            Debug.LogError("Igor Error: Something went really wrong.  We don't have Igor's core, but we've already finished updating everything.  Report this with your logs please!");
 		                        }
 		                    }
 		                }
@@ -1239,7 +1239,7 @@ namespace Igor
 		        }
 		        catch(Exception e)
 		        {
-		            Debug.LogError("Caught exception while resuming from updates.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
+		            Debug.LogError("Igor Error: Caught exception while resuming from updates.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
 
 		            bThrewException = true;
 		        }
@@ -1248,7 +1248,7 @@ namespace Igor
 		        {
 		            if(bThrewException)
 		            {
-                        Debug.LogError("Exiting EditorApplication because an exception was thrown.");
+                        Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
 		                EditorApplication.Exit(-1);
 		            }
 		        }
