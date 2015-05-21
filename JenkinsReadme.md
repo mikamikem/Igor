@@ -17,6 +17,8 @@ To set up environment variables for a given build machine:
 4. Click Add to add a new environment variable and fill in the Name and Value as described below.
 5. Make sure you click Save when you're done!
 
+![Environment Variable Example](https://raw.githubusercontent.com/mikamikem/Igor/master/DocsImages/JenkinsEnvVariableExample.png)
+
 Igor uses environment variables set on the build nodes to figure out where the Unity Editor is installed on each machine.  You need to set at least UNITY_LATEST to give Igor one valid install path.  On a Windows node that would look like:
 
 ```
@@ -61,6 +63,8 @@ Once you have the general Jenkins plugins configured for your project, do the fo
 6. Copy that text into the Execute Shell field in your new Jenkins job.
 
 Once you've copied that text into the Jenkins job it should be ready to go!
+
+![Execute Shell Example](https://raw.githubusercontent.com/mikamikem/Igor/master/DocsImages/JenkinsExecuteShellExample.png)
 
 ### Job Log Parsing Jenkins Plugin
 
