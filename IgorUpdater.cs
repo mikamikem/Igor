@@ -122,6 +122,8 @@ namespace Igor
 				RemoteFileName = RemoteFileName.Replace(")", "");
 
 				bIsRemote = true;
+
+				RemoteFileName = RemoteFileName.Replace("../", "");
 			}
 			else
 			{
@@ -757,7 +759,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 18;
+		private const int Version = 19;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
@@ -1119,7 +1121,14 @@ namespace Igor
                                         string TempDownloadPath = "";
                                         if(bIsExternal)
 										{
-											TempDownloadPath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile), RemotePath);
+											if(LocalFile.Contains("../"))
+											{
+												TempDownloadPath = IgorUtils.DownloadFileForUpdate(FullLocalPath, RemotePath);
+											}
+											else
+											{
+												TempDownloadPath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile), RemotePath);
+											}
 										}
 										else
 										{
