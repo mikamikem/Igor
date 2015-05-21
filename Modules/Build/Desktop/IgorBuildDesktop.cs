@@ -291,16 +291,23 @@ namespace Igor
 
 			List<string> BuiltFiles = new List<string>();
 
-			if(IgorAssert.EnsureTrue(this, File.Exists(BuiltName), "The built file " + BuiltName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
-			{
-				BuiltFiles.Add(BuiltName);
-			}
-
 			if(IsPlatformWindows(JobBuildTarget))
 			{
+				if(IgorAssert.EnsureTrue(this, File.Exists(BuiltName), "The built file " + BuiltName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+				{
+					BuiltFiles.Add(BuiltName);
+				}
+
 				if(IgorAssert.EnsureTrue(this, Directory.Exists(DataFolderName), "The built data directory for the Windows build " + DataFolderName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
 				{
 					BuiltFiles.Add(DataFolderName);
+				}
+			}
+			else
+			{
+				if(IgorAssert.EnsureTrue(this, Directory.Exists(BuiltName), "The built app directory for the Mac build " + BuiltName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+				{
+					BuiltFiles.Add(BuiltName);
 				}
 			}
 
