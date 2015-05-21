@@ -360,7 +360,7 @@ namespace Igor
 		public virtual string GetParamOrConfigString(string StringKey, string EmptyStringWarningMessage = "", string DefaultValue = "", bool bCheckForEmpty = true)
 		{
 #if UNITY_EDITOR
-			if(IgorConfigWindow.bIsDrawingInspector)
+			if(IgorConfigWindow.bIsDrawingInspector && EmptyStringWarningMessage != "")
 			{
 				LogError("Don't call this from within a DrawJobInspectorAndGetEnabledParams implementation!  This isn't accessing the right job config value since it hasn't been saved to disk yet.");
 			}
