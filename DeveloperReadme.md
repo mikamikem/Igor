@@ -75,7 +75,7 @@ When a module specifies dependencies they are automatically retrieved and kept u
 
 ### Module C# Structure
 
-Each module contains one class that derives from [IIgorModule](Modules/Core/Core/IIgorModule.cs), although it is highly recommended to derive from [IgoreModuleBase](Modules/Core/Core/IgorModuleBase.cs) since there are numerous helper functions in [IgoreModuleBase](Modules/Core/Core/IgorModuleBase.cs) that are useful for every module.  Regardless of what you derive from, in the Module's primary class, you need to:
+Each module contains one class that derives from [IIgorModule](Modules/Core/Core/IIgorModule.cs), although it is highly recommended to derive from [IgorModuleBase](Modules/Core/Core/IgorModuleBase.cs) since there are numerous helper functions in [IgorModuleBase](Modules/Core/Core/IgorModuleBase.cs) that are useful for every module.  Regardless of what you derive from, in the Module's primary class, you need to:
 
 1. Swap the name returned by GetModuleName()
 2. Register the module with Core in an override of RegisterModule():
@@ -103,7 +103,7 @@ Each module contains one class that derives from [IIgorModule](Modules/Core/Core
 
 #### Parameters And Config Values
 
-If you inherited from [IgoreModuleBase](Modules/Core/Core/IgorModuleBase.cs), you have several helper functions available to you to access and get the user's input for parameters and config values.
+If you inherited from [IgorModuleBase](Modules/Core/Core/IgorModuleBase.cs), you have several helper functions available to you to access and get the user's input for parameters and config values.
 
 ##### Getting User Input
 
@@ -164,7 +164,7 @@ The StepID contains a name for display purposes as well as a priority.  The lowe
 
 #### Logging
 
-If you inherited from [IgoreModuleBase](Modules/Core/Core/IgorModuleBase.cs), you have several helper functions available to you for logging.  Use these functions unless you have a really good reason not to so that all the modules follow a consistent logging system.  The logging functions are:
+If you inherited from [IgorModuleBase](Modules/Core/Core/IgorModuleBase.cs), you have several helper functions available to you for logging.  Use these functions unless you have a really good reason not to so that all the modules follow a consistent logging system.  The logging functions are:
 
 ```
 void Log(string Message);
@@ -238,7 +238,7 @@ The idea with build products is to keep track of the most recent build product s
 #### Best Practices
 
 - Keep all of your flag names, config names, and StepIDs in static variables on the class with the highest reasonable reason to have them so that they can be shared across as many modules as possible.
-- Always use the [IgoreModuleBase](Modules/Core/Core/IgorModuleBase.cs) logging functions so that the logs stay consistent.
+- Always use the [IgorModuleBase](Modules/Core/Core/IgorModuleBase.cs) logging functions so that the logs stay consistent.
 - Use the asserts as often as possible so that it's obvious when something goes wrong and provide a good failure message...trust me, you'll be glad you did.
 
 ## Dev environment setup
@@ -276,7 +276,7 @@ To create a module, I highly suggest you look through some of the other modules 
 1. Duplicate an existing module and place it under the appropriate folder structure (for Build.iOS, place the files under Modules/Build/iOS).
 	- If you are using the recommended development environment setup, you put the files and folders in the working copy folder for a shared module or your primary project for a local module.
 2. In the XML file, make sure the module name, files, and dependencies match what you need for your module and make sure that you reset your version number to 1.
-3. Include at least one source file that derives from [IIgorModule](Modules/Core/Core/IIgoreModule.cs).
+3. Include at least one source file that derives from [IIgorModule](Modules/Core/Core/IIgorModule.cs).
 4. Add your module to the appropriate module list XML file.
 	1. If you are creating a shared module to submit to GitHub, add your module to [Assets/Editor/Igor/IgorModulesList.xml](IgorModulesList.xml).  If you are using the recommended development environment setup, you want to add your module to the working copy's IgorModulesList.
 	2. If you are creating a local module for your project only, add your module to Assets/Editor/Igor/IgorLocalModulesList.xml in your primary project.
