@@ -21,5 +21,13 @@
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DeveloperReadme.md</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../JenkinsReadme.md</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../License.txt</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/AvailableModules.png</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/ConfigurationWindow.png</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/EnabledJobSteps.png</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/GlobalOptions.png</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/JenkinsEnvVariableExample.png</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/JenkinsExecuteShellExample.png</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/JobParameters.png</File>
+    <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/ParamConfigUI.png</File>
   </ModuleFiles>
 </IgorModuleDescriptor>
