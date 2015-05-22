@@ -247,27 +247,25 @@ namespace Igor
 
 				string FullBuildProductPath = Path.Combine(Path.GetFullPath("."), BuildProducts[0]);
 
-				int BuildExitCode = IgorUtils.RunProcessCrossPlatform("/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
-					"-project Unity-iPhone.xcodeproj clean build", FullBuildProductPath, ref BuildOutput, ref BuildError);
+				int BuildExitCode = IgorUtils.RunProcessCrossPlatform(this, "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
+					"-project Unity-iPhone.xcodeproj clean build", FullBuildProductPath, "XCode build");
 
-				if(!IgorAssert.EnsureTrue(this, BuildExitCode == 0, "XCode build failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError))
+				if(BuildExitCode != 0)
 				{
 					return true;
 				}
-
-				Log("XCode build succeeded!\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
 
 				BuildOutput = "";
 				BuildError = "";
 
 				string LastBundleIdentifierPart = PlayerSettings.bundleIdentifier.Substring(PlayerSettings.bundleIdentifier.LastIndexOf('.') + 1);
 
-				BuildExitCode = IgorUtils.RunProcessCrossPlatform("/usr/bin/xcrun", "",
+				BuildExitCode = IgorUtils.RunProcessCrossPlatform(this, "/usr/bin/xcrun", "",
 					"-sdk iphoneos PackageApplication -v \"build/" + LastBundleIdentifierPart + ".app\" -o \"" + Path.Combine(FullBuildProductPath, BuiltName + ".ipa") +
 					"\" --sign \"" + SigningIdentity + "\" --embed \"../" + ProvisionPath + "\"",
-					FullBuildProductPath, ref BuildOutput, ref BuildError);
+					FullBuildProductPath, "Packaging the application");
 
-				if(!IgorAssert.EnsureTrue(this, BuildExitCode == 0, "Packaging the application failed.\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError))
+				if(BuildExitCode != 0)
 				{
 					return true;
 				}

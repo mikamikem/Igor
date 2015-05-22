@@ -17,5 +17,8 @@
     <Module ModuleName="3rdParty.StoreKitiOS" ModuleDescriptorRelativePath="3rdParty/StoreKitiOS/IgorStoreKitiOS.xml" />
     <Module ModuleName="Package.iOSOTA" ModuleDescriptorRelativePath="Package/iOSOTA/iOSOTA.xml" />
     <Module ModuleName="Distribution.IgorFTP" ModuleDescriptorRelativePath="Distribution/IgorFTP/IgorFTP.xml" />
+    <Module ModuleName="Build.Android" ModuleDescriptorRelativePath="Build/Android/Android.xml" />
+    <Module ModuleName="3rdParty.FacebookAndroidHats" ModuleDescriptorRelativePath="3rdParty/FacebookAndroidHats/FacebookAndroidHats.xml" />
+    <Module ModuleName="3rdParty.GooglePlayGameServicesAndroid" ModuleDescriptorRelativePath="3rdParty/GooglePlayGameServicesAndroid/GooglePlayGameServicesAndroid.xml" />
   </Modules>
 </IgorModuleList>

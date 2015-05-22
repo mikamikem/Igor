@@ -98,11 +98,7 @@ namespace Igor
 			string ZipOutput = "";
 			string ZipError = "";
 
-			if(IgorUtils.RunProcessCrossPlatform("zip", "", ZipParams, Path.GetFullPath("."), ref ZipOutput, ref ZipError, true) != 0)
-			{
-				IgorCore.LogError(ModuleInst, "There was a problem zipping the built files.\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
-			}
-			else
+			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "zip", "", ZipParams, Path.GetFullPath("."), "Zipping the files", true) == 0)
 			{
 				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
 
@@ -152,11 +148,7 @@ namespace Igor
 			string ZipOutput = "";
 			string ZipError = "";
 
-			if(IgorUtils.RunProcessCrossPlatform("", ZipCommand, ZipParams, Path.GetFullPath("."), ref ZipOutput, ref ZipError) != 0)
-			{
-				IgorCore.LogError(ModuleInst, "There was a problem zipping the built files.\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
-			}
-			else
+			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "", ZipCommand, ZipParams, Path.GetFullPath("."), "Zipping the files") == 0)
 			{
 				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
 
@@ -192,14 +184,7 @@ namespace Igor
 			string ZipOutput = "";
 			string ZipError = "";
 
-			if(IgorUtils.RunProcessCrossPlatform("unzip", "", ZipParams, Path.GetFullPath("."), ref ZipOutput, ref ZipError, true) != 0)
-			{
-				IgorCore.LogError(ModuleInst, "There was a problem unzipping the archive " + ZipFilename + " to folder " + DirectoryToUnzipTo + ".\nOutput:\n" + ZipOutput + "\nError:\n" + ZipError);
-			}
-			else
-			{
-				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " was successfully extracted to " + DirectoryToUnzipTo + "!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
-			}
+			IgorUtils.RunProcessCrossPlatform(ModuleInst, "unzip", "", ZipParams, Path.GetFullPath("."), "Unzipping the archive " + ZipFilename + " to folder " + DirectoryToUnzipTo, true);
 		}
 
 		public static void UnzipFileWindows(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo)

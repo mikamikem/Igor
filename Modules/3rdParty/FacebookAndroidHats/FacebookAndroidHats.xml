@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <ModuleName>Package.Zip</ModuleName>
-  <ModuleVersion>9</ModuleVersion>
+  <ModuleName>3rdParty.FacebookAndroidHats</ModuleName>
+  <ModuleVersion>1</ModuleVersion>
   <ModuleFiles>
-    <File>IgorZip.cs</File>
+    <File>IgorFacebookAndroidHats.cs</File>
   </ModuleFiles>
   <ModuleDependencies>
-    <Module>Build.Common</Module>
-    <Module>Package.Common</Module>
+    <Module>Build.Android</Module>
   </ModuleDependencies>
 </IgorModuleDescriptor>

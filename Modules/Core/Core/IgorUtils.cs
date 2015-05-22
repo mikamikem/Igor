@@ -59,6 +59,23 @@ namespace Igor
 			return CurrentPath;
 		}
 
+		public static int RunProcessCrossPlatform(IIgorModule ModuleInst, string OSXCommand, string WindowsCommand, string Parameters, string Directory, string CommandLogDescription, bool bUseShell = false)
+		{
+			string ProcessOutput = "";
+			string ProcessError = "";
+
+			int RunProcessExitCode = RunProcessCrossPlatform(OSXCommand, WindowsCommand, Parameters, Directory, ref ProcessOutput, ref ProcessError, bUseShell);
+
+			if(!IgorAssert.EnsureTrue(ModuleInst, RunProcessExitCode == 0, CommandLogDescription + " failed!\nOutput:\n" + ProcessOutput + "\n\n\nError:\n" + ProcessError))
+			{
+				return RunProcessExitCode;
+			}
+
+			IgorCore.Log(ModuleInst, CommandLogDescription + " succeeded!\nOutput:\n" + ProcessOutput + "\n\n\nError:\n" + ProcessError);
+
+			return RunProcessExitCode;
+		}
+
 		public static int RunProcessCrossPlatform(string OSXCommand, string WindowsCommand, string Parameters, string Directory, ref string Output, ref string Error, bool bUseShell = false)
 		{
 			string Command = "";
@@ -190,6 +207,37 @@ namespace Igor
 
 				File.WriteAllText(FilePath, FileContents);
 	    	}
+	    }
+
+	    public static List<string> GetListOfFilesAndDirectoriesInDirectory(string RootDir, bool bFiles = true, bool bDirectories = true, bool bRecursive = false, bool bFilterOutUnitySpecialFiles = true)
+	    {
+	    	List<string> FilesAndDirs = new List<string>();
+
+	    	string[] Results = { };
+
+	    	if(bFiles)
+	    	{
+				FilesAndDirs.AddRange(Directory.GetFiles(RootDir, "*", bRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
+	    	}
+	    	
+	    	if(bDirectories)
+	    	{
+	    		FilesAndDirs.AddRange(Directory.GetDirectories(RootDir, "*", bRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
+	    	}
+
+	    	Results = FilesAndDirs.ToArray();
+
+	    	FilesAndDirs.Clear();
+
+			foreach(string CurrentFile in Results)
+			{
+				if(!bFilterOutUnitySpecialFiles || (!CurrentFile.EndsWith(".meta") && !CurrentFile.EndsWith("~") && !CurrentFile.EndsWith(".class")))
+				{
+					FilesAndDirs.Add(CurrentFile);
+				}
+			}
+
+	    	return FilesAndDirs;
 	    }
 	}
 }
