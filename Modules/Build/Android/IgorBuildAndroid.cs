@@ -354,11 +354,11 @@ namespace Igor
 
 			string SignedAPK = Path.Combine(RepackagingDirectory, "Repackaged.signed.apk");
 
-			IgorCore.LogError(ModuleInst, "jarsigner command running from " + Path.GetFullPath(".") + " is\n" + "-verbose -keystore " + KeystoreFilename + " -storepass " + KeystorePassword + " -keypass " +
-				KeyAliasPassword + " -signedjar " + SignedAPK + " " + UnsignedAPK + " " + KeyAlias);
+			IgorCore.LogError(ModuleInst, "jarsigner command running from " + Path.GetFullPath(".") + " is\n" + "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword +
+				" -keypass " + KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias);
 
-			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "jarsigner", "jarsigner", "-verbose -keystore " + KeystoreFilename + " -storepass " + KeystorePassword + " -keypass " +
-				KeyAliasPassword + " -signedjar " + SignedAPK + " " + UnsignedAPK + " " + KeyAlias, Path.GetFullPath("."), "Running jarsigner", true) != 0)
+			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "jarsigner", "jarsigner", "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword + " -keypass " +
+				KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias, Path.GetFullPath("."), "Running jarsigner", true) != 0)
 			{
 				return false;
 			}
@@ -366,7 +366,7 @@ namespace Igor
 			string ZipAlignPath = GetZipAlignPath(ModuleInst);
 			string AlignedAPK = Path.Combine(RepackagingDirectory, "Repackaged.aligned.apk");
 
-			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, ZipAlignPath, ZipAlignPath, "-v 4 " + SignedAPK + " " + AlignedAPK, Path.GetFullPath("."), "Running zipalign") != 0)
+			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, ZipAlignPath, ZipAlignPath, "-v 4 \"" + SignedAPK + "\" \"" + AlignedAPK + "\"", Path.GetFullPath("."), "Running zipalign") != 0)
 			{
 				return false;
 			}

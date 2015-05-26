@@ -88,7 +88,7 @@ namespace Igor
 
 		public static void ZipFilesMac(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts, string RootDir)
 		{
-			string ZipParams = "-r " + ZipFilename + " ";
+			string ZipParams = "-r \"" + ZipFilename + "\" ";
 
 			foreach(string CurrentFile in FilesToZip)
 			{
@@ -124,13 +124,13 @@ namespace Igor
 			if(File.Exists(PathX86))
 			{
 				ZipCommand = PathX86;
-				ZipParams += "a -tzip " + ZipFilename + " ";
+				ZipParams += "a -tzip \"" + ZipFilename + "\" ";
 			}
 			else
 			if(File.Exists(Path64))
 			{
 				ZipCommand = Path64;
-				ZipParams += "a -tzip " + ZipFilename + " ";
+				ZipParams += "a -tzip \"" + ZipFilename + "\" ";
 			}
 			else
 			{
