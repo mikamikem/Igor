@@ -719,6 +719,7 @@ namespace Igor
 			bDontUpdate = EditorGUILayout.Toggle(new GUIContent("Don't auto-update", "No updating Igor files from local or remote sources"), bDontUpdate);
 			bAlwaysUpdate = EditorGUILayout.Toggle(new GUIContent("Always update", "Update even if the versions match"), bAlwaysUpdate);
 			bLocalDownload = EditorGUILayout.Toggle(new GUIContent("Local update", "Update from local directory instead of remotely from GitHub"), bLocalDownload);
+			bDownloadRemoteWhenLocal = EditorGUILayout.Toggle(new GUIContent("Download remote repos in local", "For modules that have externally hosted content.  Enable this if you want Igor to pull the latest version from the remote host even during a local update."), bDownloadRemoteWhenLocal);
 			LocalPrefix = EditorGUILayout.TextField(new GUIContent("Local Update Directory", "This is the local directory (relative to the project root) to pull from when Local Update is enabled."), LocalPrefix);
 		}
 
@@ -740,6 +741,12 @@ namespace Igor
 			set { EditorPrefs.SetBool(kPrefix + "bLocalDownload", value); }
 		}
 
+		public static bool bDownloadRemoteWhenLocal
+		{
+			get { return EditorPrefs.GetBool(kPrefix + "bDownloadRemoteWhenLocal", false); }
+			set { EditorPrefs.SetBool(kPrefix + "bDownloadRemoteWhenLocal", value); }
+		}
+
 		public static string LocalPrefix
 		{
 			get { return EditorPrefs.GetString(kPrefix + "LocalPrefix", ""); }
@@ -759,7 +766,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 20;
+		private const int Version = 21;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
@@ -1062,18 +1069,6 @@ namespace Igor
 
 									if(CurrentModuleDescriptorInst != null)
 									{
-										foreach(string ModuleFile in CurrentModuleDescriptorInst.ModuleFiles)
-										{
-                                            string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
-
-											string FullLocalPath = Path.Combine(LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile));
-
-											if(File.Exists(FullLocalPath))
-											{
-												IgorUtils.DeleteFile(FullLocalPath);
-											}
-										}
-
 										IgorUtils.DeleteFile(CurrentModuleDescriptor);
 									}
 
@@ -1121,13 +1116,16 @@ namespace Igor
                                         string TempDownloadPath = "";
                                         if(bIsExternal)
 										{
-											if(LocalFile.Contains("../"))
+											if(!bLocalDownload || bDownloadRemoteWhenLocal)
 											{
-												TempDownloadPath = IgorUtils.DownloadFileForUpdate(FullLocalPath, RemotePath);
-											}
-											else
-											{
-												TempDownloadPath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile), RemotePath);
+												if(LocalFile.Contains("../"))
+												{
+													TempDownloadPath = IgorUtils.DownloadFileForUpdate(FullLocalPath, RemotePath);
+												}
+												else
+												{
+													TempDownloadPath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile), RemotePath);
+												}
 											}
 										}
 										else
@@ -1135,19 +1133,22 @@ namespace Igor
 											TempDownloadPath = IgorUtils.DownloadFileForUpdate(RemotePath);
 										}
 
-										if(File.Exists(FullLocalPath))
+										if(TempDownloadPath != "")
 										{
-											IgorUtils.DeleteFile(FullLocalPath);
-										}
+											if(File.Exists(FullLocalPath))
+											{
+												IgorUtils.DeleteFile(FullLocalPath);
+											}
 
-										if(!Directory.Exists(Path.GetDirectoryName(FullLocalPath)))
-										{
-											Directory.CreateDirectory(Path.GetDirectoryName(FullLocalPath));
-										}
+											if(!Directory.Exists(Path.GetDirectoryName(FullLocalPath)))
+											{
+												Directory.CreateDirectory(Path.GetDirectoryName(FullLocalPath));
+											}
 
-										if(File.Exists(TempDownloadPath))
-										{
-											File.Copy(TempDownloadPath, FullLocalPath);
+											if(File.Exists(TempDownloadPath))
+											{
+												File.Copy(TempDownloadPath, FullLocalPath);
+											}
 										}
 									}
 								}
