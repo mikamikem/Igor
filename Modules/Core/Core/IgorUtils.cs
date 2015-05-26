@@ -197,6 +197,11 @@ namespace Igor
 	    		FullFilePath = Path.Combine(Path.GetFullPath("."), FilePath);
 	    	}
 
+	    	if(File.Exists(FullFilePath))
+	    	{
+			    File.SetAttributes(FullFilePath, System.IO.FileAttributes.Normal);
+			}
+
 	    	if(IgorAssert.EnsureTrue(ModuleInst, File.Exists(FullFilePath), "Replace string in file failed because " + FullFilePath + " doesn't exist."))
 	    	{
 				string FileContents = File.ReadAllText(FilePath);
@@ -209,7 +214,7 @@ namespace Igor
 	    	}
 	    }
 
-	    public static List<string> GetListOfFilesAndDirectoriesInDirectory(string RootDir, bool bFiles = true, bool bDirectories = true, bool bRecursive = false, bool bFilterOutUnitySpecialFiles = true)
+	    public static List<string> GetListOfFilesAndDirectoriesInDirectory(string RootDir, bool bFiles = true, bool bDirectories = true, bool bRecursive = false, bool bFilterOutUnitySpecialFiles = true, bool bAbsolutePath = false)
 	    {
 	    	List<string> FilesAndDirs = new List<string>();
 
@@ -233,7 +238,14 @@ namespace Igor
 			{
 				if(!bFilterOutUnitySpecialFiles || (!CurrentFile.EndsWith(".meta") && !CurrentFile.EndsWith("~") && !CurrentFile.EndsWith(".class")))
 				{
-					FilesAndDirs.Add(CurrentFile);
+					string RequestedPath = CurrentFile;
+
+					if(!bAbsolutePath)
+					{
+						RequestedPath = RequestedPath.Replace(Path.GetFullPath(RootDir) + Path.DirectorySeparatorChar, "");
+					}
+
+					FilesAndDirs.Add(RequestedPath);
 				}
 			}
 

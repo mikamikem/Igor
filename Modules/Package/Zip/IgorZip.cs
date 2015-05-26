@@ -72,7 +72,7 @@ namespace Igor
 			return true;
 		}
 
-		public static void ZipFilesCrossPlatform(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts = true)
+		public static void ZipFilesCrossPlatform(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts = true, string RootDir = ".")
 		{
 			if(File.Exists(ZipFilename))
 			{
@@ -80,13 +80,13 @@ namespace Igor
 			}
 
 #if UNITY_EDITOR_OSX
-			ZipFilesMac(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts);
+			ZipFilesMac(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts, RootDir);
 #else
-			ZipFilesWindows(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts);
+			ZipFilesWindows(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts, RootDir);
 #endif // UNITY_EDITOR_OSX
 		}
 
-		public static void ZipFilesMac(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts)
+		public static void ZipFilesMac(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts, string RootDir)
 		{
 			string ZipParams = "-r " + ZipFilename + " ";
 
@@ -98,7 +98,7 @@ namespace Igor
 			string ZipOutput = "";
 			string ZipError = "";
 
-			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "zip", "", ZipParams, Path.GetFullPath("."), "Zipping the files", true) == 0)
+			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "zip", "", ZipParams, Path.GetFullPath(RootDir), "Zipping the files", true) == 0)
 			{
 				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
 
@@ -113,7 +113,7 @@ namespace Igor
 			}
 		}
 
-		public static void ZipFilesWindows(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts)
+		public static void ZipFilesWindows(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts, string RootDir)
 		{
 			string ZipCommand = "";
 			string ZipParams = "";
@@ -148,7 +148,7 @@ namespace Igor
 			string ZipOutput = "";
 			string ZipError = "";
 
-			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "", ZipCommand, ZipParams, Path.GetFullPath("."), "Zipping the files") == 0)
+			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "", ZipCommand, ZipParams, Path.GetFullPath(RootDir), "Zipping the files") == 0)
 			{
 				IgorCore.Log(ModuleInst, "Zip file " + ZipFilename + " created successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
 

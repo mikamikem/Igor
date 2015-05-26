@@ -187,20 +187,20 @@ namespace Igor
 					return true;
 				}
 
-				string AndroidProjDirectory = System.IO.Path.Combine(System.IO.Path.GetFullPath("."), "Android");
+				string AndroidProjDirectory = Path.Combine(Path.GetFullPath("."), "Android");
 				
 				if(AndroidProjDirectory.Contains(" "))
 				{
-					AndroidProjDirectory = System.IO.Path.Combine(System.IO.Path.GetTempPath() + PlayerSettings.productName, "Android");
+					AndroidProjDirectory = Path.Combine(Path.GetTempPath() + PlayerSettings.productName, "Android");
 				}
 				
-				if(System.IO.Directory.Exists(AndroidProjDirectory))
+				if(Directory.Exists(AndroidProjDirectory))
 				{
 					IgorUtils.DeleteDirectory(AndroidProjDirectory);
 				}
 				
 				// We need to force create the directory before we use it or it will prompt us for a path to build to
-				System.IO.Directory.CreateDirectory(AndroidProjDirectory);
+				Directory.CreateDirectory(AndroidProjDirectory);
 				
 				Log("Android project destination directory is: " + AndroidProjDirectory);
 
@@ -219,10 +219,10 @@ namespace Igor
 				// TODO: Figure out how to set the extra build options...
 
 				// Then we do some reflection witchcraft and we get an exported eclipse project!
-				System.Reflection.Assembly EditorAssembly = typeof(UnityEditor.EditorWindow).Assembly;
-				System.Type BuildPlayerWindowType = EditorAssembly.GetType("UnityEditor.BuildPlayerWindow");
+				Assembly EditorAssembly = typeof(UnityEditor.EditorWindow).Assembly;
+				Type BuildPlayerWindowType = EditorAssembly.GetType("UnityEditor.BuildPlayerWindow");
 				
-				System.Reflection.MethodInfo ShowBuildPlayerWindowCall = BuildPlayerWindowType.GetMethod("ShowBuildPlayerWindow", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+				MethodInfo ShowBuildPlayerWindowCall = BuildPlayerWindowType.GetMethod("ShowBuildPlayerWindow", BindingFlags.Static | BindingFlags.NonPublic);
 				
 				if(ShowBuildPlayerWindowCall != null)
 				{
@@ -230,7 +230,7 @@ namespace Igor
 					ShowBuildPlayerWindowCall.Invoke(null, Arguments);
 				}
 				
-				System.Reflection.MethodInfo BuildPlayerAndSelectCall = BuildPlayerWindowType.GetMethod("BuildPlayerAndSelect", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+				MethodInfo BuildPlayerAndSelectCall = BuildPlayerWindowType.GetMethod("BuildPlayerAndSelect", BindingFlags.Static | BindingFlags.NonPublic);
 				
 				if(BuildPlayerAndSelectCall != null)
 				{
@@ -350,7 +350,7 @@ namespace Igor
 
 			List<string> APKContents = IgorUtils.GetListOfFilesAndDirectoriesInDirectory(RepackagingDirectory);
 
-			IgorZip.ZipFilesCrossPlatform(ModuleInst, APKContents, UnsignedAPK, false);
+			IgorZip.ZipFilesCrossPlatform(ModuleInst, APKContents, UnsignedAPK, false, RepackagingDirectory);
 
 			string SignedAPK = Path.Combine(RepackagingDirectory, "Repackaged.signed.apk");
 
@@ -428,7 +428,7 @@ namespace Igor
 
 				if(IgorAssert.EnsureTrue(ModuleInst, Directory.Exists(BuildToolsPath), "The Android build tools path " + BuildToolsPath + " doesn't exist!"))
 				{
-					List<string> BuildToolVersions = IgorUtils.GetListOfFilesAndDirectoriesInDirectory(BuildToolsPath, false, true);
+					List<string> BuildToolVersions = IgorUtils.GetListOfFilesAndDirectoriesInDirectory(BuildToolsPath, false, true, false, true, true);
 
 					foreach(string CurrentVersion in BuildToolVersions)
 					{
@@ -459,6 +459,44 @@ namespace Igor
 		public static bool RunAndroidCommandLineUtility(IIgorModule ModuleInst, string ProjectDirectory, string Command)
 		{
 			return IgorUtils.RunProcessCrossPlatform(ModuleInst, GetAndroidSDKPath(ModuleInst) + "/tools/android", GetAndroidSDKPath(ModuleInst) + "/tools/android.bat", Command, ProjectDirectory, "Running Android project helper utility") == 0;
+		}
+
+		public static void SwapStringValueInStringsXML(string Filename, string StringKey, string NewStringValue, string OldStringValue = null)
+		{
+			if(File.Exists(Filename))
+			{
+				StreamReader OriginalFileReader = new StreamReader(Filename);
+				string OriginalFile = OriginalFileReader.ReadToEnd();
+				
+				OriginalFileReader.Close();
+				
+				string StartString = "<string name=\"" + StringKey + "\">";
+				string OptionalOldStringValue = "";
+				
+				if(OldStringValue != null)
+				{
+					OptionalOldStringValue = OldStringValue + "</string>";
+				}
+				else
+				{
+					int StartPosition = OriginalFile.IndexOf(StartString) + StartString.Length;
+					OptionalOldStringValue = OriginalFile.Substring(StartPosition, OriginalFile.IndexOf("</string>", StartPosition) - StartPosition);
+				}
+				
+				string ToReplace = StartString + OptionalOldStringValue;
+				
+				if(OriginalFile.Contains(ToReplace))
+				{
+					string NewValue = StartString + NewStringValue + "</string>";
+					string NewFile = OriginalFile.Replace(ToReplace, NewValue);
+
+					StreamWriter NewFileWriter = new StreamWriter(Filename);
+				
+					NewFileWriter.Write(NewFile);
+					
+					NewFileWriter.Close();
+				}
+			}
 		}
 	}
 }
