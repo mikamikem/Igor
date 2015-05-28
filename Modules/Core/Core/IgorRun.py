@@ -31,6 +31,8 @@ LocalPythonFile = "TestDeploy/Modules/Core/Core/IgorRun.py"
 JobConfigFilename = "IgorJob.xml"
 MinVersionString = ""
 MaxVersionString = ""
+BatchModeString = ""
+NoGraphicsString = ""
 UnityDirectory = ""
 
 UnityAutomatorFilename = "IgorRun.py"
@@ -292,7 +294,10 @@ def CreateJobConfigFile(PassThroughParams):
 	return
 
 def RunUnity(Function):
-	BuildCommand = GetUnityPath() + " -projectPath \"" + os.getcwd() + "\" -buildmachine -executeMethod " + Function + " -logfile Igor.log"
+	global BatchModeString, NoGraphicsString
+	AdditionalUnityArgs = BatchModeString + NoGraphicsString
+
+	BuildCommand = GetUnityPath() + " -projectPath \"" + os.getcwd() + "\" -buildmachine -executeMethod " + Function + " -logfile Igor.log" + AdditionalUnityArgs
 
 	print("Starting job with: " + BuildCommand)
 
@@ -339,6 +344,8 @@ parser.add_argument('--appendcommitinfo', action='store_true')
 parser.add_argument('--bootstrap')
 parser.add_argument('--minunityversion')
 parser.add_argument('--maxunityversion')
+parser.add_argument('--batchmode', action='store_true')
+parser.add_argument('--nographics', action='store_true')
 
 testargs, passthrough = parser.parse_known_args()
 
@@ -347,6 +354,12 @@ if testargs.minunityversion != None and testargs.minunityversion != "":
 
 if testargs.maxunityversion != None and testargs.maxunityversion != "":
 	MaxVersionString = testargs.maxunityversion
+
+if testargs.batchmode:
+	BatchModeString = " -batchmode"
+
+if testargs.nographics:
+	NoGraphicsString = " -nographics"
 
 #if testargs.noselfupdate == False and testargs.finalbootstrap == None and testargs.bootstrap == None:
 #	SelfUpdate()

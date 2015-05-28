@@ -322,18 +322,21 @@ namespace Igor
 					IgorCore.RegisterAllModules();
 				}
 
-				if(IgorJobConfig.GetIsRunning())
-				{
-					DrawJobRunning();
-				}
-				else if(IgorJobConfig.IsBoolParamSet("wascompiling"))
-				{
-					DrawWaitingForCompile();
-				}
-				else
-				{
-					DrawConfiguration();
-				}
+                if(!UnityEditorInternal.InternalEditorUtility.inBatchMode)
+                {
+				    if(IgorJobConfig.GetIsRunning())
+				    {
+					    DrawJobRunning();
+				    }
+				    else if(IgorJobConfig.IsBoolParamSet("wascompiling"))
+				    {
+					    DrawWaitingForCompile();
+				    }
+				    else
+				    {
+					    DrawConfiguration();
+				    }
+                }
 			}
 			catch(System.Exception e)
 			{
