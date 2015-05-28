@@ -187,6 +187,11 @@ namespace Igor
 				BuiltName = Path.GetFileName(EditorUserBuildSettings.GetBuildLocation(NewTarget));
 			}
 
+            if(BuiltName == "")
+            {
+                BuiltName = IgorJobConfig.GetStringParam(IgorBuildCommon.BuiltNameFlag);
+            }
+
 			if(BuiltName == "")
 			{
 				if(bOSX)
