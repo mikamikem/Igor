@@ -174,7 +174,7 @@ def GetCommitInfo():
 	commit_info = ""
 	if(commit_hash != "None"):
 		commit_info = "HASH_" + commit_hash;
-	if(commit_tag != "None")
+	if(commit_tag != "None"):
 		commit_info = commit_info + "_TAG_" + ;
 	
 	return "--appendcommitinfo=\"" + commit_info + "\"";
