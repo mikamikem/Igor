@@ -168,12 +168,16 @@ def GetUnityPath():
 	return ""
 
 def GetCommitInfo():
-	info = str(os.environ.get('GIT_COMMIT'))
-	if(info == "None"):
-		#return ""
-		return "--appendcommitinfo=\"\""
-	else:
-		return "--appendcommitinfo=\"" + info + "\"";
+	commit_hash = str(os.environ.get('GIT_COMMIT'))
+	commit_tag = str(os.environ.get('GIT_TAG'))
+
+	commit_info = ""
+	if(commit_hash != "None"):
+		commit_info = "HASH_" + commit_hash;
+	if(commit_tag != "None")
+		commit_info = commit_info + "_TAG_" + ;
+	
+	return "--appendcommitinfo=\"" + commit_info + "\"";
 	
 def SetFileWritable(Filename):
 	Stats = os.stat(Filename)
