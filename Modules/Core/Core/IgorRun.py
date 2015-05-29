@@ -13,6 +13,9 @@ import time;
 from contextlib import closing
 from sys import platform as _platform
 
+if _platform != "win32":
+	import signal;
+
 try:
 	from urllib.request import urlopen
 except ImportError:
@@ -167,6 +170,16 @@ def GetUnityPath():
 	
 	return ""
 
+def KillProcess(pid):
+	if _platform == "linux" or _platform == "linux2":
+		print("Igor Error: Attempted to kill process " + pid + ", but we're on linux and we haven't implemented process killing yet.")
+	elif _platform == "darwin":
+		os.killpg(pid, signal.SIGTERM)
+	elif _platform == "win32":
+		subprocess.Popen("TASKKILL /F /PID {pid} /T".format(pid=pid))
+
+	return
+
 def GetCommitInfo():
 	commit_hash = str(os.environ.get('GIT_COMMIT'))
 	commit_tag = str(os.environ.get('GIT_TAG'))
@@ -310,7 +323,10 @@ def RunUnity(Function):
 	if os.path.exists("Igor.log"):
 		os.remove("Igor.log")
 
-	BuildProc = subprocess.Popen(BuildCommand, shell=True)
+	if _platform == "win32":
+		BuildProc = subprocess.Popen(BuildCommand, shell=True)
+	else:
+		BuildProc = subprocess.Popen(BuildCommand, shell=True, preexec_fn=os.setpgrp)
 
 	while BuildProc.poll() is None:
 		if logHandle == None and os.path.exists("Igor.log"):
@@ -323,16 +339,31 @@ def RunUnity(Function):
 				time.sleep(10)
 				logHandle.seek(where)
 			else:
+				if "Compilation failed: " in line:
+					print("Igor Error: Killing Unity because script compilation failed and anything beyond this point is undefined behavior.")
+
+					KillProcess(BuildProc.pid)
+				elif "UnityUpgradable" in line:
+					print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
+
+					KillProcess(BuildProc.pid)
 				sys.stdout.write(line)
 
-	sys.stdout.write(logHandle.read())
+	Rest = logHandle.read()
+
+	if "Compilation failed: " in Rest:
+		print("Igor Error: Killing Unity because script compilation failed and anything beyond this point is undefined behavior.")
+	elif "UnityUpgradable" in Rest:
+		print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
+
+	sys.stdout.write(Rest)
 
 	logHandle.close()
 
 	BuildRC = BuildProc.returncode
 
 	if BuildRC != 0:
-		print("Return code from Unity was " + str(BuildRC) + " which is non-zero.  Something went wrong so check the logs.")
+		print("Igor Error: Return code from Unity was " + str(BuildRC) + " which is non-zero.  Something went wrong so check the logs.")
 
 		sys.exit(1)
 
