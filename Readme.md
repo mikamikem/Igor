@@ -89,17 +89,16 @@ For a value that can be set either in the config or as a parameter, you will see
 
 ## What is currently supported?
 
-- Build Platforms: Windows, OSX, iOS
+- Build Platforms: [Windows](Modules/Build/Desktop), [OSX](Modules/Build/Desktop), [iOS](Modules/Build/iOS), [Android](Modules/Build/Android)
 - Continuous Integration: Jenkins
-- Packaging: Zip, iOS OTA
-- Distribution: FTP, BitTorrent Sync
-- 3rd Party SDKs: (iOS)StoreKit, (iOS)Facebook
+- Packaging: [Zip](Modules/Package/Zip), [iOS OTA](Modules/Package/iOSOTA)
+- Distribution: [FTP](Modules/Distribution/IgorFTP), [BitTorrent Sync](Modules/Distribution/BitTorrentSync)
+- 3rd Party SDKs: [(iOS)StoreKit](Modules/3rdParty/StoreKitiOS), [(iOS)Facebook](Modules/3rdParty/FacebookiOSHats), [(Android)Facebook](Modules/3rdParty/FacebookAndroidHats), [(Android)Google Play Game Services](Modules/3rdParty/GooglePlayGameServicesAndroid), [Amplify Texture](Modules/3rdParty/AmplifyTexture)
 
 ## What is on the roadmap?
 
-- Planned Build Platforms: Linux, Android, PS4, PSVita, Xbox One
+- Planned Build Platforms: Linux, PS4, PSVita, Xbox One
 - Planned Distribution: Dropbox
-- Planned 3rd Party SDKs: (Android)Facebook
 
 ## How do I make it work for my SDK/plugin/platform/etc?
 
