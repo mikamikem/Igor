@@ -198,7 +198,7 @@ namespace Igor
 
                     if(www.error != null && www.error != "")
                     {
-                    	if(bIgnoreErrors)
+                    	if(!bIgnoreErrors)
                     	{
 	                    	Debug.LogError("Igor Error: Downloading " + PathToSource + " failed.  Error is \"" + www.error + "\"");
 	                    }
@@ -769,7 +769,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 22;
+		private const int Version = 23;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";
