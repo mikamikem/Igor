@@ -146,7 +146,7 @@ namespace Igor
 			return RemoteFileName;
 		}
 
-		public static string DownloadFileForUpdate(string RelativePath, string AbsolutePath = "")
+		public static string DownloadFileForUpdate(string RelativePath, string AbsolutePath = "", bool bIgnoreErrors = false)
 		{
 			string DestFilePath = Path.Combine(IgorUpdater.TempLocalDirectory, RelativePath);
 			
@@ -198,7 +198,10 @@ namespace Igor
 
                     if(www.error != null && www.error != "")
                     {
-                    	Debug.LogError("Igor Error: Downloading " + PathToSource + " failed.  Error is \"" + www.error + "\"");
+                    	if(bIgnoreErrors)
+                    	{
+	                    	Debug.LogError("Igor Error: Downloading " + PathToSource + " failed.  Error is \"" + www.error + "\"");
+	                    }
                     }
                     else
                     {
@@ -766,7 +769,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 21;
+		private const int Version = 22;
 
 		public static string BaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string RemotePrefix = "https://raw.githubusercontent.com/mikamikem/Igor/master/";

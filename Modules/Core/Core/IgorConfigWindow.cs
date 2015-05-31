@@ -288,7 +288,7 @@ namespace Igor
 
 					if(!File.Exists(LocalReadmePath) && !bLocal)
 					{
-						LocalReadmePath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), "Readme.md"));
+						LocalReadmePath = IgorUtils.DownloadFileForUpdate(Path.Combine("Modules", Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), "Readme.md")), "", true);
 					}
 
 					if(File.Exists(LocalReadmePath))
