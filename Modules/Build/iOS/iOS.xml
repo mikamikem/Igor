@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Build.iOS</ModuleName>
-  <ModuleVersion>7</ModuleVersion>
+  <ModuleVersion>8</ModuleVersion>
   <ModuleFiles>
     <File>IgorBuildiOS.cs</File>
     <File>IgorPlistUtils.cs</File>
     <File>IgorXCodeProjUtils.cs</File>
     <File>IgorDummyBigInt.cs</File>
     <File>IgoriOSSourceUtils.cs</File>
+    <File>Readme.md</File>
     <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXBuildFile.cs</File>
     <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXBuildPhase.cs</File>
     <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXDictionary.cs</File>

@@ -59,6 +59,9 @@ namespace Igor
         [SerializeField]
 		protected FoldoutState ModuleCategoryExpanded = new FoldoutState();
 
+		[SerializeField]
+		protected FoldoutState ModuleDetailsExpanded = new FoldoutState();
+
 		protected bool bModulesChanged = false;
 
 		protected List<IgorPersistentJobConfig> Jobs = new List<IgorPersistentJobConfig>();
@@ -84,6 +87,18 @@ namespace Igor
 		protected FoldoutState StepIDExpanded = new FoldoutState();
 
 	    protected Vector2 ScrollPosition;
+
+	    public class ModuleReadmeInfo
+	    {
+	    	public string Summary = "";
+	    	public string Description = "";
+	    	public string Jenkins = "";
+	    	public string ProjectSetup = "";
+	    	public string RuntimeInfo = "";
+	    	public string DeveloperInfo = "";
+	    }
+
+	    protected Dictionary<string, ModuleReadmeInfo> ModuleReadmes = new Dictionary<string, ModuleReadmeInfo>();
 
 	    public IgorPersistentJobConfig CurrentJobInst
 	    {
@@ -176,6 +191,7 @@ namespace Igor
 					AvailableModuleNames.Clear();
 					ModuleNamesToAvailableVersions.Clear();
 					ModuleNamesToCurrentVersions.Clear();
+					ModuleReadmes.Clear();
 
 					AppendToModuleList(ModuleListInst, false);
 
@@ -260,7 +276,122 @@ namespace Igor
 							DependencyToDependentModules[Dependency].Add(CurrentModule.ModuleName);
 						}
 					}
+
+					IgorModuleDescriptor ReadmeDescriptor = CurrentModuleDescriptorInst;
+
+					if(ReadmeDescriptor == null)
+					{
+						ReadmeDescriptor = NewModuleDescriptorInst;
+					}
+
+					string LocalReadmePath = Path.Combine(IgorUpdater.LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), "Readme.md"));
+
+					if(!File.Exists(LocalReadmePath) && !bLocal)
+					{
+						LocalReadmePath = IgorUtils.DownloadFileForUpdate(Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), "Readme.md"));
+					}
+
+					if(File.Exists(LocalReadmePath))
+					{
+						ParseModuleReadme(LocalReadmePath, CurrentModule.ModuleName);
+					}
 				}
+			}
+		}
+
+		protected virtual string MarkupFixup(string MarkupText)
+		{
+			string FinalParsedLine = MarkupText;
+
+			if(FinalParsedLine.StartsWith("### "))
+			{
+				FinalParsedLine = "--" + FinalParsedLine.Substring(3) + " --";
+			}
+
+			FinalParsedLine = FinalParsedLine.Replace("[", "");
+			FinalParsedLine = FinalParsedLine.Replace("](", " (");
+
+			return FinalParsedLine;
+		}
+
+		protected virtual void ParseModuleReadme(string ReadmePath, string ModuleName)
+		{
+			if(!File.Exists(ReadmePath))
+			{
+				return;
+			}
+
+			string[] ReadmeLines = File.ReadAllLines(ReadmePath);
+			string CurrentSectionTitle = "";
+			string CurrentSectionText = "";
+
+			ModuleReadmeInfo NewReadmeInfo = new ModuleReadmeInfo();
+
+			for(int CurrentLineIndex = 0; CurrentLineIndex < ReadmeLines.Length; ++CurrentLineIndex)
+			{
+				string CurrentLine = ReadmeLines[CurrentLineIndex];
+
+				if(CurrentLine.StartsWith("## ") || CurrentLineIndex == (ReadmeLines.Length - 1))
+				{
+					if(CurrentLineIndex == (ReadmeLines.Length - 1))
+					{
+						CurrentSectionText += MarkupFixup(CurrentLine) + "\n";
+					}
+
+					if(CurrentSectionTitle != "")
+					{
+						CurrentSectionText = CurrentSectionText.Trim();
+						CurrentSectionText = CurrentSectionText.Replace("\r\n", "\n");
+
+						if(CurrentSectionText.StartsWith("\n"))
+						{
+							CurrentSectionText = CurrentSectionText.Substring(1);
+						}
+
+						if(CurrentSectionText.EndsWith("\n\n"))
+						{
+							CurrentSectionText = CurrentSectionText.Substring(0, CurrentSectionText.Length-1);
+						}
+
+						switch(CurrentSectionTitle)
+						{
+						case "Summary":
+							NewReadmeInfo.Summary = CurrentSectionText;
+							break;
+						case "Description":
+							NewReadmeInfo.Description = CurrentSectionText;
+							break;
+						case "Jenkins Setup":
+							NewReadmeInfo.Jenkins = CurrentSectionText;
+							break;
+						case "Project Setup":
+							NewReadmeInfo.ProjectSetup = CurrentSectionText;
+							break;
+						case "Runtime Info":
+							NewReadmeInfo.RuntimeInfo = CurrentSectionText;
+							break;
+						case "Developer Info":
+							NewReadmeInfo.DeveloperInfo = CurrentSectionText;
+							break;
+						}
+					}
+
+					CurrentSectionText = "";
+					CurrentSectionTitle = CurrentLine.Substring(3);
+				}
+				else if(CurrentSectionTitle != "")
+				{
+					CurrentSectionText += MarkupFixup(CurrentLine) + "\n";
+				}
+			}
+
+			if(ModuleReadmes.ContainsKey(ModuleName))
+			{
+				ModuleReadmes[ModuleName] = NewReadmeInfo;
+			}
+			else
+			{
+				ModuleReadmes.Add(ModuleName, NewReadmeInfo);
 			}
 		}
 
@@ -375,6 +506,8 @@ namespace Igor
 		            EditorGUILayout.Separator();
 
 		            EditorGUILayout.BeginVertical("box");
+		            EditorGUILayout.BeginHorizontal();
+		            EditorGUILayout.BeginVertical();
 
 		            bAvailableModulesExpanded = EditorGUILayout.Foldout(bAvailableModulesExpanded, "Available Modules");
 
@@ -463,15 +596,62 @@ namespace Igor
 		                                bWasInstalled = true;
 		                            }
 
-		                            GUI.enabled = !bIsDependency;
-
 		                            EditorGUILayout.BeginHorizontal();
+
+				                    bool bCurrentModuleExpanded = ModuleDetailsExpanded.ContainsKey(MergedName) && ModuleDetailsExpanded[MergedName];
+
+				                    GUIStyle FoldoutStyle = EditorStyles.foldout;
+
+				                    FoldoutStyle.fixedWidth = 1.0f;
+
+				                    bCurrentModuleExpanded = EditorGUILayout.Foldout(bCurrentModuleExpanded, "", FoldoutStyle);
+
+        		                    if(!ModuleDetailsExpanded.ContainsKey(MergedName))
+				                    {
+				                        ModuleDetailsExpanded.Add(MergedName, bCurrentModuleExpanded);
+				                    }
+
+				                    ModuleDetailsExpanded[MergedName] = bCurrentModuleExpanded;
+
+		                            GUI.enabled = !bIsDependency;
 
 		                            bool bInstalled = EditorGUILayout.ToggleLeft(CurrentModuleName + VersionString + (bIsDependency ? " - Required by (" + DependentOf + ")" : ""), bWasInstalled || bIsDependency);
 
 		                            EditorGUILayout.EndHorizontal();
 
 		                            GUI.enabled = true;
+
+		                            if(bCurrentModuleExpanded)
+		                            {
+		                            	EditorGUI.indentLevel += 1;
+
+		                            	if(ModuleReadmes.ContainsKey(MergedName))
+		                            	{
+			                            	ModuleReadmeInfo CurrentModuleReadme = ModuleReadmes[MergedName];
+
+											GUIStyle LabelStyle = new GUIStyle(EditorStyles.label);
+
+											LabelStyle.wordWrap = true;
+
+			                            	EditorGUILayout.LabelField("Summary", CurrentModuleReadme.Summary, LabelStyle);
+			                            	EditorGUILayout.LabelField("Description", CurrentModuleReadme.Description, LabelStyle);
+			                            	EditorGUILayout.LabelField("Jenkins Setup", CurrentModuleReadme.Jenkins, LabelStyle);
+			                            	EditorGUILayout.LabelField("Project Setup", CurrentModuleReadme.ProjectSetup, LabelStyle);
+			                            	EditorGUILayout.LabelField("Runtime Info", CurrentModuleReadme.RuntimeInfo, LabelStyle);
+			                            	EditorGUILayout.LabelField("Developer Info", CurrentModuleReadme.DeveloperInfo, LabelStyle);
+
+			                            	if(GUILayout.Button("Open full Readme"))
+			                            	{
+			                            		Application.OpenURL("https://github.com/mikamikem/Igor/blob/master/Modules/" + MergedName.Replace(".", "/") + "/Readme.md");
+			                            	}
+			                            }
+			                            else
+			                            {
+			                            	EditorGUILayout.LabelField("This module does not contain a Readme file!");
+			                            }
+
+		                            	EditorGUI.indentLevel -= 1;
+		                            }
 
 		                            if(!bIsDependency)
 		                            {
@@ -505,6 +685,8 @@ namespace Igor
 		                EditorGUI.indentLevel -= 1;
 		            }
 
+		            EditorGUILayout.EndVertical();
+		            EditorGUILayout.EndHorizontal();
 		            EditorGUILayout.EndVertical();
 
 		            EditorGUILayout.Separator();
@@ -622,6 +804,8 @@ namespace Igor
 				EditorGUILayout.Separator();
 
 				EditorGUILayout.BeginVertical("box");
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.BeginVertical();
 
 				Dictionary<string, List<string>> AvailableModuleGroupsAndNames = GetModuleCategoriesAndNames(EnabledModuleNames);
 
@@ -655,6 +839,8 @@ namespace Igor
 						bool bCurrentStepExpanded = StepIDExpanded.ContainsKey(CurrentStep.StepName) && StepIDExpanded[CurrentStep.StepName];
 
 						EditorGUILayout.BeginVertical("box");
+						EditorGUILayout.BeginHorizontal();
+						EditorGUILayout.BeginVertical();
 
 						bCurrentStepExpanded = EditorGUILayout.Foldout(bCurrentStepExpanded, CurrentStep.StepPriority.ToString() + " - " + CurrentStep.StepName);
 
@@ -680,16 +866,22 @@ namespace Igor
 						}
 
 						EditorGUILayout.EndVertical();
+						EditorGUILayout.EndHorizontal();
+						EditorGUILayout.EndVertical();
 					}
 
 					EditorGUI.indentLevel -= 1;
 				}
 
 				EditorGUILayout.EndVertical();
+				EditorGUILayout.EndHorizontal();
+				EditorGUILayout.EndVertical();
 
 				EditorGUILayout.Separator();
 
 				EditorGUILayout.BeginVertical("box");
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.BeginVertical();
 
 				string GlobalOptionsKey = "Global Options";
 
@@ -721,6 +913,8 @@ namespace Igor
 					EditorGUI.indentLevel -= 1;
 				}
 
+				EditorGUILayout.EndVertical();
+				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.EndVertical();
 
 				EditorGUILayout.Separator();
@@ -794,6 +988,8 @@ namespace Igor
 							bool bIsExpanded = IsModuleExpanded[CurrentModule.GetModuleName()];
 
 							EditorGUILayout.BeginVertical("box");
+							EditorGUILayout.BeginHorizontal();
+							EditorGUILayout.BeginVertical();
 
 							bIsExpanded = EditorGUILayout.Foldout(bIsExpanded, CurrentModule.GetModuleName());
 
@@ -808,6 +1004,8 @@ namespace Igor
 								EditorGUI.indentLevel -= 1;
 							}
 
+							EditorGUILayout.EndVertical();
+							EditorGUILayout.EndHorizontal();
 							EditorGUILayout.EndVertical();
 						}
 

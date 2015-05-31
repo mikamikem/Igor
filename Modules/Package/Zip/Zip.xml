@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Package.Zip</ModuleName>
-  <ModuleVersion>11</ModuleVersion>
+  <ModuleVersion>12</ModuleVersion>
   <ModuleFiles>
     <File>IgorZip.cs</File>
+    <File>Readme.md</File>
   </ModuleFiles>
   <ModuleDependencies>
     <Module>Build.Common</Module>
