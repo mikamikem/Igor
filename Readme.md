@@ -89,7 +89,7 @@ For a value that can be set either in the config or as a parameter, you will see
 
 ## What is currently supported?
 
-- Build Platforms: [Windows](Modules/Build/Desktop), [OSX](Modules/Build/Desktop), [iOS](Modules/Build/iOS), [Android](Modules/Build/Android)
+- Build Platforms: [Windows](Modules/Build/Desktop), [OSX](Modules/Build/Desktop), [Linux](Modules/Build/Desktop), [iOS](Modules/Build/iOS), [Android](Modules/Build/Android)
 - Continuous Integration: Jenkins
 - Packaging: [Zip](Modules/Package/Zip), [iOS OTA](Modules/Package/iOSOTA)
 - Distribution: [FTP](Modules/Distribution/IgorFTP), [BitTorrent Sync](Modules/Distribution/BitTorrentSync)
@@ -97,7 +97,7 @@ For a value that can be set either in the config or as a parameter, you will see
 
 ## What is on the roadmap?
 
-- Planned Build Platforms: Linux, PS4, PSVita, Xbox One
+- Planned Build Platforms: PS4, PSVita, Xbox One
 - Planned Distribution: Dropbox
 
 ## How do I make it work for my SDK/plugin/platform/etc?

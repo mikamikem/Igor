@@ -7,7 +7,7 @@ This module provides build functionality for desktop builds.
 
 ## Description
 
-This module currently supports building to all architectures of Windows and OSX.
+This module currently supports building to all architectures of Windows, OSX, and Linux.
 
 ## Jenkins Setup
 

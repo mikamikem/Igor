@@ -22,7 +22,7 @@ namespace Igor
 		{
 			bool DidRegister = IgorCore.RegisterNewModule(this);
 
-		    IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64"});
+		    IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64", "Linux32", "Linux64", "LinuxUniversal"});
 		}
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
@@ -35,6 +35,7 @@ namespace Igor
 
 				bool bWindows = false;
 				bool bOSX = false;
+				bool bLinux = false;
 
 				if(Platform.Contains("OSX32"))
 				{
@@ -61,6 +62,21 @@ namespace Igor
 					JobBuildTarget = BuildTarget.StandaloneWindows64;
 					bWindows = true;
 				}
+				else if(Platform.Contains("Linux32"))
+				{
+					JobBuildTarget = BuildTarget.StandaloneLinux;
+					bLinux = true;
+				}
+				else if(Platform.Contains("Linux64"))
+				{
+					JobBuildTarget = BuildTarget.StandaloneLinux64;
+					bLinux = true;
+				}
+				else if(Platform.Contains("LinuxUniversal"))
+				{
+					JobBuildTarget = BuildTarget.StandaloneLinuxUniversal;
+					bLinux = true;
+				}
 
 				if(bOSX)
 				{
@@ -71,6 +87,11 @@ namespace Igor
 				{
 					StepHandler.RegisterJobStep(IgorBuildCommon.SwitchPlatformStep, this, SwitchPlatforms);
 					StepHandler.RegisterJobStep(IgorBuildCommon.BuildStep, this, BuildWindows);
+				}
+				else if(bLinux)
+				{
+					StepHandler.RegisterJobStep(IgorBuildCommon.SwitchPlatformStep, this, SwitchPlatforms);
+					StepHandler.RegisterJobStep(IgorBuildCommon.BuildStep, this, BuildLinux);
 				}
 			}
 		}
@@ -109,6 +130,18 @@ namespace Igor
 				{
 					bRecognizedPlatform = true;
 				}
+				else if(Platform == "Linux32")
+				{
+					bRecognizedPlatform = true;
+				}
+				else if(Platform == "Linux64")
+				{
+					bRecognizedPlatform = true;
+				}
+				else if(Platform == "LinuxUniversal")
+				{
+					bRecognizedPlatform = true;
+				}
 			}
 
 			return bBuilding && bRecognizedPlatform;
@@ -142,6 +175,7 @@ namespace Igor
 
 			bool bOSX = false;
 			bool bWindows = false;
+			bool bLinux = false;
 
 			if(NewTarget == BuildTarget.StandaloneOSXIntel)
 			{
@@ -170,6 +204,22 @@ namespace Igor
 				bWindows = true;
 			}
 
+			if(NewTarget == BuildTarget.StandaloneLinux)
+			{
+				BuiltName = GetConfigString("BuiltLinux32Name");
+				bLinux = true;
+			}
+			else if(NewTarget == BuildTarget.StandaloneLinux64)
+			{
+				BuiltName = GetConfigString("BuiltLinux64Name");
+				bLinux = true;
+			}
+			else if(NewTarget == BuildTarget.StandaloneLinuxUniversal)
+			{
+				BuiltName = GetConfigString("BuiltLinuxUniversalName");
+				bLinux = true;
+			}
+
 			if(BuiltName == "")
 			{
 				if(bOSX)
@@ -179,6 +229,10 @@ namespace Igor
 				else if(bWindows)
 				{
 					BuiltName = GetConfigString("BuiltWindowsName");
+				}
+				else if(bLinux)
+				{
+					BuiltName = GetConfigString("BuiltLinuxName");
 				}
 			}
 
@@ -202,9 +256,13 @@ namespace Igor
 				{
 					BuiltName = "Unity.exe";
 				}
+				else if(bLinux)
+				{
+					BuiltName = "Unity";
+				}
 			}
 
-            if(!BuiltName.Contains(".exe") && !BuiltName.Contains(".app"))
+            if(!bLinux && !BuiltName.Contains(".exe") && !BuiltName.Contains(".app"))
             {
                 if(bOSX)
                 {
@@ -269,10 +327,24 @@ namespace Igor
 			return Build();
 		}
 
+		public virtual bool BuildLinux()
+		{
+			Log("Building Linux build (Target:" + JobBuildTarget + ")");
+
+			return Build();
+		}
+
 		public virtual bool Build()
 		{
 			string BuiltName = GetBuiltNameForTarget(JobBuildTarget);
-			string DataFolderName = BuiltName.Substring(0, BuiltName.LastIndexOf('.')) + "_Data";
+			string BuiltBaseName = BuiltName;
+
+			if(BuiltBaseName.Contains("."))
+			{
+				BuiltBaseName = BuiltName.Substring(0, BuiltBaseName.LastIndexOf('.'));
+			}
+
+			string DataFolderName = BuiltBaseName + "_Data";
 
 			if(File.Exists(BuiltName))
 			{
