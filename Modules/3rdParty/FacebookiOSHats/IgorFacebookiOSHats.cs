@@ -35,9 +35,6 @@ namespace Igor
 				IgorCore.SetModuleActiveForJob(this);
 
 				StepHandler.RegisterJobStep(IgorBuildiOS.CustomFixupXCodeProjStep, this, UpdateXCodeProj);
-
-				FacebookID = GetParamOrConfigString(FacebookIDFlag, "Your Facebook ID hasn't been set!  Facebook functionality will probably not work correctly.");
-				FacebookDisplayName = GetParamOrConfigString(FacebookDisplayNameFlag, "Your Facebook Display Name hasn't been set!  Facebook functionality will probably not work correctly.");
 			}
 		}
 
@@ -52,11 +49,11 @@ namespace Igor
 			return EnabledParams;
 		}
 
-		public string FacebookID = "";
-		public string FacebookDisplayName = "";
-
 		public virtual bool UpdateXCodeProj()
 		{
+			string FacebookID = GetParamOrConfigString(FacebookIDFlag, "Your Facebook ID hasn't been set!  Facebook functionality will probably not work correctly.");
+			string FacebookDisplayName = GetParamOrConfigString(FacebookDisplayNameFlag, "Your Facebook Display Name hasn't been set!  Facebook functionality will probably not work correctly.");
+
 			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Attempting to update the XCode project, but one was not generated in the build phase!"))

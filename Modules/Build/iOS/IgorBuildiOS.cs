@@ -56,12 +56,6 @@ namespace Igor
 					StepHandler.RegisterJobStep(IgorBuildCommon.BuildStep, this, BuildiOS);
 					StepHandler.RegisterJobStep(FixupXCodeProjStep, this, FixupXCodeProj);
 					StepHandler.RegisterJobStep(BuildXCodeProjStep, this, BuildXCodeProj);
-
-					DevTeamID = GetParamOrConfigString(iOSDevTeamIDFlag, "Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
-					SigningIdentity = GetParamOrConfigString(iOSProvisionProfileFlag, "Your Signing Identity hasn't been set!  Your build may not sign correctly.");
-					ProvisionPath = GetParamOrConfigString(iOSMobileProvisionFlag, "Your Mobile Provision path hasn't been set!  Your build may not sign correctly.");
-
-					bEnableGamekit = IgorJobConfig.IsBoolParamSet(EnableGameKitFlag);
 				}
 			}
 		}
@@ -103,10 +97,6 @@ namespace Igor
 
 		public BuildTarget JobBuildTarget = BuildTarget.iPhone;
 		public List<IgorBuildCommon.GetExtraBuildOptions> BuildOptionsDelegates = new List<IgorBuildCommon.GetExtraBuildOptions>();
-		public string DevTeamID = "";
-		public bool bEnableGamekit = false;
-		public string SigningIdentity = "";
-		public string ProvisionPath = "";
 
 		public virtual void AddDelegateCallback(IgorBuildCommon.GetExtraBuildOptions NewDelegate)
 		{
@@ -209,6 +199,10 @@ namespace Igor
 		{
 			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
 
+			string DevTeamID = GetParamOrConfigString(iOSDevTeamIDFlag, "Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
+			string SigningIdentity = GetParamOrConfigString(iOSProvisionProfileFlag, "Your Signing Identity hasn't been set!  Your build may not sign correctly.");
+			bool bEnableGamekit = IgorJobConfig.IsBoolParamSet(EnableGameKitFlag);
+
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Trying to fix up the XCode project, but one was not generated in the build phase!"))
 			{
 				string ProjectPath = Path.Combine(BuildProducts[0], "Unity-IPhone.xcodeproj");
@@ -237,6 +231,9 @@ namespace Igor
 		public virtual bool BuildXCodeProj()
 		{
 			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+
+			string SigningIdentity = GetParamOrConfigString(iOSProvisionProfileFlag, "Your Signing Identity hasn't been set!  Your build may not sign correctly.");
+			string ProvisionPath = GetParamOrConfigString(iOSMobileProvisionFlag, "Your Mobile Provision path hasn't been set!  Your build may not sign correctly.");
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Trying to build the XCode project, but one was not generated in the build phase!"))
 			{

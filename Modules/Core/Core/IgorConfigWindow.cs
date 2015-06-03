@@ -717,7 +717,11 @@ namespace Igor
                 {
 				    if(GUILayout.Button("Run Job"))
 				    {
+				    	bIsDrawingInspector = false;
+
 					    TriggerJob(CurrentJobInst.JobName);
+
+					    bIsDrawingInspector = true;
 				    }
 
 				    if(GUILayout.Button("Delete job") && !EditorUtility.DisplayDialog("Delete this job configuration?", "This will delete the whole job!  Are you sure you want to delete this?", "I'm not ready yet...", "Yup delete the job!"))
