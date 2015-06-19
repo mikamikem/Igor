@@ -1,13 +1,3 @@
-/**********************************************************************************************************
- **                                   DON'T USE OR IMPROVE!                                              **
- **                                                                                                      **
- ** This version is obsolete!!! This file is only kept around so that older versions have something they **
- ** can pull down and upgrade with.  The new file exists at:                                             **
- **                                                                                                      **
- **                             Assets/Igor/Editor/IgorUpdater.cs                                        **
- **                                                                                                      **
- **********************************************************************************************************/
-
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
@@ -779,7 +769,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 24;
+		private const int Version = 25;
 		private const int MajorUpgrade = 1;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));

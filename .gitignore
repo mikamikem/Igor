@@ -1,3 +1,5 @@
 *.meta
 Modules/Build/iOS/XCodeEditor
+Modules/Build/iOS/Editor/XCodeEditor
 Modules/Build/iOS/PlistEditor
+Modules/Build/iOS/Editor/PlistEditor

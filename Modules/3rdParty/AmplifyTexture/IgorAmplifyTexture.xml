@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>3rdParty.AmplifyTexture</ModuleName>
-  <ModuleVersion>3</ModuleVersion>
+  <ModuleVersion>4</ModuleVersion>
   <ModuleFiles>
-    <File>IgorAmplifyTexture.cs</File>
+    <File>Editor/IgorAmplifyTexture.cs</File>
     <File>Readme.md</File>
   </ModuleFiles>
 </IgorModuleDescriptor>

@@ -1,51 +1,51 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Build.iOS</ModuleName>
-  <ModuleVersion>9</ModuleVersion>
+  <ModuleVersion>10</ModuleVersion>
   <ModuleFiles>
-    <File>IgorBuildiOS.cs</File>
-    <File>IgorPlistUtils.cs</File>
-    <File>IgorXCodeProjUtils.cs</File>
-    <File>IgorDummyBigInt.cs</File>
-    <File>IgoriOSSourceUtils.cs</File>
+    <File>Editor/IgorBuildiOS.cs</File>
+    <File>Editor/IgorPlistUtils.cs</File>
+    <File>Editor/IgorXCodeProjUtils.cs</File>
+    <File>Editor/IgorDummyBigInt.cs</File>
+    <File>Editor/IgoriOSSourceUtils.cs</File>
     <File>Readme.md</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXBuildFile.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXBuildPhase.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXDictionary.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXFileReference.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXGroup.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXList.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXObject.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXParser.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]PBXProject.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCBuildConfiguration.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCConfigurationList.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCFileOperationQueue.cs</File>
-    <File>(https://raw.githubusercontent.com/kexplo/XCodeEditor-for-Unity/5e459b2cf9275e30898882e4d025afbfb94413bd/)[XCodeEditor/]XCMod.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCProject.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCSourceFile.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCTarget.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XCodeEditorMenu.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]XMiniJSON.cs</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]LICENSE</File>
-    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[XCodeEditor/]Readme.mdown</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]ASCIIPropertyListParser.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]BinaryPropertyListParser.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]BinaryPropertyListWriter.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSArray.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSData.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSDate.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSDictionary.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSNumber.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSObject.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSSet.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]NSString.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]PropertyListFormatException.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]PropertyListParser.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]UID.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[PlistEditor/]XmlPropertyListParser.cs</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/)[PlistEditor/]LICENSE</File>
-    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/)[PlistEditor/]README.md</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXBuildFile.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXBuildPhase.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXDictionary.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXFileReference.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXGroup.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXList.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXObject.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXParser.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]PBXProject.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XCBuildConfiguration.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XCConfigurationList.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XCFileOperationQueue.cs</File>
+    <File>(https://raw.githubusercontent.com/kexplo/XCodeEditor-for-Unity/5e459b2cf9275e30898882e4d025afbfb94413bd/)[Editor/XCodeEditor/]XCMod.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XCProject.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XCSourceFile.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XCTarget.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XCodeEditorMenu.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]XMiniJSON.cs</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]LICENSE</File>
+    <File>(https://raw.githubusercontent.com/dcariola/XCodeEditor-for-Unity/master/)[Editor/XCodeEditor/]Readme.mdown</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]ASCIIPropertyListParser.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]BinaryPropertyListParser.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]BinaryPropertyListWriter.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSArray.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSData.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSDate.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSDictionary.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSNumber.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSObject.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSSet.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]NSString.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]PropertyListFormatException.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]PropertyListParser.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]UID.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/plist-cil/)[Editor/PlistEditor/]XmlPropertyListParser.cs</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/)[Editor/PlistEditor/]LICENSE</File>
+    <File>(https://raw.githubusercontent.com/claunia/plist-cil/master/)[Editor/PlistEditor/]README.md</File>
   </ModuleFiles>
   <ModuleDependencies>
     <Module>Build.Common</Module>

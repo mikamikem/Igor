@@ -10,7 +10,7 @@ Igor gives you a framework for automating any task in Unity, both in-editor and 
 1. Install Igor by either:
 
     * Installing the [Unity Package](https://raw.githubusercontent.com/mikamikem/Igor/master/Igor.unitypackage)
-    * Installing the [Igor Updater Script](https://raw.githubusercontent.com/mikamikem/Igor/master/IgorUpdater.cs) to Assets\Editor\Igor\
+    * Installing the [Igor Updater Script](https://raw.githubusercontent.com/mikamikem/Igor/master/Editor/IgorUpdater.cs) to Assets\Igor\Editor\
 
 2. Once the script has been added to your Unity project, launching Unity will pull down the latest version of all the necessary core files.
 3. Next open the new Igor Project Configuration window by going to Window -> Igor Project Configuration.
@@ -103,3 +103,9 @@ For a value that can be set either in the config or as a parameter, you will see
 ## How do I make it work for my SDK/plugin/platform/etc?
 
 Check out the [Developer Readme](DeveloperReadme.md) for more information on writing your own modules.
+
+## Upgrading from an old version?
+
+### June 18th, 2015
+
+Igor now exists under Assets\Igor instead of Assets\Editor\Igor.  This allows the modules to determine what portion of their scripts are compiled as editor scripts and which scripts can be used at runtime.  With this change the Updater script now includes a MajorUpgrade variable that allows the Updater to know when it must update itself first and re-compile before upgrading the modules.  Since this wasn't in place, we had to break the old updater and the only way I could find to do that was to empty the module list and so subsequently, this change also moves the module list from IgorModulesList.xml to IgorModuleList.xml.

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Core.Core</ModuleName>
-  <ModuleVersion>35</ModuleVersion>
+  <ModuleVersion>36</ModuleVersion>
   <ModuleFiles>
-    <File>IgorCore.cs</File>
-    <File>IgorConfig.cs</File>
-    <File>IIgorModule.cs</File>
-    <File>IgorConfigWindow.cs</File>
-    <File>IIgorLogger.cs</File>
-    <File>IgorModuleBase.cs</File>
-    <File>IgorBuiltinLogger.cs</File>
-    <File>IIgorStepHandler.cs</File>
-    <File>IgorUtils.cs</File>
-    <File>SerializableDictionary.cs</File>
+    <File>Editor/IgorCore.cs</File>
+    <File>Editor/IgorConfig.cs</File>
+    <File>Editor/IIgorModule.cs</File>
+    <File>Editor/IgorConfigWindow.cs</File>
+    <File>Editor/IIgorLogger.cs</File>
+    <File>Editor/IgorModuleBase.cs</File>
+    <File>Editor/IgorBuiltinLogger.cs</File>
+    <File>Editor/IIgorStepHandler.cs</File>
+    <File>Editor/IgorUtils.cs</File>
+    <File>Editor/SerializableDictionary.cs</File>
     <File>../../../IgorRun.py</File>
     <File>jobs_done.wav</File>
-    <File>IgorAssert.cs</File>
-    <File>IgorCoreModule.cs</File>
+    <File>Editor/IgorAssert.cs</File>
+    <File>Editor/IgorCoreModule.cs</File>
     <File>Readme.md</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../Readme.md</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DeveloperReadme.md</File>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Build.Common</ModuleName>
-  <ModuleVersion>8</ModuleVersion>
+  <ModuleVersion>9</ModuleVersion>
   <ModuleFiles>
-    <File>IgorBuildCommon.cs</File>
+    <File>Editor/IgorBuildCommon.cs</File>
     <File>Readme.md</File>
   </ModuleFiles>
 </IgorModuleDescriptor>
