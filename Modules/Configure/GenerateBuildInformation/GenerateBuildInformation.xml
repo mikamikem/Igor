@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <ModuleName>Configure.OverridePlayerSettings</ModuleName>
-  <ModuleVersion>8</ModuleVersion>
+  <ModuleName>Configure.GenerateBuildInformation</ModuleName>
+  <ModuleVersion>1</ModuleVersion>
   <ModuleFiles>
-    <File>Editor/IgorOverridePlayerSettings.cs</File>
+    <File>Editor/IgorGenerateBuildInformation.cs</File>
     <File>Readme.md</File>
   </ModuleFiles>
 </IgorModuleDescriptor>

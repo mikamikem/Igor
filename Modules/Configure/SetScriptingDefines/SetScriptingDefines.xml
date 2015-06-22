@@ -4,5 +4,6 @@
   <ModuleVersion>3</ModuleVersion>
   <ModuleFiles>
     <File>Editor/IgorSetScriptingDefines.cs</File>
+    <File>Readme.md</File>
   </ModuleFiles>
 </IgorModuleDescriptor>
