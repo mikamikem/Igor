@@ -26,7 +26,6 @@ namespace Igor
 		public static StepID PreBuildCleanupStep = new StepID("PreBuildCleanup", 0);
 
         public delegate BuildOptions GetExtraBuildOptions(BuildTarget CurrentTarget);
-        public static string CommitInfo = string.Empty;
 
         public static int SetBuildOptionsBitfield = 0;
 
@@ -84,11 +83,6 @@ namespace Igor
 
             if(IgorJobConfig.IsBoolParamSet(IgorBuildCommon.BuildFlag))
 			{
-                if(IgorJobConfig.IsStringParamSet(IgorBuildCommon.AppendCommitInfoFlag))
-                {
-                    CommitInfo = IgorJobConfig.GetStringParam(IgorBuildCommon.AppendCommitInfoFlag);
-                }
-
                 if(IgorJobConfig.IsStringParamSet(IgorBuildCommon.BuildOptionsFlag))
                 {
                     int OutResult = 0;
@@ -118,7 +112,7 @@ namespace Igor
 			DrawBoolParam(ref EnabledParams, "Build the game", BuildFlag);
 			DrawStringOptionsParam(ref EnabledParams, "Platform to build", PlatformFlag, AvailablePlatforms);
 
-            DrawBoolParam(ref EnabledParams, "Append Commit Info", IgorBuildCommon.AppendCommitInfoFlag);
+            DrawBoolParam(ref EnabledParams, "Append commit info", IgorBuildCommon.AppendCommitInfoFlag);
                 
             string BuildOptionsAsString = IgorUtils.GetStringParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag).Trim('"');
             if(!string.IsNullOrEmpty(BuildOptionsAsString))
@@ -130,7 +124,7 @@ namespace Igor
                 }
             }
 
-            int newValue = EditorGUILayout.MaskField(SetBuildOptionsBitfield, BuildOptionNames);
+            int newValue = EditorGUILayout.MaskField("Build options", SetBuildOptionsBitfield, BuildOptionNames);
             if(newValue != SetBuildOptionsBitfield)
             {
                 SetBuildOptionsBitfield = newValue;
@@ -198,6 +192,13 @@ namespace Igor
                 }
             }
             return (BuildOptions)BuildOptionsBitfield;
+        }
+
+        public static string GetCommitInfo()
+        {
+            // Should handle other version control systems.
+            string GitCommitHash = System.Environment.GetEnvironmentVariable("GIT_COMMIT");
+            return GitCommitHash;
         }
     }
 }

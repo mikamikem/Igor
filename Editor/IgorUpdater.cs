@@ -343,13 +343,26 @@ namespace Igor
  			{
  			    int StartingPos = 1, EndingPos = -1;
 
- 				StartingPos = AllParams.IndexOf("--" + ParamKey + "=") + ("--" + ParamKey + "=").Length;
+                string Prefix = "--" + ParamKey + "=\"";
+ 				StartingPos = AllParams.IndexOf(Prefix) + (Prefix).Length;
 
                 string StartSubstring = AllParams.Substring(StartingPos);
 
- 			    EndingPos = StartSubstring.IndexOf("--");
+ 			    EndingPos = StartSubstring.IndexOf("\"");
                 if(EndingPos < 0)
+                {
                     EndingPos = StartSubstring.Length;
+                }
+                else
+                {
+                    while(EndingPos < StartSubstring.Length && (StartSubstring[EndingPos] == '"' || StartSubstring[EndingPos] == ' '))
+                        EndingPos++;
+                }
+
+                if(EndingPos >= StartSubstring.Length)
+                {
+                    EndingPos = StartSubstring.Length;
+                }
  				
                 Result = StartSubstring.Substring(0, EndingPos);
 
@@ -769,7 +782,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 25;
+		private const int Version = 26;
 		private const int MajorUpgrade = 1;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));

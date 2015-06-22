@@ -211,7 +211,11 @@ namespace Igor
 				TextFieldStyle.focused.background = GetTextFieldBGGreenActive();
 			}
 
-			CurrentStringValue = GUILayout.TextField(DisplayString, TextFieldStyle, GUILayout.ExpandWidth(true), GUILayout.MinWidth(100.0f));
+			string NewStringValue = GUILayout.TextField(DisplayString, TextFieldStyle, GUILayout.ExpandWidth(true), GUILayout.MinWidth(100.0f));
+            if(!NewStringValue.Contains("\"") && !(NewStringValue.Length == 1 && NewStringValue[0] == ' '))
+            {
+                CurrentStringValue = NewStringValue;
+            }
 
 			if(bDisplayConfigValue && CurrentStringValue == CurrentConfigValue)
 			{

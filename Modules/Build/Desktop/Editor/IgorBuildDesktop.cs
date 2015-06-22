@@ -236,15 +236,15 @@ namespace Igor
 				}
 			}
 
-			if(BuiltName == "")
-			{
-				BuiltName = Path.GetFileName(EditorUserBuildSettings.GetBuildLocation(NewTarget));
-			}
-
             if(BuiltName == "")
             {
                 BuiltName = IgorJobConfig.GetStringParam(IgorBuildCommon.BuiltNameFlag);
             }
+
+			if(BuiltName == "")
+			{
+				BuiltName = Path.GetFileName(EditorUserBuildSettings.GetBuildLocation(NewTarget));
+			}
 
 			if(BuiltName == "")
 			{
@@ -274,9 +274,13 @@ namespace Igor
                 }
             }
 
-            if(!string.IsNullOrEmpty(BuiltName) && !string.IsNullOrEmpty(IgorBuildCommon.CommitInfo))
+            if(!string.IsNullOrEmpty(BuiltName) && IgorJobConfig.IsBoolParamSet(IgorBuildCommon.AppendCommitInfoFlag))
             {
-                BuiltName = BuiltName.Insert(BuiltName.IndexOf("."), "_" + IgorBuildCommon.CommitInfo.Trim(new char[] {'"'}));
+                string CommitInfo = IgorBuildCommon.GetCommitInfo();
+                if(!string.IsNullOrEmpty(CommitInfo))
+                {
+                    BuiltName = BuiltName.Insert(BuiltName.IndexOf("."), "_" + CommitInfo);
+                }
             }
 
 			return BuiltName;

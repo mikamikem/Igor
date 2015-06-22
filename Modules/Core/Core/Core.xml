@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Core.Core</ModuleName>
-  <ModuleVersion>38</ModuleVersion>
+  <ModuleVersion>39</ModuleVersion>
   <ModuleFiles>
     <File>Editor/IgorCore.cs</File>
     <File>Editor/IgorConfig.cs</File>

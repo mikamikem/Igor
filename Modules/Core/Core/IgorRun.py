@@ -179,18 +179,6 @@ def KillProcess(pid):
 		subprocess.Popen("TASKKILL /F /PID {pid} /T".format(pid=pid))
 
 	return
-
-def GetCommitInfo():
-	commit_hash = str(os.environ.get('GIT_COMMIT'))
-	commit_tag = str(os.environ.get('GIT_TAG'))
-
-	commit_info = ""
-	if(commit_hash != "None"):
-		commit_info = "HASH_" + commit_hash
-	if(commit_tag != "None"):
-		commit_info = commit_info + "_TAG_" + commit_tag
-	
-	return "--appendcommitinfo=\"" + commit_info + "\""
 	
 def SetFileWritable(Filename):
 	Stats = os.stat(Filename)
@@ -375,7 +363,6 @@ parser = argparse.ArgumentParser(description='Igor - The Unity automator.', add_
 parser.add_argument('--noselfupdate', action='store_true')
 parser.add_argument('--nounityupdate', action='store_true')
 parser.add_argument('--finalbootstrap')
-parser.add_argument('--appendcommitinfo', action='store_true')
 parser.add_argument('--bootstrap')
 parser.add_argument('--minunityversion')
 parser.add_argument('--maxunityversion')
@@ -403,9 +390,6 @@ passthroughstring = ' '.join(passthrough)
 
 if passthroughstring.find('-'):
 	passthroughstring = passthroughstring[passthroughstring.find('-'):]
-
-if testargs.appendcommitinfo:
-	passthroughstring = passthroughstring + GetCommitInfo()
 
 print("\n\n-= Igor - The Unity Automator =-\n\n")
 
