@@ -792,6 +792,7 @@ namespace Igor
 
 		private static string IgorUpdaterBaseFilename = "IgorUpdater.cs";
 		public static string IgorUpdaterFilename = Path.Combine("Editor", IgorUpdaterBaseFilename);
+        public static string IgorUpdaterURL = "Editor/" +  IgorUpdaterBaseFilename;
 		public static string IgorModulesListFilename = "IgorModuleList.xml";
 		public static string InstalledModulesListPath = Path.Combine(BaseIgorDirectory, IgorModulesListFilename);
 		public static string IgorLocalModulesListFilename = "IgorLocalModulesList.xml";
@@ -965,7 +966,7 @@ namespace Igor
 
 			try
 			{
-				string LocalUpdater = IgorUtils.DownloadFileForUpdate(IgorUpdaterFilename);
+				string LocalUpdater = IgorUtils.DownloadFileForUpdate(IgorUpdaterURL);
 
 				if(File.Exists(LocalUpdater))
 				{
