@@ -43,7 +43,7 @@ namespace Igor
 		{
 			bool bIsEnabled = IgorUtils.IsBoolParamSet(CurrentParams, BoolParam);
 
-			bIsEnabled = EditorGUILayout.Toggle(BoolLabel, bIsEnabled);
+			bIsEnabled = EditorGUILayout.Toggle(new GUIContent(BoolLabel, BoolLabel), bIsEnabled);
 
 			CurrentParams = IgorUtils.SetBoolParam(CurrentParams, BoolParam, bIsEnabled);
 
@@ -54,7 +54,7 @@ namespace Igor
 		{
 			string CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringParam);
 
-			CurrentStringValue = EditorGUILayout.TextField(StringLabel, string.IsNullOrEmpty(CurrentStringValue) ? string.Empty : CurrentStringValue);
+			CurrentStringValue = EditorGUILayout.TextField(new GUIContent(StringLabel, StringLabel), string.IsNullOrEmpty(CurrentStringValue) ? string.Empty : CurrentStringValue);
 
 			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
 		}
@@ -197,7 +197,7 @@ namespace Igor
 
 			EditorGUILayout.BeginHorizontal();
 
-			EditorGUILayout.LabelField(StringLabel, GUILayout.MaxWidth(100.0f));
+			EditorGUILayout.LabelField(new GUIContent(StringLabel, StringLabel), GUILayout.MaxWidth(100.0f));
 
 			EditorGUILayout.BeginHorizontal();
 
@@ -287,16 +287,20 @@ namespace Igor
 				CurrentStringValue = "Not set";
 			}
 
-			List<string> AllOptions = new List<string>();
+			List<GUIContent> AllOptions = new List<GUIContent>();
 
-			AllOptions.Add("Not set");
-			AllOptions.AddRange(ValidOptions);
+			AllOptions.Add(new GUIContent("Not set", "Not set"));
+
+			foreach(string CurrentOption in ValidOptions)
+			{
+				AllOptions.Add(new GUIContent(CurrentOption, CurrentOption));
+			}
 
 			int ChosenIndex = -1;
 
 			for(int CurrentIndex = 0; CurrentIndex < AllOptions.Count; ++CurrentIndex)
 			{
-				if(AllOptions[CurrentIndex] == CurrentStringValue)
+				if(AllOptions[CurrentIndex].text == CurrentStringValue)
 				{
 					ChosenIndex = CurrentIndex;
 				}
@@ -306,7 +310,7 @@ namespace Igor
 			{
 				EditorGUILayout.BeginHorizontal();
 
-				EditorGUILayout.LabelField(StringLabel);
+				EditorGUILayout.LabelField(new GUIContent(StringLabel, StringLabel));
 
 				EditorGUILayout.BeginHorizontal();
 
@@ -325,11 +329,11 @@ namespace Igor
 			}
 			else
 			{
-			    int NewIndex = EditorGUILayout.Popup(StringLabel, ChosenIndex, AllOptions.ToArray());
+			    int NewIndex = EditorGUILayout.Popup(new GUIContent(StringLabel, StringLabel), ChosenIndex, AllOptions.ToArray());
 		        if(NewIndex != ChosenIndex)
 		        {
 		            ChosenIndex = NewIndex;
-		            CurrentStringValue = AllOptions[ChosenIndex];
+		            CurrentStringValue = AllOptions[ChosenIndex].text;
 
 		            if(CurrentStringValue == "Not set")
 		            {
