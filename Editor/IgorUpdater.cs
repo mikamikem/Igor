@@ -192,6 +192,7 @@ namespace Igor
 						PathToSource = AbsolutePath;
                     }
                     
+                    PathToSource = PathToSource.Replace("\\", "/");
 				    WWW www = new WWW(PathToSource);
 					while(!www.isDone)
                     { }
