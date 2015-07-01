@@ -10,15 +10,13 @@ using System.Xml.Serialization;
 
 namespace Igor
 {
-	public class IgorPackageCommon : IgorModuleBase
+	public class IgorDistributionCommon : IgorModuleBase
 	{
-		public static string RunPackageFromMenuFlag = "runpackagefrommenu";
-
-		public static StepID PackageStep = new StepID("Package", 750);
+		public static string RunDistributeFromMenuFlag = "rundistributefrommenu";
 
 		public override string GetModuleName()
 		{
-			return "Package.Common";
+			return "Distribution.Common";
 		}
 
 		public override void RegisterModule()
@@ -30,7 +28,7 @@ namespace Igor
 		{
 			string EnabledParams = CurrentParams;
 
-			DrawBoolParam(ref EnabledParams, "Run Package Steps For Manual Builds", RunPackageFromMenuFlag);
+			DrawBoolParam(ref EnabledParams, "Run Distribution Steps For Manual Builds", RunDistributeFromMenuFlag);
 
 			return EnabledParams;
 		}
@@ -39,9 +37,9 @@ namespace Igor
 		{
 		}
 
-		public static bool RunPackageStepsThisJob()
+		public static bool RunDistributionStepsThisJob()
 		{
-			if(IgorJobConfig.IsBoolParamSet(IgorPackageCommon.RunPackageFromMenuFlag))
+			if(IgorJobConfig.IsBoolParamSet(IgorDistributionCommon.RunDistributeFromMenuFlag))
 			{
 				return true;
 			}

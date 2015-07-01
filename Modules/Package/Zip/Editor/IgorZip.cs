@@ -27,7 +27,7 @@ namespace Igor
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
-			if(IgorJobConfig.IsBoolParamSet(ZipFlag) && IgorJobConfig.GetStringParam(ZipFilenameFlag) != "")
+			if(IgorPackageCommon.RunPackageStepsThisJob() && IgorJobConfig.IsBoolParamSet(ZipFlag) && IgorJobConfig.GetStringParam(ZipFilenameFlag) != "")
 			{
 				IgorCore.SetModuleActiveForJob(this);
 				StepHandler.RegisterJobStep(IgorPackageCommon.PackageStep, this, CreateZip);

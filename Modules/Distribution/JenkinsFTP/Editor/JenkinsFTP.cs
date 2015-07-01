@@ -32,25 +32,28 @@ namespace Igor
 		{
 			bool bStepRegistered = false;
 
-			if(IgorJobConfig.GetStringParam(UploadToFTPFlag) != "" &&
-				(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) ||
-					(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "" && IgorUtils.GetEnvVariable(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag)) == "true")))
+			if(IgorDistributionCommon.RunDistributionStepsThisJob())
 			{
-				StepHandler.RegisterJobStep(UploadToFTPStep, this, UploadToFTP);
+				if(IgorJobConfig.GetStringParam(UploadToFTPFlag) != "" &&
+					(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) ||
+						(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "" && IgorUtils.GetEnvVariable(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag)) == "true")))
+				{
+					StepHandler.RegisterJobStep(UploadToFTPStep, this, UploadToFTP);
 
-				bStepRegistered = true;
-			}
+					bStepRegistered = true;
+				}
 
-			if(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) || IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "")
-			{
-				StepHandler.RegisterJobStep(IgorBuildCommon.PreBuildCleanupStep, this, Cleanup);
+				if(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) || IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "")
+				{
+					StepHandler.RegisterJobStep(IgorBuildCommon.PreBuildCleanupStep, this, Cleanup);
 
-				bStepRegistered = true;
-			}
+					bStepRegistered = true;
+				}
 
-			if(bStepRegistered)
-			{
-				IgorCore.SetModuleActiveForJob(this);
+				if(bStepRegistered)
+				{
+					IgorCore.SetModuleActiveForJob(this);
+				}
 			}
 		}
 

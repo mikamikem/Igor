@@ -29,7 +29,8 @@ namespace Igor
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
-			if(IgorJobConfig.IsBoolParamSet(OTAEnabledFlag) && GetParamOrConfigString(OTAPlistNameFlag) != "" &&
+			if(IgorPackageCommon.RunPackageStepsThisJob() &&
+				IgorJobConfig.IsBoolParamSet(OTAEnabledFlag) && GetParamOrConfigString(OTAPlistNameFlag) != "" &&
 				GetParamOrConfigString(OTAHTTPRootFlag) != "")
 			{
 				IgorCore.SetModuleActiveForJob(this);

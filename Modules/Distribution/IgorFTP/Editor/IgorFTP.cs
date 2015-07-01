@@ -37,7 +37,8 @@ namespace Igor
 		{
 			bool bStepRegistered = false;
 
-			if(GetParamOrConfigString(UploadToFTPHostFlag) != "" && GetParamOrConfigString(UploadToFTPUserFlag) != "" && GetParamOrConfigString(UploadToFTPPassFlag) != "" && 
+			if(IgorDistributionCommon.RunDistributionStepsThisJob() &&
+			   GetParamOrConfigString(UploadToFTPHostFlag) != "" && GetParamOrConfigString(UploadToFTPUserFlag) != "" && GetParamOrConfigString(UploadToFTPPassFlag) != "" && 
 			   GetParamOrConfigString(UploadToFTPDirectoryFlag) != "" && 
 				(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) ||
 					(IgorJobConfig.IsBoolParamSet(UploadToFTPEnvEnableFlag) && GetParamOrConfigString(UploadToFTPEnvNameFlag) != ""

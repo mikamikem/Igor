@@ -32,7 +32,8 @@ namespace Igor
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
-			if(((IgorJobConfig.IsBoolParamSet(CopyToSyncExpEnabledFlag) && GetParamOrConfigString(CopyToSyncExplicitFlag) != "") ||
+			if(IgorDistributionCommon.RunDistributionStepsThisJob() &&
+				((IgorJobConfig.IsBoolParamSet(CopyToSyncExpEnabledFlag) && GetParamOrConfigString(CopyToSyncExplicitFlag) != "") ||
 			    (IgorJobConfig.IsBoolParamSet(CopyToSyncEnvEnabledFlag) &&
 			   	 (GetParamOrConfigString(CopyToSyncEnvFlag) != "" && IgorUtils.GetEnvVariable(GetParamOrConfigString(CopyToSyncEnvFlag)) != ""))) &&
 				GetParamOrConfigString(CopyToSyncFilenameFlag) != "")
