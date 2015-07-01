@@ -69,6 +69,8 @@ namespace Igor
         [SerializeField]
 		protected int _currentJobIndex = -1;
 
+        bool bCreateNewJob;
+
 	    protected int CurrentJobIndex
 	    {
             get {  return Mathf.Clamp(_currentJobIndex, 0, Jobs.Count - 1); }
@@ -155,6 +157,14 @@ namespace Igor
 					IgorCore.RunJob();
 				}
 			}
+
+            if(bCreateNewJob)
+            {
+                IgorPersistentJobConfig NewJob = new IgorPersistentJobConfig();
+				NewJob.JobName = "New job";
+				Jobs.Add(NewJob);
+                bCreateNewJob = false;
+            }
 
 			if(bQueueRepaint)
 			{
@@ -1077,15 +1087,7 @@ namespace Igor
 			int NewJobIndex = EditorGUILayout.Popup("Job to configure", CurrentJobIndex, JobNames.ToArray());
             if(NewJobIndex != CurrentJobIndex || JobNames.Count == 1)
             {
-			    if(_currentJobIndex == (JobNames.Count - 1))
-			    {
-				    IgorPersistentJobConfig NewJob = new IgorPersistentJobConfig();
-
-				    NewJob.JobName = "New job";
-
-				    Jobs.Add(NewJob);
-			    }
-                
+				bCreateNewJob = true;
                 _currentJobIndex = NewJobIndex;
             }
 		}

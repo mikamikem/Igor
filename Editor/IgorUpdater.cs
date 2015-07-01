@@ -783,7 +783,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 28;
+		private const int Version = 29;
 		private const int MajorUpgrade = 1;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
@@ -1162,9 +1162,9 @@ namespace Igor
 
 										if(LocalFile.StartsWith("."))
 										{
-											string Base = Path.Combine(LocalModuleRoot, Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath));
-											string NewLocalFile = LocalFile;
-											int FirstIndex = NewLocalFile.IndexOf("../");
+											string Base = Path.Combine(LocalModuleRoot.Replace('/', Path.DirectorySeparatorChar), Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+											string NewLocalFile = LocalFile.Replace('/', Path.DirectorySeparatorChar);
+											int FirstIndex = NewLocalFile.IndexOf(".." + Path.DirectorySeparatorChar);
 
 											while(FirstIndex != -1)
 											{
@@ -1177,7 +1177,7 @@ namespace Igor
 
 												NewLocalFile = NewLocalFile.Substring(3);
 
-												FirstIndex = NewLocalFile.IndexOf("../");
+												FirstIndex = NewLocalFile.IndexOf(".." + Path.DirectorySeparatorChar);
 											}
 
 											FullLocalPath = Path.Combine(Base, NewLocalFile);
