@@ -738,6 +738,11 @@ namespace Igor
 					    bIsDrawingInspector = true;
 				    }
 
+				    if(GUILayout.Button("Duplicate Job"))
+				    {
+				    	DuplicateSelectedJob();
+				    }
+
 				    if(GUILayout.Button("Delete job") && !EditorUtility.DisplayDialog("Delete this job configuration?", "This will delete the whole job!  Are you sure you want to delete this?", "I'm not ready yet...", "Yup delete the job!"))
 				    {
 					    DeleteSelectedJob();
@@ -1087,9 +1092,24 @@ namespace Igor
 			int NewJobIndex = EditorGUILayout.Popup("Job to configure", CurrentJobIndex, JobNames.ToArray());
             if(NewJobIndex != CurrentJobIndex || JobNames.Count == 1)
             {
-				bCreateNewJob = true;
+            	if(NewJobIndex == (JobNames.Count - 1))
+            	{
+					bCreateNewJob = true;
+				}
+
                 _currentJobIndex = NewJobIndex;
             }
+		}
+
+		public virtual void DuplicateSelectedJob()
+		{
+            IgorPersistentJobConfig NewJob = new IgorPersistentJobConfig();
+			NewJob.JobName = Jobs[CurrentJobIndex].JobName + " Copy";
+			NewJob.JobCommandLineParams = Jobs[CurrentJobIndex].JobCommandLineParams;
+			Jobs.Add(NewJob);
+
+			CurrentJobIndex = Jobs.Count - 1;
+			_currentJobIndex = Jobs.Count - 1;
 		}
 
 		public virtual void DeleteSelectedJob()
