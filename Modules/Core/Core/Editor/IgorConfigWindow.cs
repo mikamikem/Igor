@@ -644,6 +644,10 @@ namespace Igor
 			                            	{
 			                            		Application.OpenURL("https://github.com/mikamikem/Igor/blob/master/Modules/" + MergedName.Replace(".", "/") + "/Readme.md");
 			                            	}
+                                            if(GUILayout.Button("Force update module"))
+			                            	{
+			                            		IgorUpdater.UpdateModule(MergedName, true);
+			                            	}
 			                            }
 			                            else
 			                            {

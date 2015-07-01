@@ -783,7 +783,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 27;
+		private const int Version = 28;
 		private const int MajorUpgrade = 1;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
@@ -1049,7 +1049,7 @@ namespace Igor
 
 				UpdatedModules.Clear();
 
-				if(UpdateModule(CoreModuleName))
+				if(UpdateModule(CoreModuleName, false))
 				{
 					return true;
 				}
@@ -1086,7 +1086,7 @@ namespace Igor
 			return false;
 		}
 
-		public static bool UpdateModule(string ModuleName)
+		public static bool UpdateModule(string ModuleName, bool ForceUpdate)
 		{
 			bool bUpdated = false;
 
@@ -1127,13 +1127,13 @@ namespace Igor
 								{
 									foreach(string CurrentDependency in NewModuleDescriptorInst.ModuleDependencies)
 									{
-										bUpdated = UpdateModule(CurrentDependency) || bUpdated;
+										bUpdated = UpdateModule(CurrentDependency, ForceUpdate) || bUpdated;
 									}
 								}
 
 								int NewVersion = NewModuleDescriptorInst.ModuleVersion;
 
-								if(CurrentModuleDescriptorInst == null || NewVersion > CurrentModuleDescriptorInst.ModuleVersion || bAlwaysUpdate)
+								if(CurrentModuleDescriptorInst == null || NewVersion > CurrentModuleDescriptorInst.ModuleVersion || bAlwaysUpdate || ForceUpdate)
 								{
 									bUpdated = true;
                                     UpdatedContent.Add(ModuleName);
@@ -1250,7 +1250,7 @@ namespace Igor
 
 					foreach(string CurrentModule in Core.GetEnabledModuleNames())
 					{
-						bUpdated = UpdateModule(CurrentModule) || bUpdated;
+						bUpdated = UpdateModule(CurrentModule, false) || bUpdated;
 					}
 
 					if(bUpdated)
