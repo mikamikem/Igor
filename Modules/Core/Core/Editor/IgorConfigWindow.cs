@@ -744,7 +744,8 @@ namespace Igor
 			{
 				EditorGUILayout.Separator();
 
-				CurrentJobInst.JobName = EditorGUILayout.TextField("Job Name", CurrentJobInst.JobName);
+                string JobName = !string.IsNullOrEmpty(CurrentJobInst.JobName) ? CurrentJobInst.JobName : "New Job";
+				CurrentJobInst.JobName = EditorGUILayout.TextField("Job Name", JobName);
 
 				EditorGUILayout.Separator();
 
