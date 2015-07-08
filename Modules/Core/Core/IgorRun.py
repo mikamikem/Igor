@@ -397,10 +397,10 @@ print("Calling Unity with pass through parameters " + passthroughstring)
 
 CreateJobConfigFile(passthroughstring)
 
-FunctionName = "Igor.IgorCore.UpdateAndRunJob"
+FunctionName = "Igor.IgorEditorCore.UpdateAndRunJob"
 
 if testargs.nounityupdate:
-	FunctionName = "Igor.IgorCore.CommandLineRunJob"
+	FunctionName = "Igor.IgorEditorCore.CommandLineRunJob"
 
 RunUnity(FunctionName)
 

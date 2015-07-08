@@ -1,5 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif // UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -27,6 +29,7 @@ namespace Igor
 			IgorCore.RegisterNewModule(this);
 		}
 
+#if UNITY_EDITOR
 		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
@@ -43,18 +46,18 @@ namespace Igor
 			string MinVersionParam = "";
 			string MaxVersionParam = "";
 
-			if(IgorUtils.IsStringParamSet(CurrentParams, MinUnityVersionFlag))
+			if(IgorRuntimeUtils.IsStringParamSet(CurrentParams, MinUnityVersionFlag))
 			{
-				MinVersionParam = IgorUtils.GetStringParam(CurrentParams, MinUnityVersionFlag);
+				MinVersionParam = IgorRuntimeUtils.GetStringParam(CurrentParams, MinUnityVersionFlag);
 			}
 			else
 			{
 				MinVersionParam = GetConfigString(MinUnityVersionFlag);
 			}
 
-			if(IgorUtils.IsStringParamSet(CurrentParams, MaxUnityVersionFlag))
+			if(IgorRuntimeUtils.IsStringParamSet(CurrentParams, MaxUnityVersionFlag))
 			{
-				MaxVersionParam = IgorUtils.GetStringParam(CurrentParams, MaxUnityVersionFlag);
+				MaxVersionParam = IgorRuntimeUtils.GetStringParam(CurrentParams, MaxUnityVersionFlag);
 			}
 			else
 			{
@@ -399,6 +402,7 @@ namespace Igor
 
 			return -1;
 		}
+#endif // UNITY_EDITOR
 		
 		public class UnityVersionInfo
 		{

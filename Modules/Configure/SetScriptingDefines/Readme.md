@@ -24,3 +24,5 @@ This module does not require any changes to your project.
 This module only runs in the editor.
 
 ## Developer Info
+
+This module does not expose any useful functionality for development purposes.

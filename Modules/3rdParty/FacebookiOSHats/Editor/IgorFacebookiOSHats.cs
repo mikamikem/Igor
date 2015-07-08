@@ -54,7 +54,7 @@ namespace Igor
 			string FacebookID = GetParamOrConfigString(FacebookIDFlag, "Your Facebook ID hasn't been set!  Facebook functionality will probably not work correctly.");
 			string FacebookDisplayName = GetParamOrConfigString(FacebookDisplayNameFlag, "Your Facebook Display Name hasn't been set!  Facebook functionality will probably not work correctly.");
 
-			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Attempting to update the XCode project, but one was not generated in the build phase!"))
 			{

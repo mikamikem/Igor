@@ -47,7 +47,7 @@ namespace Igor
 
 		public virtual bool UpdateXCodeProj()
 		{
-			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Attempting to update the XCode project, but one was not generated in the build phase!"))
 			{

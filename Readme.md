@@ -106,6 +106,10 @@ Check out the [Developer Readme](DeveloperReadme.md) for more information on wri
 
 ## Upgrading from an old version?
 
+### July 8th, 2015
+
+Igor's module architecture has been refactored to better support runtime modules and runtime jobs.  If you're upgrading from an older version you should delete your Modules folder and let Igor re-download the new modules.  Unfortunately too many pieces changed all at once and it wasn't possible to automatically update to the new architecture.
+
 ### June 18th, 2015
 
 Igor now exists under Assets\Igor instead of Assets\Editor\Igor.  This allows the modules to determine what portion of their scripts are compiled as editor scripts and which scripts can be used at runtime.  With this change the Updater script now includes a MajorUpgrade variable that allows the Updater to know when it must update itself first and re-compile before upgrading the modules.  Since this wasn't in place, we had to break the old updater and the only way I could find to do that was to empty the module list and so subsequently, this change also moves the module list from IgorModulesList.xml to IgorModuleList.xml.

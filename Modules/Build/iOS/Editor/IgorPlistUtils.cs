@@ -33,21 +33,21 @@ namespace Igor
 							{
 								RootDictionary[BoolKey] = new NSNumber(bValue);
 
-								IgorUtils.DeleteFile(PlistPath);
+								IgorRuntimeUtils.DeleteFile(PlistPath);
 
 								PropertyListParser.SaveAsXml(RootDictionary, PlistFileInfo);
 
-								IgorCore.Log(ModuleInst, "Plist key " + BoolKey + " updated to " + bValue);
+								IgorDebug.Log(ModuleInst, "Plist key " + BoolKey + " updated to " + bValue);
 							}
 							else
 							{
 								RootDictionary.Add(BoolKey, new NSNumber(bValue));
 
-								IgorUtils.DeleteFile(PlistPath);
+								IgorRuntimeUtils.DeleteFile(PlistPath);
 
 								PropertyListParser.SaveAsXml(RootDictionary, PlistFileInfo);
 
-								IgorCore.Log(ModuleInst, "Plist key " + BoolKey + " added with value of " + bValue);
+								IgorDebug.Log(ModuleInst, "Plist key " + BoolKey + " added with value of " + bValue);
 							}
 						}
 					}
@@ -113,21 +113,21 @@ namespace Igor
 							{
 								RootDictionary[StringKey] = new NSString(Value);
 
-								IgorUtils.DeleteFile(PlistPath);
+								IgorRuntimeUtils.DeleteFile(PlistPath);
 
 								PropertyListParser.SaveAsXml(RootDictionary, PlistFileInfo);
 
-								IgorCore.Log(ModuleInst, "Plist key " + StringKey + " updated to " + Value);
+								IgorDebug.Log(ModuleInst, "Plist key " + StringKey + " updated to " + Value);
 							}
 							else
 							{
 								RootDictionary.Add(StringKey, new NSString(Value));
 
-								IgorUtils.DeleteFile(PlistPath);
+								IgorRuntimeUtils.DeleteFile(PlistPath);
 
 								PropertyListParser.SaveAsXml(RootDictionary, PlistFileInfo);
 
-								IgorCore.Log(ModuleInst, "Plist key " + StringKey + " added with value of " + Value);
+								IgorDebug.Log(ModuleInst, "Plist key " + StringKey + " added with value of " + Value);
 							}
 						}
 					}
@@ -165,7 +165,7 @@ namespace Igor
 										{
 											if(CapabilitiesArray.ContainsObject(new NSString(NewRequiredDeviceCapability)))
 											{
-												IgorCore.Log(ModuleInst, "UIRequiredDeviceCapabilities already contains " + NewRequiredDeviceCapability);
+												IgorDebug.Log(ModuleInst, "UIRequiredDeviceCapabilities already contains " + NewRequiredDeviceCapability);
 											}
 											else
 											{
@@ -177,11 +177,11 @@ namespace Igor
 
 												RootDictionary["UIRequiredDeviceCapabilities"] = NewCapabilitiesArray;
 
-												IgorUtils.DeleteFile(PlistPath);
+												IgorRuntimeUtils.DeleteFile(PlistPath);
 
 												PropertyListParser.SaveAsXml(RootDictionary, PlistFileInfo);
 
-												IgorCore.Log(ModuleInst, NewRequiredDeviceCapability + " added to UIRequiredDeviceCapabilities.");
+												IgorDebug.Log(ModuleInst, NewRequiredDeviceCapability + " added to UIRequiredDeviceCapabilities.");
 											}
 										}
 									}
@@ -268,7 +268,7 @@ namespace Igor
 																{
 																	bAlreadyExists = true;
 
-																	IgorCore.Log(ModuleInst, "URL scheme " + NewURLScheme + " is already in " + PlistPath);
+																	IgorDebug.Log(ModuleInst, "URL scheme " + NewURLScheme + " is already in " + PlistPath);
 
 																	break;
 																}
@@ -302,16 +302,16 @@ namespace Igor
 								{
 									RootDictionary["CFBundleURLTypes"] = BundleURLTypesArray;
 
-									IgorCore.Log(ModuleInst, "Updated CFBundleURLTypes to add " + NewURLScheme + ".");
+									IgorDebug.Log(ModuleInst, "Updated CFBundleURLTypes to add " + NewURLScheme + ".");
 								}
 								else
 								{
 									RootDictionary.Add("CFBundleURLTypes", BundleURLTypesArray);
 
-									IgorCore.Log(ModuleInst, "Added CFBundleURLTypes to add " + NewURLScheme + ".");
+									IgorDebug.Log(ModuleInst, "Added CFBundleURLTypes to add " + NewURLScheme + ".");
 								}
 
-								IgorUtils.DeleteFile(PlistPath);
+								IgorRuntimeUtils.DeleteFile(PlistPath);
 
 								PropertyListParser.SaveAsXml(RootDictionary, PlistFileInfo);
 							}

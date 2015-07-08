@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -26,6 +25,7 @@ namespace Igor
 			IgorCore.RegisterNewModule(this);
 		}
 
+#if UNITY_EDITOR
 		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
@@ -34,6 +34,7 @@ namespace Igor
 
 			return EnabledParams;
 		}
+#endif // UNITY_EDITOR
 
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{

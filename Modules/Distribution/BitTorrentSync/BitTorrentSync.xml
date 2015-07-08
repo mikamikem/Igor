@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Distribution.BitTorrentSync</ModuleName>
-  <ModuleVersion>8</ModuleVersion>
+  <ModuleVersion>9</ModuleVersion>
   <ModuleFiles>
-    <File>Editor/BitTorrentSync.cs</File>
+    <File>Runtime/BitTorrentSync.cs</File>
     <File>Readme.md</File>
   </ModuleFiles>
   <ModuleDependencies>
-    <Module>Build.Common</Module>
     <Module>Distribution.Common</Module>
   </ModuleDependencies>
 </IgorModuleDescriptor>

@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Package.Zip</ModuleName>
-  <ModuleVersion>14</ModuleVersion>
+  <ModuleVersion>15</ModuleVersion>
   <ModuleFiles>
-    <File>Editor/IgorZip.cs</File>
+    <File>Runtime/IgorZip.cs</File>
     <File>Readme.md</File>
   </ModuleFiles>
   <ModuleDependencies>
-    <Module>Build.Common</Module>
     <Module>Package.Common</Module>
   </ModuleDependencies>
 </IgorModuleDescriptor>

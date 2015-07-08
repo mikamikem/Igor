@@ -19,7 +19,7 @@ This module does not require any changes to your project.
 
 ## Runtime Info
 
-This module only runs in the editor.
+This module is fully available at runtime except for the configuration window and a few utility functions.
 
 ## Developer Info
 

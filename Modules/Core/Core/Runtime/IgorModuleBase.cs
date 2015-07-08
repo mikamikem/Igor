@@ -1,5 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif // UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -29,6 +31,9 @@ namespace Igor
         {
         }
 
+#if UNITY_EDITOR
+        public static bool bIsDrawingInspector = false;
+
 		public virtual string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			return CurrentParams;
@@ -41,22 +46,22 @@ namespace Igor
 
 		public virtual bool DrawBoolParam(ref string CurrentParams, string BoolLabel, string BoolParam)
 		{
-			bool bIsEnabled = IgorUtils.IsBoolParamSet(CurrentParams, BoolParam);
+			bool bIsEnabled = IgorRuntimeUtils.IsBoolParamSet(CurrentParams, BoolParam);
 
 			bIsEnabled = EditorGUILayout.Toggle(new GUIContent(BoolLabel, BoolLabel), bIsEnabled);
 
-			CurrentParams = IgorUtils.SetBoolParam(CurrentParams, BoolParam, bIsEnabled);
+			CurrentParams = IgorRuntimeUtils.SetBoolParam(CurrentParams, BoolParam, bIsEnabled);
 
             return bIsEnabled;
 		}
 
 		public virtual void DrawStringParam(ref string CurrentParams, string StringLabel, string StringParam)
 		{
-			string CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringParam);
+			string CurrentStringValue = IgorRuntimeUtils.GetStringParam(CurrentParams, StringParam);
 
 			CurrentStringValue = EditorGUILayout.TextField(new GUIContent(StringLabel, StringLabel), string.IsNullOrEmpty(CurrentStringValue) ? string.Empty : CurrentStringValue);
 
-			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+			CurrentParams = IgorRuntimeUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
 		}
 
 		protected static Texture2D LabelFieldBGGreen = null;
@@ -174,9 +179,9 @@ namespace Igor
 
 			if(OverrideCurrentValue == null)
 			{
-				if(IgorUtils.IsStringParamSet(CurrentParams, StringOverrideParam))
+				if(IgorRuntimeUtils.IsStringParamSet(CurrentParams, StringOverrideParam))
 				{
-					CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringOverrideParam);
+					CurrentStringValue = IgorRuntimeUtils.GetStringParam(CurrentParams, StringOverrideParam);
 				}
 				else
 				{
@@ -270,7 +275,7 @@ namespace Igor
 
 			EditorGUILayout.EndHorizontal();
 
-			CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringOverrideParam, CurrentStringValue);
+			CurrentParams = IgorRuntimeUtils.SetStringParam(CurrentParams, StringOverrideParam, CurrentStringValue);
 		}
 
 		public virtual void DrawStringOptionsParam(ref string CurrentParams, string StringLabel, string StringParam, List<string> ValidOptions)
@@ -280,7 +285,7 @@ namespace Igor
 
 		public virtual void DrawStringOptionsParam(ref string CurrentParams, string StringLabel, string StringParam, string[] ValidOptions)
 		{
-			string CurrentStringValue = IgorUtils.GetStringParam(CurrentParams, StringParam);
+			string CurrentStringValue = IgorRuntimeUtils.GetStringParam(CurrentParams, StringParam);
 
 			if(CurrentStringValue == "")
 			{
@@ -320,7 +325,7 @@ namespace Igor
 				{
 					CurrentStringValue = "";
 
-					CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+					CurrentParams = IgorRuntimeUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
 				}
 
 				EditorGUILayout.EndHorizontal();
@@ -340,35 +345,36 @@ namespace Igor
 		                CurrentStringValue = "";
 		            }
 
-		            CurrentParams = IgorUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
+		            CurrentParams = IgorRuntimeUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
 		        }
             }
 		}
+#endif //UNITY_EDITOR
 
 		public virtual void Log(string Message)
 		{
-			IgorCore.Log(this, Message);
+			IgorDebug.Log(this, Message);
 		}
 
 		public virtual void LogWarning(string Message)
 		{
-			IgorCore.LogWarning(this, Message);
+			IgorDebug.LogWarning(this, Message);
 		}
 
 		public virtual void LogError(string Message)
 		{
-			IgorCore.LogError(this, Message);
+			IgorDebug.LogError(this, Message);
 		}
 
 		public virtual void CriticalError(string Message)
 		{
-			IgorCore.CriticalError(this, Message);
+			IgorDebug.CriticalError(this, Message);
 		}
 
 		public virtual string GetParamOrConfigString(string StringKey, string EmptyStringWarningMessage = "", string DefaultValue = "", bool bCheckForEmpty = true)
 		{
 #if UNITY_EDITOR
-			if(IgorConfigWindow.bIsDrawingInspector && EmptyStringWarningMessage != "")
+			if(bIsDrawingInspector && EmptyStringWarningMessage != "")
 			{
 				LogError("Don't call this from within a DrawJobInspectorAndGetEnabledParams implementation!  This isn't accessing the right job config value since it hasn't been saved to disk yet.");
 			}

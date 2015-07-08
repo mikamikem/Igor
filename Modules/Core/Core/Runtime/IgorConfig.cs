@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif // UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -14,7 +16,7 @@ namespace Igor
 	public class IgorConfig
 	{
 		public static string IgorConfigFilename = "IgorConfig.xml";
-		public static string DefaultConfigPath = Path.Combine(IgorUpdater.BaseIgorDirectory, IgorConfigFilename);
+		public static string DefaultConfigPath = "";
 		private static IgorConfig Instance = null;
 
 		public static IgorConfig GetInstance()
@@ -55,7 +57,7 @@ namespace Igor
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorConfig));
 
-	 		IgorUtils.DeleteFile(path);
+	 		IgorRuntimeUtils.DeleteFile(path);
 
 	 		using(FileStream stream = new FileStream(path, FileMode.Create))
 	 		{
@@ -292,7 +294,7 @@ namespace Igor
 			return null;
 		}
 
-		public static void TriggerJobByName(string JobName, bool bFromMenu, bool bAttemptUpdate)
+		public static void SetJobToRunByName(string JobName)
 		{
 			IgorConfig Inst = GetInstance();
 
@@ -307,15 +309,6 @@ namespace Igor
 						NewConfig.Persistent = CurrentJob;
 
 						NewConfig.Save(IgorJobConfig.IgorJobConfigPath);
-
-					    if(!bAttemptUpdate)
-					    {
-					        IgorCore.RunJob(bFromMenu);
-					    }
-					    else
-					    {
-					        IgorCore.UpdateAndRunJob();
-					    }
 
 					    return;
 					}

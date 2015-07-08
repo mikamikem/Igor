@@ -79,12 +79,12 @@ namespace Igor
 
 		public override bool ShouldDrawInspectorForParams(string CurrentParams)
 		{
-			bool bBuilding = IgorUtils.IsBoolParamSet(CurrentParams, IgorBuildCommon.BuildFlag);
+			bool bBuilding = IgorRuntimeUtils.IsBoolParamSet(CurrentParams, IgorBuildCommon.BuildFlag);
 			bool bRecognizedPlatform = false;
 
 			if(bBuilding)
 			{
-				string Platform = IgorUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
+				string Platform = IgorRuntimeUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
 
 				if(Platform == "iOS")
 				{
@@ -168,7 +168,7 @@ namespace Igor
 
 			if(Directory.Exists(XCodeProjDirectory))
 			{
-				IgorUtils.DeleteDirectory(XCodeProjDirectory);
+				IgorRuntimeUtils.DeleteDirectory(XCodeProjDirectory);
 			}
 
 			Log("XCode project destination directory is: " + XCodeProjDirectory);
@@ -190,14 +190,14 @@ namespace Igor
 				BuiltFiles.Add(XCodeProjDirectory);
 			}
 
-			IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
+			IgorCore.SetNewModuleProducts(BuiltFiles);
 
 			return true;
 		}
 
 		public virtual bool FixupXCodeProj()
 		{
-			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 			string DevTeamID = GetParamOrConfigString(iOSDevTeamIDFlag, "Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
 			string SigningIdentity = GetParamOrConfigString(iOSProvisionProfileFlag, "Your Signing Identity hasn't been set!  Your build may not sign correctly.");
@@ -230,7 +230,7 @@ namespace Igor
 
 		public virtual bool BuildXCodeProj()
 		{
-			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 			string SigningIdentity = GetParamOrConfigString(iOSProvisionProfileFlag, "Your Signing Identity hasn't been set!  Your build may not sign correctly.");
 			string ProvisionPath = GetParamOrConfigString(iOSMobileProvisionFlag, "Your Mobile Provision path hasn't been set!  Your build may not sign correctly.");
@@ -244,7 +244,7 @@ namespace Igor
 
 				string FullBuildProductPath = Path.Combine(Path.GetFullPath("."), BuildProducts[0]);
 
-				int BuildExitCode = IgorUtils.RunProcessCrossPlatform(this, "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
+				int BuildExitCode = IgorRuntimeUtils.RunProcessCrossPlatform(this, "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
 					"-project Unity-iPhone.xcodeproj clean build", FullBuildProductPath, "XCode build");
 
 				if(BuildExitCode != 0)
@@ -257,7 +257,7 @@ namespace Igor
 
 				string LastBundleIdentifierPart = PlayerSettings.bundleIdentifier.Substring(PlayerSettings.bundleIdentifier.LastIndexOf('.') + 1);
 
-				BuildExitCode = IgorUtils.RunProcessCrossPlatform(this, "/usr/bin/xcrun", "",
+				BuildExitCode = IgorRuntimeUtils.RunProcessCrossPlatform(this, "/usr/bin/xcrun", "",
 					"-sdk iphoneos PackageApplication -v \"build/" + LastBundleIdentifierPart + ".app\" -o \"" + Path.Combine(FullBuildProductPath, BuiltName + ".ipa") +
 					"\" --sign \"" + SigningIdentity + "\" --embed \"../" + ProvisionPath + "\"",
 					FullBuildProductPath, "Packaging the application");
@@ -281,7 +281,7 @@ namespace Igor
 					NewBuildProducts.Add(BuildProducts[0]);
 				}
 
-				IgorBuildCommon.SetNewBuildProducts(NewBuildProducts);
+				IgorCore.SetNewModuleProducts(NewBuildProducts);
 
 				Log("Packaging the application succeeded!\nOutput:\n" + BuildOutput + "\n\n\nError:\n" + BuildError);
 			}

@@ -36,7 +36,7 @@ namespace Igor
 			{
 				if(IgorJobConfig.GetStringParam(UploadToFTPFlag) != "" &&
 					(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) ||
-						(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "" && IgorUtils.GetEnvVariable(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag)) == "true")))
+						(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag) != "" && IgorRuntimeUtils.GetEnvVariable(IgorJobConfig.GetStringParam(UploadToFTPEnvToggleFlag)) == "true")))
 				{
 					StepHandler.RegisterJobStep(UploadToFTPStep, this, UploadToFTP);
 
@@ -74,7 +74,7 @@ namespace Igor
 
 			if(File.Exists(DestinationFile))
 			{
-				IgorUtils.DeleteFile(DestinationFile);
+				IgorRuntimeUtils.DeleteFile(DestinationFile);
 			}
 
 			return true;
@@ -82,7 +82,7 @@ namespace Igor
 
 		public virtual bool UploadToFTP()
 		{
-			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuiltProducts = IgorCore.GetModuleProducts();
 
 			IgorAssert.EnsureTrue(this, BuiltProducts.Count == 1, "This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
 

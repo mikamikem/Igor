@@ -75,7 +75,7 @@ When a module specifies dependencies they are automatically retrieved and kept u
 
 ### Module C# Structure
 
-Each module contains one class that derives from [IIgorModule](Modules/Core/Core/Editor/IIgorModule.cs), although it is highly recommended to derive from [IgorModuleBase](Modules/Core/Core/Editor/IgorModuleBase.cs) since there are numerous helper functions in [IgorModuleBase](Modules/Core/Core/Editor/IgorModuleBase.cs) that are useful for every module.  Regardless of what you derive from, in the Module's primary class, you need to:
+Each module contains one class that derives from [IIgorModule](Modules/Core/Core/Runtime/IIgorModule.cs), although it is highly recommended to derive from [IgorModuleBase](Modules/Core/Core/Runtime/IgorModuleBase.cs) since there are numerous helper functions in [IgorModuleBase](Modules/Core/Core/Runtime/IgorModuleBase.cs) that are useful for every module.  Regardless of what you derive from, in the Module's primary class, you need to:
 
 1. Swap the name returned by GetModuleName()
 2. Register the module with Core in an override of RegisterModule():
@@ -103,7 +103,7 @@ Each module contains one class that derives from [IIgorModule](Modules/Core/Core
 
 #### Parameters And Config Values
 
-If you inherited from [IgorModuleBase](Modules/Core/Core/Editor/IgorModuleBase.cs), you have several helper functions available to you to access and get the user's input for parameters and config values.
+If you inherited from [IgorModuleBase](Modules/Core/Core/Runtime/IgorModuleBase.cs), you have several helper functions available to you to access and get the user's input for parameters and config values.
 
 ##### Getting User Input
 
@@ -164,7 +164,7 @@ The StepID contains a name for display purposes as well as a priority.  The lowe
 
 #### Logging
 
-If you inherited from [IgorModuleBase](Modules/Core/Core/Editor/IgorModuleBase.cs), you have several helper functions available to you for logging.  Use these functions unless you have a really good reason not to so that all the modules follow a consistent logging system.  The logging functions are:
+If you inherited from [IgorModuleBase](Modules/Core/Core/Runtime/IgorModuleBase.cs), you have several helper functions available to you for logging.  Use these functions unless you have a really good reason not to so that all the modules follow a consistent logging system.  The logging functions are:
 
 ```
 void Log(string Message);
@@ -204,23 +204,23 @@ If you have more complex logic that you want to write outside of an assert you c
 IgorAssert.JobFailed();
 ```
 
-#### Build Products
+#### Module Products
 
-One way for the Modules to communicate with each other is by depending on a common module that can stash information relevant to all of the modules.  An example can be found in the [Build Common Module](Modules/Build/Common/Editor/IgorBuildCommon.cs) with build products.
+One way for the Modules to communicate with each other is by using the Core module to stash generated products.
 
-The idea with build products is to keep track of the most recent build product so that each module can pick up from where the last one left off.  Here's an example flow:
+The idea with module products is to keep track of the most recent products so that each module can pick up from where the last one left off.  Here's an example flow:
 
 1. The [Desktop Builder class](Modules/Build/Desktop/Editor/IgorBuildDesktop.cs) executes its Build() function which calls:
 
 	```
-	IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
+	IgorCore.SetNewModuleProducts(BuiltFiles);
 	```
 
 	To track the built desktop app's file (let's say the file is called "Unity.exe" for example).
-2. The [Zip class](Modules/Package/Zip/Editor/IgorZip.cs) executes the CreateZip() function which checks:
+2. The [Zip class](Modules/Package/Zip/Runtime/IgorZip.cs) executes the CreateZip() function which checks:
 
 	```
-	List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
+	List<string> BuiltProducts = IgorCore.GetModuleProducts();
 	```
 
 	To retrieve all the files that were produced by the previous step so that it can zip them up.
@@ -230,7 +230,7 @@ The idea with build products is to keep track of the most recent build product s
 	It then eventually calls:
 
 	```
-	IgorBuildCommon.SetNewBuildProducts(NewProducts);
+	IgorCore.SetNewModuleProducts(NewProducts);
 	```
 
 	Again to set the newly created zip file as the latest build product.  Note that it doesn't keep the old files around, but that you could include the build products that you were provided at the start of your module's job step in your job step's new build products list.
@@ -238,7 +238,7 @@ The idea with build products is to keep track of the most recent build product s
 #### Best Practices
 
 - Keep all of your flag names, config names, and StepIDs in static variables on the class with the highest reasonable reason to have them so that they can be shared across as many modules as possible.
-- Always use the [IgorModuleBase](Modules/Core/Core/Editor/IgorModuleBase.cs) logging functions so that the logs stay consistent.
+- Always use the [IgorModuleBase](Modules/Core/Core/Runtime/IgorModuleBase.cs) or [IgorDebug](Modules/Core/Core/Runtime/IgorDebug.cs) logging functions so that the logs stay consistent.
 - Use the asserts as often as possible so that it's obvious when something goes wrong and provide a good failure message...trust me, you'll be glad you did.
 
 ## Dev environment setup
@@ -276,7 +276,9 @@ To create a module, I highly suggest you look through some of the other modules 
 1. Duplicate an existing module and place it under the appropriate folder structure (for Build.iOS, place the files under Modules/Build/iOS).
 	- If you are using the recommended development environment setup, you put the files and folders in the working copy folder for a shared module or your primary project for a local module.
 2. In the XML file, make sure the module name, files, and dependencies match what you need for your module and make sure that you reset your version number to 1.
-3. Include at least one source file that derives from [IIgorModule](Modules/Core/Core/Editor/IIgorModule.cs).
+3. Include at least one source file that derives from [IIgorModule](Modules/Core/Core/Runtime/IIgorModule.cs).
+	- For script files, if your module could be useful outside of the editor, make sure that the class deriving from [IIgorModule](Modules/Core/Core/Runtime/IIgorModule.cs) is in the Runtime folder for your module and not the Editor folder.
+	- If you have some functionality that would be useful at runtime, but also want some to be Editor only, please separate out your module as needed.
 4. Duplicate a module Readme.md file like the [Core Readme](Modules/Core/Core/Readme.md) and fill in the appropriate information for your module.
 5. Add your module to the appropriate module list XML file.
 	1. If you are creating a shared module to submit to GitHub, add your module to [Assets/Igor/IgorModuleList.xml](IgorModuleList.xml).  If you are using the recommended development environment setup, you want to add your module to the working copy's IgorModuleList.

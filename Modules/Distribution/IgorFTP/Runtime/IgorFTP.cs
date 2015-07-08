@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -42,7 +41,7 @@ namespace Igor
 			   GetParamOrConfigString(UploadToFTPDirectoryFlag) != "" && 
 				(IgorJobConfig.IsBoolParamSet(UploadToFTPNoEnvFlag) ||
 					(IgorJobConfig.IsBoolParamSet(UploadToFTPEnvEnableFlag) && GetParamOrConfigString(UploadToFTPEnvNameFlag) != ""
-						&& IgorUtils.GetEnvVariable(GetParamOrConfigString(UploadToFTPEnvNameFlag)) == "true")))
+						&& IgorRuntimeUtils.GetEnvVariable(GetParamOrConfigString(UploadToFTPEnvNameFlag)) == "true")))
 			{
 				StepHandler.RegisterJobStep(UploadToFTPStep, this, UploadToFTP);
 
@@ -50,6 +49,7 @@ namespace Igor
 			}
 		}
 
+#if UNITY_EDITOR
 		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
@@ -68,10 +68,11 @@ namespace Igor
 
 			return EnabledParams;
 		}
+#endif // UNITY_EDITOR
 
 		public virtual bool UploadToFTP()
 		{
-			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuiltProducts = IgorCore.GetModuleProducts();
 
 			string FTPRoot = GetParamOrConfigString(UploadToFTPHostFlag, "FTP Upload host is not set!  Can't upload without a host!");
 			string FTPUsername = GetParamOrConfigString(UploadToFTPUserFlag, "FTP Upload username is not set!  Can't upload without a username!");

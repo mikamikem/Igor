@@ -64,12 +64,12 @@ namespace Igor
 
 		public override bool ShouldDrawInspectorForParams(string CurrentParams)
 		{
-			bool bBuilding = IgorUtils.IsBoolParamSet(CurrentParams, IgorBuildCommon.BuildFlag);
+			bool bBuilding = IgorRuntimeUtils.IsBoolParamSet(CurrentParams, IgorBuildCommon.BuildFlag);
 			bool bRecognizedPlatform = false;
 
 			if(bBuilding)
 			{
-				string Platform = IgorUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
+				string Platform = IgorRuntimeUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
 
 				if(Platform == "Android")
 				{
@@ -196,7 +196,7 @@ namespace Igor
 				
 				if(Directory.Exists(AndroidProjDirectory))
 				{
-					IgorUtils.DeleteDirectory(AndroidProjDirectory);
+					IgorRuntimeUtils.DeleteDirectory(AndroidProjDirectory);
 				}
 				
 				// We need to force create the directory before we use it or it will prompt us for a path to build to
@@ -242,7 +242,7 @@ namespace Igor
 
 				BuiltFiles.Add(AndroidProjDirectory);
 
-				IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
+				IgorCore.SetNewModuleProducts(BuiltFiles);
 
 				Log("Triggered export of Android Eclipse project.");
 
@@ -250,7 +250,7 @@ namespace Igor
 			}
 			else
 			{
-				List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+				List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 				if(File.Exists(Path.Combine(BuildProducts[0], Path.Combine(PlayerSettings.productName, "project.properties"))))
 				{
@@ -265,7 +265,7 @@ namespace Igor
 
 		public virtual bool BuildAndroidProj()
 		{
-			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Building the Android project, but there were no previous built products."))
 			{
@@ -312,7 +312,7 @@ namespace Igor
 
 				if(File.Exists(FinalBuildProductName))
 				{
-					IgorUtils.DeleteFile(FinalBuildProductName);
+					IgorRuntimeUtils.DeleteFile(FinalBuildProductName);
 				}
 
 				File.Copy(AppropriatelySignedAPK, FinalBuildProductName);
@@ -324,7 +324,7 @@ namespace Igor
 					NewBuildProducts.Add(AppropriatelySignedAPK);
 				}
 
-				IgorBuildCommon.SetNewBuildProducts(NewBuildProducts);
+				IgorCore.SetNewModuleProducts(NewBuildProducts);
 
 				Log("APK built and renamed to " + AppropriatelySignedAPK + ".");
 			}
@@ -337,18 +337,18 @@ namespace Igor
 		{
 			if(Directory.Exists(RepackagingDirectory))
 			{
-				IgorUtils.DeleteDirectory(RepackagingDirectory);
+				IgorRuntimeUtils.DeleteDirectory(RepackagingDirectory);
 			}
 
 			Directory.CreateDirectory(RepackagingDirectory);
 
 			IgorZip.UnzipArchiveCrossPlatform(ModuleInst, SourceAPK, RepackagingDirectory);
 
-			IgorUtils.DeleteDirectory(Path.Combine(RepackagingDirectory, "META-INF"));
+			IgorRuntimeUtils.DeleteDirectory(Path.Combine(RepackagingDirectory, "META-INF"));
 
 			string UnsignedAPK = Path.Combine(RepackagingDirectory, "Repackaged.unsigned.apk");
 
-			List<string> APKContents = IgorUtils.GetListOfFilesAndDirectoriesInDirectory(RepackagingDirectory);
+			List<string> APKContents = IgorRuntimeUtils.GetListOfFilesAndDirectoriesInDirectory(RepackagingDirectory);
 
 			IgorZip.ZipFilesCrossPlatform(ModuleInst, APKContents, UnsignedAPK, false, RepackagingDirectory);
 
@@ -357,7 +357,7 @@ namespace Igor
 //			IgorCore.LogError(ModuleInst, "jarsigner command running from " + Path.GetFullPath(".") + " is\n" + "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword +
 //				" -keypass " + KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias);
 
-			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, "jarsigner", "jarsigner", "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword + " -keypass " +
+			if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, "jarsigner", "jarsigner", "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword + " -keypass " +
 				KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias, Path.GetFullPath("."), "Running jarsigner", true) != 0)
 			{
 				return false;
@@ -366,7 +366,7 @@ namespace Igor
 			string ZipAlignPath = GetZipAlignPath(ModuleInst);
 			string AlignedAPK = Path.Combine(RepackagingDirectory, "Repackaged.aligned.apk");
 
-			if(IgorUtils.RunProcessCrossPlatform(ModuleInst, ZipAlignPath, ZipAlignPath, "-v 4 \"" + SignedAPK + "\" \"" + AlignedAPK + "\"", Path.GetFullPath("."), "Running zipalign") != 0)
+			if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, ZipAlignPath, ZipAlignPath, "-v 4 \"" + SignedAPK + "\" \"" + AlignedAPK + "\"", Path.GetFullPath("."), "Running zipalign") != 0)
 			{
 				return false;
 			}
@@ -383,7 +383,7 @@ namespace Igor
 
 		public static bool RunAnt(IIgorModule ModuleInst, string ProjectDirectory, string Targets)
 		{
-			string ANT_ROOT = IgorUtils.GetEnvVariable("ANT_ROOT");
+			string ANT_ROOT = IgorRuntimeUtils.GetEnvVariable("ANT_ROOT");
 			string AntCommand = "";
 
 			string FinalParams = "";
@@ -414,7 +414,7 @@ namespace Igor
 
 //			IgorCore.LogError(ModuleInst, "Ant params are " + FinalParams);
 
-			return IgorUtils.RunProcessCrossPlatform(ModuleInst, AntCommand, AntCommand, FinalParams, ProjectDirectory, "Running Ant build") == 0;
+			return IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, AntCommand, AntCommand, FinalParams, ProjectDirectory, "Running Ant build") == 0;
 		}
 
 		public static string GetZipAlignPath(IIgorModule ModuleInst)
@@ -428,7 +428,7 @@ namespace Igor
 
 				if(IgorAssert.EnsureTrue(ModuleInst, Directory.Exists(BuildToolsPath), "The Android build tools path " + BuildToolsPath + " doesn't exist!"))
 				{
-					List<string> BuildToolVersions = IgorUtils.GetListOfFilesAndDirectoriesInDirectory(BuildToolsPath, false, true, false, true, true);
+					List<string> BuildToolVersions = IgorRuntimeUtils.GetListOfFilesAndDirectoriesInDirectory(BuildToolsPath, false, true, false, true, true);
 
 					foreach(string CurrentVersion in BuildToolVersions)
 					{
@@ -458,7 +458,7 @@ namespace Igor
 
 		public static bool RunAndroidCommandLineUtility(IIgorModule ModuleInst, string ProjectDirectory, string Command)
 		{
-			return IgorUtils.RunProcessCrossPlatform(ModuleInst, GetAndroidSDKPath(ModuleInst) + "/tools/android", GetAndroidSDKPath(ModuleInst) + "/tools/android.bat", Command, ProjectDirectory, "Running Android project helper utility") == 0;
+			return IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, GetAndroidSDKPath(ModuleInst) + "/tools/android", GetAndroidSDKPath(ModuleInst) + "/tools/android.bat", Command, ProjectDirectory, "Running Android project helper utility") == 0;
 		}
 
 		public static void SwapStringValueInStringsXML(string Filename, string StringKey, string NewStringValue, string OldStringValue = null)

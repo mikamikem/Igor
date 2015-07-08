@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Configure.GenerateBuildInformation</ModuleName>
-  <ModuleVersion>1</ModuleVersion>
+  <ModuleVersion>2</ModuleVersion>
   <ModuleFiles>
     <File>Editor/IgorGenerateBuildInformation.cs</File>
+    <File>Runtime/GenerateBuildInformation.cs</File>
     <File>Readme.md</File>
   </ModuleFiles>
 </IgorModuleDescriptor>

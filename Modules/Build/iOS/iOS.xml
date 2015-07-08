@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Build.iOS</ModuleName>
-  <ModuleVersion>10</ModuleVersion>
+  <ModuleVersion>11</ModuleVersion>
   <ModuleFiles>
     <File>Editor/IgorBuildiOS.cs</File>
     <File>Editor/IgorPlistUtils.cs</File>

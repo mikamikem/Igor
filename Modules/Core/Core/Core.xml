@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>Core.Core</ModuleName>
-  <ModuleVersion>43</ModuleVersion>
+  <ModuleVersion>44</ModuleVersion>
   <ModuleFiles>
-    <File>Editor/IgorCore.cs</File>
-    <File>Editor/IgorConfig.cs</File>
-    <File>Editor/IIgorModule.cs</File>
+    <File>Runtime/IgorCore.cs</File>
+    <File>Editor/IgorEditorCore.cs</File>
+    <File>Runtime/IgorConfig.cs</File>
+    <File>Runtime/IIgorModule.cs</File>
     <File>Editor/IgorConfigWindow.cs</File>
-    <File>Editor/IIgorLogger.cs</File>
-    <File>Editor/IgorModuleBase.cs</File>
-    <File>Editor/IgorBuiltinLogger.cs</File>
-    <File>Editor/IIgorStepHandler.cs</File>
+    <File>Runtime/IIgorLogger.cs</File>
+    <File>Runtime/IgorModuleBase.cs</File>
+    <File>Runtime/IgorBuiltinLogger.cs</File>
+    <File>Runtime/IIgorStepHandler.cs</File>
     <File>Editor/IgorUtils.cs</File>
     <File>Editor/SerializableDictionary.cs</File>
     <File>../../../IgorRun.py</File>
     <File>jobs_done.wav</File>
-    <File>Editor/IgorAssert.cs</File>
-    <File>Editor/IgorCoreModule.cs</File>
+    <File>Runtime/IgorAssert.cs</File>
+    <File>Runtime/IgorCoreModule.cs</File>
     <File>Readme.md</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../Readme.md</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DeveloperReadme.md</File>
@@ -30,5 +31,9 @@
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/JenkinsExecuteShellExample.png</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/JobParameters.png</File>
     <File>(https://raw.githubusercontent.com/mikamikem/Igor/master/)../../../DocsImages/ParamConfigUI.png</File>
+    <File>Runtime/IIgorModule.cs</File>
+    <File>Runtime/IgorDebug.cs</File>
+    <File>Runtime/IgorRuntimeUtils.cs</File>
+    <File>Runtime/IIgorCore.cs</File>
   </ModuleFiles>
 </IgorModuleDescriptor>

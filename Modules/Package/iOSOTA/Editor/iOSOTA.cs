@@ -53,7 +53,7 @@ namespace Igor
 
 		public virtual bool CreateWebDeployFiles()
 		{
-			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuiltProducts = IgorCore.GetModuleProducts();
 
 			string FileToCopy = "";
 			string RootProjectDirectory = "";
@@ -70,7 +70,7 @@ namespace Igor
 			{
 				if(Directory.Exists(WebDeployTempDir))
 				{
-					IgorUtils.DeleteDirectory(WebDeployTempDir);
+					IgorRuntimeUtils.DeleteDirectory(WebDeployTempDir);
 				}
 
 				Directory.CreateDirectory(WebDeployTempDir);
@@ -109,7 +109,7 @@ namespace Igor
 				NewBuiltProducts.Add(IPADeployName);
 				NewBuiltProducts.Add(IconDeployName);
 
-				IgorBuildCommon.SetNewBuildProducts(NewBuiltProducts);
+				IgorCore.SetNewModuleProducts(NewBuiltProducts);
 
 				Log("iOS OTA files successfully generated.");
 			}

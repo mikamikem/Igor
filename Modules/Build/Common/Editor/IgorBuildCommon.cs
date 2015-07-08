@@ -59,8 +59,6 @@ namespace Igor
             }
         }
 
-		protected static List<string> CurrentBuildProducts = new List<string>();
-
 		public static List<string> AvailablePlatforms = new List<string>();
 
 		public override string GetModuleName()
@@ -114,7 +112,7 @@ namespace Igor
 
             DrawBoolParam(ref EnabledParams, "Append commit info", IgorBuildCommon.AppendCommitInfoFlag);
                 
-            string BuildOptionsAsString = IgorUtils.GetStringParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag).Trim('"');
+            string BuildOptionsAsString = IgorRuntimeUtils.GetStringParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag).Trim('"');
             if(!string.IsNullOrEmpty(BuildOptionsAsString))
             {
                 int OutResult = 0;
@@ -130,9 +128,9 @@ namespace Igor
                 SetBuildOptionsBitfield = newValue;
 
                 if(SetBuildOptionsBitfield != 0)
-                    EnabledParams = IgorUtils.SetStringParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag, ((int)SetBuildOptionsBitfield).ToString());
+                    EnabledParams = IgorRuntimeUtils.SetStringParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag, ((int)SetBuildOptionsBitfield).ToString());
                 else
-                    EnabledParams = IgorUtils.ClearParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag);
+                    EnabledParams = IgorRuntimeUtils.ClearParam(EnabledParams, IgorBuildCommon.BuildOptionsFlag);
             }
 
 			return EnabledParams;
@@ -151,34 +149,6 @@ namespace Igor
 			}
 			
 			return LevelNames.ToArray();
-		}
-
-		public static void SetNewBuildProducts(List<string> NewBuildProducts)
-		{
-			CurrentBuildProducts.Clear();
-			CurrentBuildProducts.AddRange(NewBuildProducts);
-
-			string CombinedProducts = "";
-
-			foreach(string CurrentProduct in NewBuildProducts)
-			{
-				CombinedProducts += (CombinedProducts.Length > 0 ? "," : "") + CurrentProduct;
-			}
-
-			IgorJobConfig.SetStringParam(ProductsFlag, CombinedProducts);
-		}
-
-		public static List<string> GetBuildProducts()
-		{
-			if(CurrentBuildProducts.Count == 0)
-			{
-				string CombinedProducts = IgorJobConfig.GetStringParam(ProductsFlag);
-
-				CurrentBuildProducts.Clear();
-				CurrentBuildProducts.AddRange(CombinedProducts.Split(','));
-			}
-
-			return CurrentBuildProducts;
 		}
 
         public static BuildOptions GetBuildOptions()

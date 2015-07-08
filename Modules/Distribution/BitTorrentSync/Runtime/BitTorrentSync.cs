@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -35,7 +34,7 @@ namespace Igor
 			if(IgorDistributionCommon.RunDistributionStepsThisJob() &&
 				((IgorJobConfig.IsBoolParamSet(CopyToSyncExpEnabledFlag) && GetParamOrConfigString(CopyToSyncExplicitFlag) != "") ||
 			    (IgorJobConfig.IsBoolParamSet(CopyToSyncEnvEnabledFlag) &&
-			   	 (GetParamOrConfigString(CopyToSyncEnvFlag) != "" && IgorUtils.GetEnvVariable(GetParamOrConfigString(CopyToSyncEnvFlag)) != ""))) &&
+			   	 (GetParamOrConfigString(CopyToSyncEnvFlag) != "" && IgorRuntimeUtils.GetEnvVariable(GetParamOrConfigString(CopyToSyncEnvFlag)) != ""))) &&
 				GetParamOrConfigString(CopyToSyncFilenameFlag) != "")
 			{
 				IgorCore.SetModuleActiveForJob(this);
@@ -43,6 +42,7 @@ namespace Igor
 			}
 		}
 
+#if UNITY_EDITOR
 		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
@@ -55,10 +55,11 @@ namespace Igor
 
 			return EnabledParams;
 		}
+#endif // UNITY_EDITOR
 
 		public virtual bool CopyToSync()
 		{
-			List<string> BuiltProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuiltProducts = IgorCore.GetModuleProducts();
 
 			IgorAssert.EnsureTrue(this, BuiltProducts.Count == 1, "This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
 
@@ -87,7 +88,7 @@ namespace Igor
 						return true;
 					}
 
-					DestinationFile = IgorUtils.GetEnvVariable(EnvVariable);
+					DestinationFile = IgorRuntimeUtils.GetEnvVariable(EnvVariable);
 
 					if(!IgorAssert.EnsureTrue(this, DestinationFile != "", "The BitTorrent Sync root path environment variable " + EnvVariable + " isn't set."))
 					{
@@ -106,7 +107,7 @@ namespace Igor
 
 				if(File.Exists(DestinationFile))
 				{
-					IgorUtils.DeleteFile(DestinationFile);
+					IgorRuntimeUtils.DeleteFile(DestinationFile);
 				}
 
 				File.Copy(FileToCopy, DestinationFile);

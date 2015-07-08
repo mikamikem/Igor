@@ -68,23 +68,23 @@ namespace Igor
 											{
 												ExistingPrimaryBuildTarget.Append(DevTeamIDDictionary);
 
-												IgorCore.Log(ModuleInst, "Added Development Team to XCodeProj.");
+												IgorDebug.Log(ModuleInst, "Added Development Team to XCodeProj.");
 											}
 											else
 											{
-												IgorCore.Log(ModuleInst, "Development Team already set up in XCodeProj.");
+												IgorDebug.Log(ModuleInst, "Development Team already set up in XCodeProj.");
 											}
 										}
 										else
 										{
-											IgorCore.LogError(ModuleInst, "Primary build target already has a key in TargetAttributes, but the value stored is invalid.");
+											IgorDebug.LogError(ModuleInst, "Primary build target already has a key in TargetAttributes, but the value stored is invalid.");
 										}
 									}
 									else
 									{
 										TargetAttributes.Append(PrimaryBuildTargetToDevTeam);
 
-										IgorCore.Log(ModuleInst, "Added Development Team to XCodeProj.");
+										IgorDebug.Log(ModuleInst, "Added Development Team to XCodeProj.");
 									}
 
 									CurrentProject.Save();
@@ -113,13 +113,13 @@ namespace Igor
 					{
 						BuildSettingsDict[Key] = Value;
 
-						IgorCore.Log(ModuleInst, "Updated KeyValuePair (Key: " + Key + " Value: " + Value + ") to build target GUID " + CurrentConfig.Key);
+						IgorDebug.Log(ModuleInst, "Updated KeyValuePair (Key: " + Key + " Value: " + Value + ") to build target GUID " + CurrentConfig.Key);
 					}
 					else
 					{
 						BuildSettingsDict.Add(Key, Value);
 
-						IgorCore.Log(ModuleInst, "Added new KeyValuePair (Key: " + Key + " Value: " + Value + ") to build target GUID " + CurrentConfig.Key);
+						IgorDebug.Log(ModuleInst, "Added new KeyValuePair (Key: " + Key + " Value: " + Value + ") to build target GUID " + CurrentConfig.Key);
 					}
 				}
 
@@ -137,7 +137,7 @@ namespace Igor
 
 				CurrentProject.AddFrameworkSearchPaths(NewPath);
 
-				IgorCore.Log(ModuleInst, "Added framework search path " + NewPath);
+				IgorDebug.Log(ModuleInst, "Added framework search path " + NewPath);
 
 				CurrentProject.Save();
 			}
@@ -155,7 +155,7 @@ namespace Igor
 				{
 					if(CurrentFileRef.Value.name == Filename)
 					{
-						IgorCore.Log(ModuleInst, "The file " + Filename + " is already referenced in the XCodeProj.");
+						IgorDebug.Log(ModuleInst, "The file " + Filename + " is already referenced in the XCodeProj.");
 
 						return CurrentFileRef.Value.guid;
 					}
@@ -205,7 +205,7 @@ namespace Igor
 
 				CurrentProject.fileReferences.Add(NewFile);
 
-				IgorCore.Log(ModuleInst, "File " + Filename + " has been added to the XCodeProj.");
+				IgorDebug.Log(ModuleInst, "File " + Filename + " has been added to the XCodeProj.");
 
 				CurrentProject.Save();
 
@@ -229,7 +229,7 @@ namespace Igor
 					{
 						if(CurrentBuildFile.Value.data["fileRef"] == FileRefGUID)
 						{
-							IgorCore.Log(ModuleInst, "The file GUID " + FileRefGUID + " already has an associated BuildFile in the XCodeProj.");
+							IgorDebug.Log(ModuleInst, "The file GUID " + FileRefGUID + " already has an associated BuildFile in the XCodeProj.");
 
 							return CurrentBuildFile.Value.guid;
 						}
@@ -244,7 +244,7 @@ namespace Igor
 
 						CurrentProject.buildFiles.Add(NewBuildFile);
 
-						IgorCore.Log(ModuleInst, "BuildFile for FileRefGUID " + FileRefGUID + " has been added to the XCodeProj.");
+						IgorDebug.Log(ModuleInst, "BuildFile for FileRefGUID " + FileRefGUID + " has been added to the XCodeProj.");
 
 						CurrentProject.Save();
 
@@ -288,7 +288,7 @@ namespace Igor
 										{
 											if(FrameworkChildrenList.Contains(FrameworkFileRefGUID))
 											{
-												IgorCore.Log(ModuleInst, "Framework " + Filename + " has already been added to the Framework Group " + CurrentGroup.Key + ".");
+												IgorDebug.Log(ModuleInst, "Framework " + Filename + " has already been added to the Framework Group " + CurrentGroup.Key + ".");
 											}
 											else
 											{
@@ -296,7 +296,7 @@ namespace Igor
 
 												CurrentGroup.Value.data["children"] = FrameworkChildrenList;
 
-												IgorCore.Log(ModuleInst, "Added the " + Filename + " framework to the Framework Group " + CurrentGroup.Key + ".");
+												IgorDebug.Log(ModuleInst, "Added the " + Filename + " framework to the Framework Group " + CurrentGroup.Key + ".");
 											}
 										}
 									}
@@ -341,7 +341,7 @@ namespace Igor
 									{
 										if(FrameworkFilesList.Contains(FrameworkBuildFileGUID))
 										{
-											IgorCore.Log(ModuleInst, "Framework " + Filename + " has already been added to the Framework Build Phase " + CurrentTarget.Key + ".");
+											IgorDebug.Log(ModuleInst, "Framework " + Filename + " has already been added to the Framework Build Phase " + CurrentTarget.Key + ".");
 										}
 										else
 										{
@@ -349,7 +349,7 @@ namespace Igor
 
 											CurrentTarget.Value.data["files"] = FrameworkFilesList;
 
-											IgorCore.Log(ModuleInst, "Added the " + Filename + " framework to the Framework Build Phase " + CurrentTarget.Key + ".");
+											IgorDebug.Log(ModuleInst, "Added the " + Filename + " framework to the Framework Build Phase " + CurrentTarget.Key + ".");
 										}
 									}
 								}
@@ -392,7 +392,7 @@ namespace Igor
 										{
 											if(GroupChildrenList.Contains(FileGUID))
 											{
-												IgorCore.Log(ModuleInst, "FileGUID " + FileGUID + " has already been added to the Group " + CurrentGroup.Key + ".");
+												IgorDebug.Log(ModuleInst, "FileGUID " + FileGUID + " has already been added to the Group " + CurrentGroup.Key + ".");
 											}
 											else
 											{
@@ -400,7 +400,7 @@ namespace Igor
 
 												CurrentGroup.Value.data["children"] = GroupChildrenList;
 
-												IgorCore.Log(ModuleInst, "Added the " + FileGUID + " file to the Group " + CurrentGroup.Key + ".");
+												IgorDebug.Log(ModuleInst, "Added the " + FileGUID + " file to the Group " + CurrentGroup.Key + ".");
 											}
 										}
 									}

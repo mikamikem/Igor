@@ -46,7 +46,7 @@ namespace Igor
 
 		public virtual bool UpdateAndroidProj()
 		{
-			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Attempting to update the Android project, but one was not generated in the build phase!"))
 			{

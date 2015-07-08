@@ -49,7 +49,7 @@ namespace Igor
 
 		public virtual bool UpdateAndroidProj()
 		{
-			List<string> BuildProducts = IgorBuildCommon.GetBuildProducts();
+			List<string> BuildProducts = IgorCore.GetModuleProducts();
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Attempting to update the Android project, but one was not generated in the build phase!"))
 			{
@@ -77,7 +77,7 @@ namespace Igor
 
 		public virtual void CopyJavaFilesAndReplacePackageName(string RootSourceDir, string RootDestDir)
 		{
-			List<string> JavaFilesToCopy = IgorUtils.GetListOfFilesAndDirectoriesInDirectory(RootSourceDir, true, false, true, true, true);
+			List<string> JavaFilesToCopy = IgorRuntimeUtils.GetListOfFilesAndDirectoriesInDirectory(RootSourceDir, true, false, true, true, true);
 
 			foreach(string CurrentFile in JavaFilesToCopy)
 			{

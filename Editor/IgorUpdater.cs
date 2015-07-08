@@ -11,11 +11,107 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Igor
 {
-	public interface IIgorCore
+	public interface IIgorEditorCore
 	{
 		List<string> GetEnabledModuleNames();
+		IgorHelperDelegateStub GetHelperDelegates();
 
 		void RunJobInst();
+	}
+
+	public class IgorHelperDelegateStub
+	{
+		public bool bIsValid = false;
+
+		public delegate void VoidOneStringParam(string Param1);
+
+		// These are duplicated from IgorRuntimeUtils.cs in the Core module.  This was necessary to
+		// keep the updater working, but they are overridden by the RuntimeUtils version once Core is
+		// installed.  If you have any fixes for these two functions, fix them both here and in
+		// IgorRuntimeUtils.cs.
+		public static void UpdaterDeleteFile(string TargetFile)
+		{
+			if(File.Exists(TargetFile))
+			{
+		        File.SetAttributes(TargetFile, System.IO.FileAttributes.Normal);
+		        File.Delete(TargetFile);
+		    }
+		}
+
+		// These are duplicated from IgorRuntimeUtils.cs in the Core module.  This was necessary to
+		// keep the updater working, but they are overridden by the RuntimeUtils version once Core is
+		// installed.  If you have any fixes for these two functions, fix them both here and in
+		// IgorRuntimeUtils.cs.
+		public static void UpdaterDeleteDirectory(string targetDir)
+		{
+			if(!Directory.Exists(targetDir))
+			{
+				return;
+			}
+
+		    System.IO.File.SetAttributes(targetDir, System.IO.FileAttributes.Normal);
+		
+		    string[] files = System.IO.Directory.GetFiles(targetDir);
+		    string[] dirs = System.IO.Directory.GetDirectories(targetDir);
+		
+		    foreach (string file in files)
+		    {
+		        System.IO.File.SetAttributes(file, System.IO.FileAttributes.Normal);
+		        System.IO.File.Delete(file);
+		    }
+		
+		    foreach (string dir in dirs)
+		    {
+		        UpdaterDeleteDirectory(dir);
+		    }
+		
+		    System.IO.Directory.Delete(targetDir, false);
+		}
+
+		public delegate List<Type> TemplatedTypeListOneBoolParam<TemplatedType>(bool bParam1);
+		public List<Type> DoNothingTemplatedTypeListOneBoolParam<TemplatedType>(bool bParam1)
+		{
+			return new List<Type>();
+		}
+
+		public delegate void VoidOneBoolParam(bool Param1);
+		public void DoNothingVoidOneBoolParam(bool Param1)
+		{}
+
+		public delegate bool BoolNoParams();
+		public bool DoNothingBoolNoParams()
+		{
+			return false;
+		}
+
+		public delegate bool BoolStringParam(string Param1);
+		public bool DoNothingBoolStringParam(string Param1)
+		{
+			return false;
+		}
+
+		public delegate void VoidStringBoolParams(string Param1, bool Param2);
+		public void DoNothingVoidStringBoolParams(string Param1, bool Param2)
+		{}
+
+		public VoidOneStringParam DeleteFile;
+		public VoidOneStringParam DeleteDirectory;
+		public TemplatedTypeListOneBoolParam<IIgorEditorCore> GetTypesInheritFromIIgorEditorCore;
+		public VoidOneBoolParam IgorJobConfig_SetWasMenuTriggered;
+		public BoolNoParams IgorJobConfig_GetWasMenuTriggered;
+		public BoolStringParam IgorJobConfig_IsBoolParamSet;
+		public VoidStringBoolParams IgorJobConfig_SetBoolParam;
+
+		public IgorHelperDelegateStub()
+		{
+			DeleteFile = UpdaterDeleteFile;
+			DeleteDirectory = UpdaterDeleteDirectory;
+			GetTypesInheritFromIIgorEditorCore = DoNothingTemplatedTypeListOneBoolParam<IIgorEditorCore>;
+			IgorJobConfig_SetWasMenuTriggered = DoNothingVoidOneBoolParam;
+			IgorJobConfig_GetWasMenuTriggered = DoNothingBoolNoParams;
+			IgorJobConfig_IsBoolParamSet = DoNothingBoolStringParam;
+			IgorJobConfig_SetBoolParam = DoNothingVoidStringBoolParams;
+		}
 	}
 
 	public partial class IgorUtils
@@ -38,61 +134,6 @@ namespace Igor
 			}
 
 			return AllTypes;
-		}
-
-		public static List<Type> GetTypesInheritFrom<InheritType>(bool bExcludeTemplateType = true)
-		{
-			List<Type> AllTypes = new List<Type>();
-
-			Assembly[] Assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-			foreach(Assembly CurrentAssembly in Assemblies)
-			{
-				foreach(Type CurrentType in CurrentAssembly.GetTypes())
-				{
-					if(typeof(InheritType).IsAssignableFrom(CurrentType) && (!bExcludeTemplateType || typeof(InheritType) != CurrentType))
-					{
-						AllTypes.Add(CurrentType);
-					}
-				}
-			}
-
-			return AllTypes;
-		}
-
-		public static void DeleteFile(string TargetFile)
-		{
-			if(File.Exists(TargetFile))
-			{
-		        File.SetAttributes(TargetFile, System.IO.FileAttributes.Normal);
-		        File.Delete(TargetFile);
-		    }
-		}
-
-		public static void DeleteDirectory(string targetDir)
-		{
-			if(!Directory.Exists(targetDir))
-			{
-				return;
-			}
-
-		    System.IO.File.SetAttributes(targetDir, System.IO.FileAttributes.Normal);
-		
-		    string[] files = System.IO.Directory.GetFiles(targetDir);
-		    string[] dirs = System.IO.Directory.GetDirectories(targetDir);
-		
-		    foreach (string file in files)
-		    {
-		        System.IO.File.SetAttributes(file, System.IO.FileAttributes.Normal);
-		        System.IO.File.Delete(file);
-		    }
-		
-		    foreach (string dir in dirs)
-		    {
-		        DeleteDirectory(dir);
-		    }
-		
-		    System.IO.Directory.Delete(targetDir, false);
 		}
 
         public static string GetLocalFileFromModuleFilename(string Filename)
@@ -154,7 +195,7 @@ namespace Igor
 			{
 				if(File.Exists(DestFilePath))
 				{
-					IgorUtils.DeleteFile(DestFilePath);
+					IgorUpdater.HelperDelegates.DeleteFile(DestFilePath);
 				}
 
 				if(!Directory.Exists(Path.GetDirectoryName(DestFilePath)))
@@ -219,198 +260,6 @@ namespace Igor
 
 			return DestFilePath;
 		}
-
-        public static string ClearParam(string AllParams, string Param)
-        {
-            string Query = string.Empty;
-            string StringValue = "";
-            bool bStringParam = false;
-
-            if(IsBoolParamSet(AllParams, Param))
-            {
-                Query = "--" + Param + " ";
-            }
-            else
-            if(IsStringParamSet(AllParams, Param))
-            {
-            	bStringParam = true;
-                StringValue = GetStringParam(AllParams, Param);
-                Query = "--" + Param + "=" + "\"" + StringValue + "\"";
-            }
-
-            int StartParamIndex = AllParams.IndexOf(Query);
-
-            if(StartParamIndex == -1 && !bStringParam)
-            {
-            	Query = "--" + Param;
-            	StartParamIndex = AllParams.IndexOf(Query);
-
-            	if((StartParamIndex + Query.Length) != AllParams.Length)
-            	{
-            		StartParamIndex = -1;
-            	}
-            }
-
-            if(StartParamIndex == -1 && bStringParam)
-            {
-            	Query = "--" + Param + "=" + StringValue;
-            	StartParamIndex = AllParams.IndexOf(Query);
-            }
-
-            if(StartParamIndex != -1)
-            {
-	            string TrimTarget = AllParams.Substring(0, StartParamIndex);
-	            string TrimmedTarget = TrimTarget.TrimEnd(new char[] { ' ' });
-	            int Difference = TrimTarget.Length - TrimmedTarget.Length;
-	            string ReplaceText = AllParams.Substring(StartParamIndex - Difference, Query.Length + Difference);
-	            
-	            if(!string.IsNullOrEmpty(ReplaceText))
-	            {
-	                AllParams = AllParams.Replace(ReplaceText, string.Empty);
-	            }
-	        }
-
-            return AllParams;
-        }
-
-	 	public static bool IsBoolParamSet(string AllParams, string BoolParam)
-	 	{
-            string ContainsQuery = "--" + BoolParam + " ";
-            bool bHasFlag = AllParams.Contains(ContainsQuery);
-
-            if(!bHasFlag)
-            {
-            	ContainsQuery = "--" + BoolParam;
-            	int StartParamIndex = AllParams.IndexOf(ContainsQuery);
-
-            	if((StartParamIndex + ContainsQuery.Length) == AllParams.Length)
-            	{
-            		bHasFlag = true;
-            	}
-            }
-
- 			if(bHasFlag)
- 			{
-                string Substring = AllParams.Substring(AllParams.IndexOf(ContainsQuery) + ContainsQuery.Length);
-                if(Substring.Length > 0)
-                {
-                    return Substring[0] != '=';
-                }
-
- 				return true;
- 			}
-
- 			return false;
-	 	}
-
-	 	public static string SetBoolParam(string OriginalParams, string BoolParam, bool bTrue)
-	 	{
-	 		string NewParams = OriginalParams;
-
- 			if(NewParams.Contains("--" + BoolParam))
- 			{
- 				if(!bTrue)
- 				{
- 					NewParams = NewParams.Replace(" --" + BoolParam, string.Empty);
- 					NewParams = NewParams.Replace("--" + BoolParam, string.Empty);
- 				}
- 			}
- 			else
- 			{
- 				if(bTrue)
- 				{
- 					NewParams += " --" + BoolParam;
- 				}
- 			}
-
- 			return NewParams;
-	 	}
-
-	 	public static bool IsStringParamSet(string AllParams, string ParamKey)
-	 	{
- 			if(AllParams.Contains("--" + ParamKey + "="))
- 			{
- 				return true;
- 			}
-
- 			return false;
-	 	}
-
-	 	public static string GetStringParam(string AllParams, string ParamKey)
-	 	{
-            string Result = string.Empty;
- 			
-            if(AllParams.Contains("--" + ParamKey + "="))
- 			{
- 			    int StartingPos = 1, EndingPos = -1;
-
-                string Prefix = "--" + ParamKey + "=\"";
- 				StartingPos = AllParams.IndexOf(Prefix) + (Prefix).Length;
-
-                string StartSubstring = AllParams.Substring(StartingPos);
-
- 			    EndingPos = StartSubstring.IndexOf("\"");
-                if(EndingPos < 0)
-                {
-                    EndingPos = StartSubstring.Length;
-                }
-                else
-                {
-                    while(EndingPos < StartSubstring.Length && (StartSubstring[EndingPos] == '"' || StartSubstring[EndingPos] == ' '))
-                        EndingPos++;
-                }
-
-                if(EndingPos >= StartSubstring.Length)
-                {
-                    EndingPos = StartSubstring.Length;
-                }
- 				
-                Result = StartSubstring.Substring(0, EndingPos);
-
-                // Manually trim. We want to remove all space to the left/right of quotation marks, AND the quotation
-                // marks themselves, but not the space within the quotation marks.
-
-                while(Result.Length > 0 && (Result[Result.Length - 1] == ' ' || Result[Result.Length - 1] == '"'))
-                {
-                    bool bIsQuotation = Result[Result.Length - 1] == '"';
-                    Result = Result.Remove(Result.Length - 1, 1);
-                    if(bIsQuotation)
-                        break;
-                }
-
-                while(Result.Length > 0 && (Result[0] == ' ' || Result[0] == '"'))
-                {
-                    bool bIsQuotation = Result[0] == '"';
-                    Result = Result.Remove(0, 1);
-                    if(bIsQuotation)
-                        break;
-                }
- 			}
-
- 			return Result;
-	 	}
-
-	 	public static string SetStringParam(string AllParams, string ParamKey, string ParamValue)
-	 	{
-	 		string NewParams = AllParams;
-
- 			if(NewParams.Contains("--" + ParamKey + "="))
- 			{
- 				NewParams = ClearParam(AllParams, ParamKey);
- 			}
-
- 			if(ParamValue != string.Empty)
- 			{
-                string MungedParamValue = ParamValue;
-                if(!MungedParamValue.StartsWith("\""))
-                    MungedParamValue = "\"" + MungedParamValue;
-                if(!MungedParamValue.EndsWith("\""))
-                    MungedParamValue = MungedParamValue + "\"";
- 				NewParams += " --" + ParamKey + "=" + MungedParamValue;
- 			}
-
- 			return NewParams;
-	 	}
 	}
 
 	[XmlRoot("IgorModuleList")]
@@ -432,7 +281,7 @@ namespace Igor
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorModuleList));
 
-	 		IgorUtils.DeleteFile(path);
+	 		IgorUpdater.HelperDelegates.DeleteFile(path);
 
 	 		using(FileStream stream = new FileStream(path, FileMode.Create))
 	 		{
@@ -476,7 +325,7 @@ namespace Igor
 	 	{
 	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorModuleDescriptor));
 
-	 		IgorUtils.DeleteFile(path);
+	 		IgorUpdater.HelperDelegates.DeleteFile(path);
 
 	 		using(FileStream stream = new FileStream(path, FileMode.Create))
 	 		{
@@ -500,234 +349,35 @@ namespace Igor
 	 	}
 	}
 
-    [System.Serializable]
-	public class IgorPersistentJobConfig
-	{
-		public string JobCommandLineParams = "";
-		public string JobName = "";
-	}
-
-	[XmlRoot("IgorJobConfig")]
-	public class IgorJobConfig
-	{
-		public static string IgorJobConfigPath = "IgorJob.xml";
-		public static IgorJobConfig InternalOverride = null;
-
-		public IgorPersistentJobConfig Persistent = new IgorPersistentJobConfig();
-
-		public int LastPriority = -999999;
-		public int LastIndexInPriority = -999999;
-
-		public bool bIsRunning = false;
-		public bool bMenuTriggered = false;
-
-	 	public void Save(string path)
-	 	{
-	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorJobConfig));
-	 		using(FileStream stream = new FileStream(path, FileMode.Create))
-	 		{
-	 			serializer.Serialize(stream, this);
-	 		}
-	 	}
-	 
-	 	public static IgorJobConfig Load(string path)
-	 	{
-	 		XmlSerializer serializer = new XmlSerializer(typeof(IgorJobConfig));
-	 		using(var stream = new FileStream(path, FileMode.Open))
-	 		{
-	 			return serializer.Deserialize(stream) as IgorJobConfig;
-	 		}
-	 	}
-
-	 	public static IgorJobConfig GetConfig()
-	 	{
-	 		if(InternalOverride != null)
-	 		{
-	 			return InternalOverride;
-	 		}
-
-	 		if(File.Exists(IgorJobConfigPath))
-	 		{
-				return IgorJobConfig.Load(IgorJobConfigPath);
-			}
-			else
-			{
-				IgorJobConfig NewConfig = new IgorJobConfig();
-
-				NewConfig.Save(IgorJobConfigPath);
-
-				return NewConfig;
-			}
-	 	}
-
-	 	public static void Cleanup()
-	 	{
-	 		if(File.Exists(IgorJobConfigPath))
-	 		{
-				IgorUtils.DeleteFile(IgorJobConfigPath);
-	 		}
-	 	}
-
-	 	public static bool IsBoolParamSet(string BoolParam)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return IgorUtils.IsBoolParamSet(Inst.Persistent.JobCommandLineParams, BoolParam);
-	 		}
-
-	 		return false;
-	 	}
-
-	 	public static void SetBoolParam(string BoolParam, bool bTrue)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			Inst.Persistent.JobCommandLineParams = IgorUtils.SetBoolParam(Inst.Persistent.JobCommandLineParams, BoolParam, bTrue);
-
-	 			Inst.Save(IgorJobConfigPath);
-	 		}
-	 	}
-
-		public static bool IsStringParamSet(string StringParam)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return IgorUtils.IsStringParamSet(Inst.Persistent.JobCommandLineParams, StringParam);
-	 		}
-
-	 		return false;
-	 	}
-
-	 	public static string GetStringParam(string ParamKey)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return IgorUtils.GetStringParam(Inst.Persistent.JobCommandLineParams, ParamKey);
-	 		}
-
-	 		return "";
-	 	}
-
-	 	public static void SetStringParam(string ParamKey, string ParamValue)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			Inst.Persistent.JobCommandLineParams = IgorUtils.SetStringParam(Inst.Persistent.JobCommandLineParams, ParamKey, ParamValue);
-
-	 			Inst.Save(IgorJobConfigPath);
-	 		}
-	 	}
-
-	 	public static int GetLastPriority()
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return Inst.LastPriority;
-	 		}
-
-	 		return 0;
-	 	}
-
-	 	public static void SetLastPriority(int NewLastPriority)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			Inst.LastPriority = NewLastPriority;
-
-	 			Inst.Save(IgorJobConfigPath);
-	 		}
-	 	}
-
-	 	public static int GetLastIndexInPriority()
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return Inst.LastIndexInPriority;
-	 		}
-
-	 		return 0;
-	 	}
-
-	 	public static void SetLastIndexInPriority(int NewLastIndex)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			Inst.LastIndexInPriority = NewLastIndex;
-
-	 			Inst.Save(IgorJobConfigPath);
-	 		}
-	 	}
-
-	 	public static bool GetIsRunning()
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return Inst.bIsRunning;
-	 		}
-
-	 		return false;
-	 	}
-
-	 	public static void SetIsRunning(bool bRunning)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			Inst.bIsRunning = bRunning;
-
-	 			Inst.Save(IgorJobConfigPath);
-	 		}
-	 	}
-
-	 	public static bool GetWasMenuTriggered()
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			return Inst.bMenuTriggered;
-	 		}
-
-	 		return false;
-	 	}
-
-	 	public static void SetWasMenuTriggered(bool bMenu)
-	 	{
-	 		IgorJobConfig Inst = GetConfig();
-
-	 		if(Inst != null)
-	 		{
-	 			Inst.bMenuTriggered = bMenu;
-
-	 			Inst.Save(IgorJobConfigPath);
-	 		}
-	 	}
-	}
-
 	[InitializeOnLoad]
 	public class IgorUpdater
 	{
+		private static IgorHelperDelegateStub _HelperDelegates = null;
+		public static IgorHelperDelegateStub HelperDelegates {
+			get {
+				if(_HelperDelegates == null)
+				{
+					Type IgorEditorCoreType = Type.GetType("IgorEditorCore");
+
+					if(IgorEditorCoreType != null)
+					{
+						IIgorEditorCore EditorCoreInst = (IIgorEditorCore)Activator.CreateInstance(IgorEditorCoreType);
+
+						_HelperDelegates = EditorCoreInst.GetHelperDelegates();
+					}
+					else
+					{
+						_HelperDelegates = new IgorHelperDelegateStub();
+					}
+				}
+
+				return _HelperDelegates;
+			}
+			set {
+				_HelperDelegates = value;
+			}
+		}
+
 		static string kPrefix = "Igor_";
 
 		[PreferenceItem("Igor")]
@@ -783,8 +433,8 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 29;
-		private const int MajorUpgrade = 1;
+		private const int Version = 30;
+		private const int MajorUpgrade = 2;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
 		public static string BaseIgorDirectory = Path.Combine("Assets", "Igor");
@@ -804,7 +454,7 @@ namespace Igor
 		public static string RemoteRelativeModuleRoot = "Modules/";
 		public static string CoreModuleName = "Core.Core";
 
-		public static IIgorCore Core = null;
+		public static IIgorEditorCore Core = null;
 
         private static List<string> UpdatedContent = new List<string>(); 
 		private static List<string> UpdatedModules = new List<string>();
@@ -814,15 +464,15 @@ namespace Igor
 		[MenuItem("Window/Igor/Check For Updates %i", false, 2)]
 		public static void MenuCheckForUpdates()
 		{
-			bTriggerConfigWindowRefresh = true;
+			IgorUpdater.bTriggerConfigWindowRefresh = true;
 			
-			CheckForUpdates(true, true);
+			IgorUpdater.CheckForUpdates(true, true);
 		}
 
 		// Returns true if files were updated
 		public static bool CheckForUpdates(bool bForce = false, bool bFromMenu = false, bool bSynchronous = false)
 		{
-			IgorJobConfig.SetWasMenuTriggered(bFromMenu);
+			HelperDelegates.IgorJobConfig_SetWasMenuTriggered(bFromMenu);
 
 			if(CheckForOneTimeForcedUpgrade())
 			{
@@ -836,7 +486,15 @@ namespace Igor
                 UpdatedContent.Clear();
 
                 bool bMajorUpgrade = false;
-				bool bNeedsRebuild = SelfUpdate(out bMajorUpgrade);
+
+                if(!HelperDelegates.bIsValid)
+                {
+                	UpdateCore();
+
+                	bMajorUpgrade = true;
+                }
+
+				bool bNeedsRebuild = bMajorUpgrade || SelfUpdate(out bMajorUpgrade);
 
 				bNeedsRebuild = bMajorUpgrade || UpdateCore() || bNeedsRebuild;
 				bNeedsRebuild = bMajorUpgrade || UpdateModules() || bNeedsRebuild;
@@ -850,7 +508,7 @@ namespace Igor
 
 				if(bNeedsRebuild)
 				{
-					IgorJobConfig.SetBoolParam("restartingfromupdate", true);
+					HelperDelegates.IgorJobConfig_SetBoolParam("restartingfromupdate", true);
 
                     string UpdatedContentString = "The following Igor content was ";
 
@@ -893,18 +551,18 @@ namespace Igor
 		{
 			if(Core == null)
 			{
-				List<Type> ActiveCores = IgorUtils.GetTypesInheritFrom<IIgorCore>();
+				List<Type> ActiveCores = HelperDelegates.GetTypesInheritFromIIgorEditorCore(true);
 
 				if(ActiveCores.Count > 0)
 				{
-					Core = (IIgorCore)Activator.CreateInstance(ActiveCores[0]);
+					Core = (IIgorEditorCore)Activator.CreateInstance(ActiveCores[0]);
 				}
 			}
 		}
 
 		public static void CleanupTemp()
 		{
-			IgorUtils.DeleteDirectory(TempLocalDirectory);
+			IgorUpdater.HelperDelegates.DeleteDirectory(TempLocalDirectory);
 		}
 
 		public static int GetCurrentVersion()
@@ -983,7 +641,7 @@ namespace Igor
 					{
 						if(File.Exists(InstalledFilePath))
 						{
-							IgorUtils.DeleteFile(InstalledFilePath);
+							IgorUpdater.HelperDelegates.DeleteFile(InstalledFilePath);
 						}
 
 						if(!Directory.Exists(Path.GetDirectoryName(InstalledFilePath)))
@@ -1017,12 +675,16 @@ namespace Igor
 				CleanupTemp();
 			}
 
-			if(!IgorJobConfig.GetWasMenuTriggered())
+			if(!HelperDelegates.IgorJobConfig_GetWasMenuTriggered())
 			{
 				if(bThrewException)
 				{
                     Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
-					EditorApplication.Exit(-1);
+
+                    if(HelperDelegates.bIsValid)
+                    {
+						EditorApplication.Exit(-1);
+					}
 				}
 			}
 
@@ -1037,11 +699,11 @@ namespace Igor
 
 			try
 			{
-				if(File.Exists(LocalModulesList))
+				if(File.Exists(LocalModulesList) && HelperDelegates.bIsValid)
 				{
 					if(File.Exists(InstalledModulesListPath))
 					{
-						IgorUtils.DeleteFile(InstalledModulesListPath);
+						IgorUpdater.HelperDelegates.DeleteFile(InstalledModulesListPath);
 					}
 
 					File.Copy(LocalModulesList, InstalledModulesListPath);
@@ -1074,12 +736,16 @@ namespace Igor
 				CleanupTemp();
 			}
 
-			if(!IgorJobConfig.GetWasMenuTriggered())
+			if(!HelperDelegates.IgorJobConfig_GetWasMenuTriggered())
 			{
 				if(bThrewException)
 				{
                     Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
-					EditorApplication.Exit(-1);
+
+                    if(HelperDelegates.bIsValid)
+                    {
+						EditorApplication.Exit(-1);
+					}
 				}
 			}
 
@@ -1138,9 +804,13 @@ namespace Igor
 									bUpdated = true;
                                     UpdatedContent.Add(ModuleName);
 
+                                    List<string> FilesToDelete = new List<string>();
+
 									if(CurrentModuleDescriptorInst != null)
 									{
-										IgorUtils.DeleteFile(CurrentModuleDescriptor);
+										IgorUpdater.HelperDelegates.DeleteFile(CurrentModuleDescriptor);
+
+										FilesToDelete.AddRange(CurrentModuleDescriptorInst.ModuleFiles);
 									}
 
 									if(!Directory.Exists(Path.GetDirectoryName(CurrentModuleDescriptor)))
@@ -1152,6 +822,8 @@ namespace Igor
 
 									foreach(string ModuleFile in NewModuleDescriptorInst.ModuleFiles)
 									{
+										FilesToDelete.Remove(ModuleFile);
+
                                         bool bIsExternal = false;
 
                                         string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(ModuleFile);
@@ -1208,7 +880,7 @@ namespace Igor
 										{
 											if(File.Exists(FullLocalPath))
 											{
-												IgorUtils.DeleteFile(FullLocalPath);
+												IgorUpdater.HelperDelegates.DeleteFile(FullLocalPath);
 											}
 
 											if(!Directory.Exists(Path.GetDirectoryName(FullLocalPath)))
@@ -1220,6 +892,17 @@ namespace Igor
 											{
 												File.Copy(TempDownloadPath, FullLocalPath);
 											}
+										}
+									}
+
+									foreach(string FilenameToDelete in FilesToDelete)
+									{
+										string LocalFile = IgorUtils.GetLocalFileFromModuleFilename(FilenameToDelete);
+										string FullLocalPath = Path.Combine(LocalModuleRoot, Path.Combine(Path.GetDirectoryName(CurrentModule.ModuleDescriptorRelativePath), LocalFile));
+
+										if(File.Exists(FullLocalPath))
+										{
+											IgorUpdater.HelperDelegates.DeleteFile(FullLocalPath);
 										}
 									}
 								}
@@ -1272,12 +955,16 @@ namespace Igor
 				CleanupTemp();
 			}
 
-			if(!IgorJobConfig.GetWasMenuTriggered())
+			if(!HelperDelegates.IgorJobConfig_GetWasMenuTriggered())
 			{
 				if(bThrewException)
 				{
                     Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
-					EditorApplication.Exit(-1);
+
+                    if(HelperDelegates.bIsValid)
+                    {
+						EditorApplication.Exit(-1);
+					}
 				}
 			}
 
@@ -1296,15 +983,15 @@ namespace Igor
 		        {
 		            FindCore();
 
-		            if(IgorJobConfig.IsBoolParamSet("restartingfromupdate") || IgorJobConfig.IsBoolParamSet("updatebeforebuild") || Core == null)
+		            if(HelperDelegates.IgorJobConfig_IsBoolParamSet("restartingfromupdate") || HelperDelegates.IgorJobConfig_IsBoolParamSet("updatebeforebuild") || Core == null)
 		            {
-		                IgorJobConfig.SetBoolParam("restartingfromupdate", false);
+		                HelperDelegates.IgorJobConfig_SetBoolParam("restartingfromupdate", false);
 
 		                if(!CheckForUpdates())
 		                {
-		                    if(IgorJobConfig.IsBoolParamSet("updatebeforebuild"))
+		                    if(HelperDelegates.IgorJobConfig_IsBoolParamSet("updatebeforebuild"))
 		                    {
-		                        IgorJobConfig.SetBoolParam("updatebeforebuild", false);
+		                        HelperDelegates.IgorJobConfig_SetBoolParam("updatebeforebuild", false);
 
 		                        if(Core != null)
 		                        {
@@ -1325,12 +1012,16 @@ namespace Igor
 		            bThrewException = true;
 		        }
 
-		        if(!IgorJobConfig.GetWasMenuTriggered())
+		        if(!HelperDelegates.IgorJobConfig_GetWasMenuTriggered())
 		        {
 		            if(bThrewException)
 		            {
                         Debug.LogError("Igor Error: Exiting EditorApplication because an exception was thrown.");
-		                EditorApplication.Exit(-1);
+
+	                    if(HelperDelegates.bIsValid)
+	                    {
+			                EditorApplication.Exit(-1);
+			            }
 		            }
 		        }
 		    }
@@ -1379,8 +1070,8 @@ namespace Igor
 
 		public static void RemoveOldDirectory()
 		{
-			IgorUtils.DeleteDirectory(OldBaseIgorDirectory);
-			IgorUtils.DeleteFile(OldBaseIgorDirectory + ".meta");
+			IgorUpdater.HelperDelegates.DeleteDirectory(OldBaseIgorDirectory);
+			IgorUpdater.HelperDelegates.DeleteFile(OldBaseIgorDirectory + ".meta");
 		}
 	}
 }

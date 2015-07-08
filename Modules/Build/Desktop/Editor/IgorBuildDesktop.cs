@@ -25,58 +25,76 @@ namespace Igor
 		    IgorBuildCommon.RegisterBuildPlatforms(new string[] {"OSX32", "OSX64", "OSXUniversal", "Windows32", "Windows64", "Linux32", "Linux64", "LinuxUniversal"});
 		}
 
+		public static BuildTarget GetBuildTargetForCurrentJob(out bool bWindows, out bool bOSX, out bool bLinux, string AllParams = "")
+		{
+			string PlatformString = IgorJobConfig.GetStringParam(IgorBuildCommon.PlatformFlag);
+
+			if(PlatformString == "")
+			{
+				PlatformString = IgorRuntimeUtils.GetStringParam(AllParams, IgorBuildCommon.PlatformFlag);
+			}
+
+			bWindows = false;
+			bOSX = false;
+			bLinux = false;
+
+			BuildTarget CurrentJobBuildTarget = BuildTarget.StandaloneOSXIntel;
+
+			if(PlatformString.Contains("OSX32"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneOSXIntel;
+				bOSX = true;
+			}
+			else if(PlatformString.Contains("OSX64"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneOSXIntel64;
+				bOSX = true;
+			}
+			else if(PlatformString.Contains("OSXUniversal"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneOSXUniversal;
+				bOSX = true;
+			}
+			else if(PlatformString.Contains("Windows32"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneWindows;
+				bWindows = true;
+			}
+			else if(PlatformString.Contains("Windows64"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneWindows64;
+				bWindows = true;
+			}
+			else if(PlatformString.Contains("Linux32"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneLinux;
+				bLinux = true;
+			}
+			else if(PlatformString.Contains("Linux64"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneLinux64;
+				bLinux = true;
+			}
+			else if(PlatformString.Contains("LinuxUniversal"))
+			{
+				CurrentJobBuildTarget = BuildTarget.StandaloneLinuxUniversal;
+				bLinux = true;
+			}
+
+			return CurrentJobBuildTarget;
+		}
+
 		public override void ProcessArgs(IIgorStepHandler StepHandler)
 		{
 			if(IgorJobConfig.IsBoolParamSet(IgorBuildCommon.BuildFlag))
 			{
 				IgorCore.SetModuleActiveForJob(this);
 
-				string Platform = IgorJobConfig.GetStringParam(IgorBuildCommon.PlatformFlag);
-
 				bool bWindows = false;
 				bool bOSX = false;
 				bool bLinux = false;
 
-				if(Platform.Contains("OSX32"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneOSXIntel;
-					bOSX = true;
-				}
-				else if(Platform.Contains("OSX64"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneOSXIntel64;
-					bOSX = true;
-				}
-				else if(Platform.Contains("OSXUniversal"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneOSXUniversal;
-					bOSX = true;
-				}
-				else if(Platform.Contains("Windows32"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneWindows;
-					bWindows = true;
-				}
-				else if(Platform.Contains("Windows64"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneWindows64;
-					bWindows = true;
-				}
-				else if(Platform.Contains("Linux32"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneLinux;
-					bLinux = true;
-				}
-				else if(Platform.Contains("Linux64"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneLinux64;
-					bLinux = true;
-				}
-				else if(Platform.Contains("LinuxUniversal"))
-				{
-					JobBuildTarget = BuildTarget.StandaloneLinuxUniversal;
-					bLinux = true;
-				}
+				JobBuildTarget = GetBuildTargetForCurrentJob(out bWindows, out bOSX, out bLinux);
 
 				if(bOSX)
 				{
@@ -103,12 +121,12 @@ namespace Igor
 
 		public override bool ShouldDrawInspectorForParams(string CurrentParams)
 		{
-			bool bBuilding = IgorUtils.IsBoolParamSet(CurrentParams, IgorBuildCommon.BuildFlag);
+			bool bBuilding = IgorRuntimeUtils.IsBoolParamSet(CurrentParams, IgorBuildCommon.BuildFlag);
 			bool bRecognizedPlatform = false;
 
 			if(bBuilding)
 			{
-				string Platform = IgorUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
+				string Platform = IgorRuntimeUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
 
 				if(Platform == "OSX32")
 				{
@@ -151,7 +169,7 @@ namespace Igor
 		{
 			string EnabledParams = CurrentParams;
 
-			string Platform = IgorUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
+			string Platform = IgorRuntimeUtils.GetStringParam(CurrentParams, IgorBuildCommon.PlatformFlag);
 
 			DrawStringConfigParamDifferentOverride(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, GetBuiltNameConfigKeyForPlatform(Platform));
 
@@ -352,14 +370,14 @@ namespace Igor
 
 			if(File.Exists(BuiltName))
 			{
-				IgorUtils.DeleteFile(BuiltName);
+				IgorRuntimeUtils.DeleteFile(BuiltName);
 			}
 
 			if(IsPlatformWindows(JobBuildTarget))
 			{
 				if(Directory.Exists(DataFolderName))
 				{
-					IgorUtils.DeleteDirectory(DataFolderName);
+					IgorRuntimeUtils.DeleteDirectory(DataFolderName);
 				}
 			}
 
@@ -392,7 +410,7 @@ namespace Igor
 				}
 			}
 
-			IgorBuildCommon.SetNewBuildProducts(BuiltFiles);
+			IgorCore.SetNewModuleProducts(BuiltFiles);
 
 			return true;
 		}

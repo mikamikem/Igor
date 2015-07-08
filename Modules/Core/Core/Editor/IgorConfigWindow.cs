@@ -11,6 +11,7 @@ using UnityEditorInternal;
 
 namespace Igor
 {
+	[InitializeOnLoad]
 	public class IgorConfigWindow : EditorWindow, IIgorStepHandler
 	{
         [System.Serializable]
@@ -24,6 +25,8 @@ namespace Igor
 	        {
 	            if(_window == null)
 	            {
+	            	DummyValue = new IgorEditorCore();
+
 	                System.Reflection.Assembly EditorAssembly = typeof(UnityEditor.EditorWindow).Assembly;
 			        System.Type InspectorViewType = EditorAssembly.GetType("UnityEditor.InspectorWindow");
 			
@@ -44,6 +47,8 @@ namespace Igor
 
 		[MenuItem("Window/Igor/Igor Configuration", false, 1)]
 		public static IgorConfigWindow OpenOrGetConfigWindow() { return Window; }
+
+		public static IgorEditorCore DummyValue = null; // We're using this to force static initialization for IgorEditorCore
 
 		public static double DelayAfterCompiling = 10.0;
 		public static double TimeToActivate = DelayAfterCompiling;
@@ -79,6 +84,12 @@ namespace Igor
 
 	    public static bool bIsDrawingInspector = false;
 
+	    public static void SetIsDrawingInspector(bool bIsDrawing)
+	    {
+	    	bIsDrawingInspector = bIsDrawing;
+	    	IgorModuleBase.bIsDrawingInspector = bIsDrawing;
+	    }
+
 		protected FoldoutState ParamsModuleCategoryExpanded = new FoldoutState();
 		protected FoldoutState IsModuleExpanded = new FoldoutState(); 
 		protected bool bShowParams = true;
@@ -101,6 +112,8 @@ namespace Igor
 	    }
 
 	    protected Dictionary<string, ModuleReadmeInfo> ModuleReadmes = new Dictionary<string, ModuleReadmeInfo>();
+
+	    public List<string> ModulesToDelete = new List<string>();
 
 	    public IgorPersistentJobConfig CurrentJobInst
 	    {
@@ -146,7 +159,7 @@ namespace Igor
 					IgorJobConfig.SetBoolParam("wascompiling", false);
 					TimeToActivate = EditorApplication.timeSinceStartup + DelayAfterCompiling;
 
-//					IgorCore.Log(null, "Pausing for " + DelayAfterCompiling + " seconds to make sure Unity is done compiling.");
+//					IgorDebug.Log(null, "Pausing for " + DelayAfterCompiling + " seconds to make sure Unity is done compiling.");
 
 					Repaint();
 
@@ -154,7 +167,7 @@ namespace Igor
 				}
 				else if(IgorJobConfig.GetIsRunning())
 				{
-					IgorCore.RunJob();
+					IgorEditorCore.ContinueRunningJob();
 				}
 			}
 
@@ -433,7 +446,7 @@ namespace Igor
 			return ModuleCategoriesToNames;
 		}
 
-		public virtual void RegisterJobStep(StepID CurrentStep, IIgorModule Module, IgorCore.JobStepFunc StepFunction)
+		public virtual void RegisterJobStep(StepID CurrentStep, IIgorModule Module, IgorRuntimeUtils.JobStepFunc StepFunction)
 		{
 			if(StepIDToFunctions.ContainsKey(CurrentStep))
 			{
@@ -484,7 +497,7 @@ namespace Igor
 				// Sometimes when transitioning to running the GUI freaks out and throws exceptions, so we can ignore those
 				if(!IgorJobConfig.GetIsRunning())
 				{
-					IgorCore.LogError(null, "ListWindow threw an exception in OnGUI() - " + e.ToString());
+					IgorDebug.LogError(null, "ListWindow threw an exception in OnGUI() - " + e.ToString());
 				}
 			}
 		}
@@ -501,7 +514,7 @@ namespace Igor
 
 		protected virtual void DrawConfiguration()
 		{
-			bIsDrawingInspector = true;
+			SetIsDrawingInspector(true);
 
 			ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition);
 
@@ -667,6 +680,11 @@ namespace Igor
 		                            	EditorGUI.indentLevel -= 1;
 		                            }
 
+		                            if(bInstalled)
+		                            {
+		                            	ModulesToDelete.Remove(MergedName);
+		                            }
+
 		                            if(!bIsDependency)
 		                            {
 		                                if(!bWasInstalled && bInstalled)
@@ -679,19 +697,22 @@ namespace Igor
 		                                {
 		                                    ConfigInst.EnabledModules.Remove(MergedName);
 
-										bModulesChanged = true;
-									}
-								}
-								else
-								{
-									if(!bWasInstalled)
-									{
-										ConfigInst.EnabledModules.Add(MergedName);
+		                                    ModulesToDelete.Add(MergedName);
 
-										bModulesChanged = true;
+											bModulesChanged = true;
+										}
+									}
+									else
+									{
+										if(!bWasInstalled)
+										{
+											ConfigInst.EnabledModules.Add(MergedName);
+
+											bModulesChanged = true;
+										}
 									}
 								}
-							}
+
 		                        EditorGUI.indentLevel -= 1;
 		                    }
 		                }
@@ -731,11 +752,11 @@ namespace Igor
                 {
 				    if(GUILayout.Button("Run Job"))
 				    {
-				    	bIsDrawingInspector = false;
+				    	SetIsDrawingInspector(false);
 
 					    TriggerJob(CurrentJobInst.JobName);
 
-					    bIsDrawingInspector = true;
+					    SetIsDrawingInspector(true);
 				    }
 
 				    if(GUILayout.Button("Duplicate Job"))
@@ -801,14 +822,14 @@ namespace Igor
 
 						if(CurrentModule != null)
 						{
-							if(!IgorUtils.IsStringParamSet(DisplayParams, IgorCoreModule.MinUnityVersionFlag))
+							if(!IgorRuntimeUtils.IsStringParamSet(DisplayParams, IgorCoreModule.MinUnityVersionFlag))
 							{
-								DisplayParams = IgorUtils.SetStringParam(DisplayParams, IgorCoreModule.MinUnityVersionFlag, IgorConfig.GetModuleString(CurrentModule, IgorCoreModule.MinUnityVersionFlag));
+								DisplayParams = IgorRuntimeUtils.SetStringParam(DisplayParams, IgorCoreModule.MinUnityVersionFlag, IgorConfig.GetModuleString(CurrentModule, IgorCoreModule.MinUnityVersionFlag));
 							}
 
-							if(!IgorUtils.IsStringParamSet(DisplayParams, IgorCoreModule.MaxUnityVersionFlag))
+							if(!IgorRuntimeUtils.IsStringParamSet(DisplayParams, IgorCoreModule.MaxUnityVersionFlag))
 							{
-								DisplayParams = IgorUtils.SetStringParam(DisplayParams, IgorCoreModule.MaxUnityVersionFlag, IgorConfig.GetModuleString(CurrentModule, IgorCoreModule.MaxUnityVersionFlag));
+								DisplayParams = IgorRuntimeUtils.SetStringParam(DisplayParams, IgorCoreModule.MaxUnityVersionFlag, IgorConfig.GetModuleString(CurrentModule, IgorCoreModule.MaxUnityVersionFlag));
 							}
 						}
 					}
@@ -1048,7 +1069,7 @@ namespace Igor
 			
             EditorGUILayout.EndScrollView();
 
-            bIsDrawingInspector = false;
+            SetIsDrawingInspector(false);
 		}
 
 		public virtual void SaveConfiguration()
@@ -1072,6 +1093,34 @@ namespace Igor
 
 			if(bModulesChanged)
 			{
+				foreach(string CurrentModuleName in ModulesToDelete)
+				{
+					string ModuleCategoryPath = Path.Combine(IgorUpdater.LocalModuleRoot, CurrentModuleName.Substring(0, CurrentModuleName.IndexOf(".")));
+
+					List<string> ModulesInCategory = IgorRuntimeUtils.GetListOfFilesAndDirectoriesInDirectory(ModuleCategoryPath, false, true);
+
+					if(ModulesInCategory.Count > 1)
+					{
+						string ModulePath = Path.Combine(IgorUpdater.LocalModuleRoot, CurrentModuleName.Replace('.', Path.DirectorySeparatorChar));
+
+						IgorRuntimeUtils.DeleteDirectory(ModulePath);
+
+						if(File.Exists(ModulePath + ".meta"))
+						{
+							IgorRuntimeUtils.DeleteFile(ModulePath + ".meta");
+						}
+					}
+					else
+					{
+						IgorRuntimeUtils.DeleteDirectory(ModuleCategoryPath);
+
+						if(File.Exists(ModuleCategoryPath + ".meta"))
+						{
+							IgorRuntimeUtils.DeleteFile(ModuleCategoryPath + ".meta");
+						}
+					}
+				}
+
 				IgorUpdater.CheckForUpdates(false, true);
 			}
 
@@ -1124,7 +1173,19 @@ namespace Igor
 
 		public static void TriggerJob(string JobName)
 		{
-			IgorConfig.TriggerJobByName(JobName, true, false);
+			IgorConfig.SetJobToRunByName(JobName);
+
+			bool bAttemptUpdate = false;
+			bool bFromMenu = true;
+
+		    if(!bAttemptUpdate)
+		    {
+		        IgorEditorCore.EditorHandleJobStatus(IgorCore.RunJob(bFromMenu));
+		    }
+		    else
+		    {
+		        IgorEditorCore.UpdateAndRunJob();
+		    }
 		}
 
 		public virtual void GetValuesFromConfig()
@@ -1150,13 +1211,13 @@ namespace Igor
 		{
 			string NewParams = "";
 
-			bool bSkipUnityUpdate = IgorUtils.IsBoolParamSet(OriginalParams, IgorCoreModule.SkipUnityUpdateFlag);
-			string MinUnityVersion = IgorUtils.GetStringParam(OriginalParams, IgorCoreModule.MinUnityVersionFlag);
-			string MaxUnityVersion = IgorUtils.GetStringParam(OriginalParams, IgorCoreModule.MaxUnityVersionFlag);
+			bool bSkipUnityUpdate = IgorRuntimeUtils.IsBoolParamSet(OriginalParams, IgorCoreModule.SkipUnityUpdateFlag);
+			string MinUnityVersion = IgorRuntimeUtils.GetStringParam(OriginalParams, IgorCoreModule.MinUnityVersionFlag);
+			string MaxUnityVersion = IgorRuntimeUtils.GetStringParam(OriginalParams, IgorCoreModule.MaxUnityVersionFlag);
 
-			NewParams = IgorUtils.SetBoolParam(NewParams, IgorCoreModule.SkipUnityUpdateFlag, bSkipUnityUpdate);
-			NewParams = IgorUtils.SetStringParam(NewParams, IgorCoreModule.MinUnityVersionFlag, MinUnityVersion);
-			NewParams = IgorUtils.SetStringParam(NewParams, IgorCoreModule.MaxUnityVersionFlag, MaxUnityVersion);
+			NewParams = IgorRuntimeUtils.SetBoolParam(NewParams, IgorCoreModule.SkipUnityUpdateFlag, bSkipUnityUpdate);
+			NewParams = IgorRuntimeUtils.SetStringParam(NewParams, IgorCoreModule.MinUnityVersionFlag, MinUnityVersion);
+			NewParams = IgorRuntimeUtils.SetStringParam(NewParams, IgorCoreModule.MaxUnityVersionFlag, MaxUnityVersion);
 
 			return NewParams;
 		}
@@ -1218,7 +1279,7 @@ namespace Igor
 
 			if(File.Exists(EditorMenuOptionsFilePath))
 			{
-				IgorUtils.DeleteFile(EditorMenuOptionsFilePath);
+				IgorRuntimeUtils.DeleteFile(EditorMenuOptionsFilePath);
 			}
 
 			File.WriteAllText(EditorMenuOptionsFilePath, FullEditorMenuOptionFile);

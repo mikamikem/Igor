@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif // UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 
@@ -29,7 +31,7 @@ namespace Igor
 		{
 			if(!bTrue)
 			{
-				IgorCore.LogWarning(Module, FailMessage);
+				IgorDebug.LogWarning(Module, FailMessage);
 
 				JobFailed();
 
@@ -44,7 +46,7 @@ namespace Igor
 #if DEBUG
 			if(!bTrue)
 			{
-				IgorCore.LogError(Module, FailMessage);
+				IgorDebug.LogError(Module, FailMessage);
 
 				JobFailed();
 
@@ -59,7 +61,7 @@ namespace Igor
 		{
 			if(!bTrue)
 			{
-				IgorCore.LogWarning(Module, FailMessage);
+				IgorDebug.LogWarning(Module, FailMessage);
 			}
 
 			return bTrue;
