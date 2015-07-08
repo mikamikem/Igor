@@ -80,11 +80,16 @@ namespace Igor
 				IgorRuntimeUtils.DeleteFile(ZipFilename);
 			}
 
-#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-			ZipFilesMac(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts, RootDir);
-#elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-			ZipFilesWindows(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts, RootDir);
-#endif
+			IgorRuntimeUtils.PlatformNames CurrentPlatform = IgorRuntimeUtils.RuntimeOrEditorGetPlatform();
+
+			if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_OSX || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_OSX)
+			{
+				ZipFilesMac(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts, RootDir);
+			}
+			else if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_Windows || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_Windows)
+			{
+				ZipFilesWindows(ModuleInst, FilesToZip, ZipFilename, bUpdateBuildProducts, RootDir);
+			}
 		}
 
 		public static void ZipFilesMac(IIgorModule ModuleInst, List<string> FilesToZip, string ZipFilename, bool bUpdateBuildProducts, string RootDir)
@@ -166,11 +171,16 @@ namespace Igor
 
 		public static void UnzipArchiveCrossPlatform(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo)
 		{
-#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-			UnzipFileMac(ModuleInst, ZipFilename, DirectoryToUnzipTo);
-#elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-			UnzipFileWindows(ModuleInst, ZipFilename, DirectoryToUnzipTo);
-#endif
+			IgorRuntimeUtils.PlatformNames CurrentPlatform = IgorRuntimeUtils.RuntimeOrEditorGetPlatform();
+
+			if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_OSX || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_OSX)
+			{
+				UnzipFileMac(ModuleInst, ZipFilename, DirectoryToUnzipTo);
+			}
+			else if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_Windows || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_Windows)
+			{
+				UnzipFileWindows(ModuleInst, ZipFilename, DirectoryToUnzipTo);
+			}
 		}
 
 		public static void UnzipFileMac(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo)

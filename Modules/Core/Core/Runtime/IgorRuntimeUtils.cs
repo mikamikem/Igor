@@ -489,7 +489,7 @@ namespace Igor
 		{
 			string CurrentPath = OriginalPath;
 
-			if(CurrentPath[0] == '~')
+			if(CurrentPath.Length > 0 && CurrentPath[0] == '~')
 			{
 				CurrentPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + CurrentPath.Substring(1);
 			}
@@ -540,11 +540,16 @@ namespace Igor
 		{
 			string Command = "";
 			
-#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-			Command = OSXCommand;
-#elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-			Command = WindowsCommand;
-#endif
+			IgorRuntimeUtils.PlatformNames CurrentPlatform = IgorRuntimeUtils.RuntimeOrEditorGetPlatform();
+
+			if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_OSX || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_OSX)
+			{
+				Command = OSXCommand;
+			}
+			else if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_Windows || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_Windows)
+			{
+				Command = WindowsCommand;
+			}
 			
 			Command = UpdatePathForEnvVariables(Command);
 			
@@ -564,15 +569,16 @@ namespace Igor
 
 			NewStartInfo.Arguments = Parameters;
 
-			NewStartInfo.WorkingDirectory = 
-#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-			Directory
-#elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-			Directory.Replace("/", "\\")
-#else
-			""
-#endif
-			;
+			NewStartInfo.WorkingDirectory = "";
+
+			if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_OSX || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_OSX)
+			{
+				NewStartInfo.WorkingDirectory = Directory;
+			}
+			else if(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_Windows || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_Windows)
+			{
+				NewStartInfo.WorkingDirectory = Directory.Replace("/", "\\");
+			}
 
 			NewStartInfo.UseShellExecute = bUseShell;
 			NewStartInfo.RedirectStandardOutput = !bUseShell;
@@ -625,6 +631,51 @@ namespace Igor
 			}
 
 			return Value;
+		}
+
+		public enum PlatformNames
+		{
+			Editor_Windows,
+			Editor_OSX,
+			Standalone_Windows,
+			Standalone_OSX,
+			Standalone_Linux,
+			Standalone_iOS,
+			Standalone_Android,
+			Unknown
+		}
+
+		public static PlatformNames RuntimeOrEditorGetPlatform()
+		{
+#if UNITY_EDITOR
+			string FullPath = Path.GetFullPath(".");
+
+			if(FullPath.Length > 1)
+			{
+				if(FullPath[1] == ':')
+				{
+					return PlatformNames.Editor_Windows;
+				}
+				else
+				{
+					return PlatformNames.Editor_OSX;
+				}
+			}
+#else
+#if UNITY_STANDALONE_WIN
+			return PlatformNames.Standalone_Windows;
+#elif UNITY_STANDALONE_OSX
+			return PlatformNames.Standalone_OSX;
+#elif UNITY_STANDALONE_LINUX
+			return PlatformNames.Standalone_Linux;
+#elif UNITY_IOS
+			return PlatformNames.Standalone_iOS;
+#elif UNITY_ANDROID
+			return PlatformNames.Standalone_Android;
+#endif
+#endif // UNITY_EDITOR
+
+			return PlatformNames.Unknown;
 		}
 
 	    public static List<string> GetListOfFilesAndDirectoriesInDirectory(string RootDir, bool bFiles = true, bool bDirectories = true, bool bRecursive = false, bool bFilterOutUnitySpecialFiles = true, bool bAbsolutePath = false)
