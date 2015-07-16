@@ -91,7 +91,7 @@ For a value that can be set either in the config or as a parameter, you will see
 
 - Build Platforms: [Windows](Modules/Build/Desktop), [OSX](Modules/Build/Desktop), [Linux](Modules/Build/Desktop), [iOS](Modules/Build/iOS), [Android](Modules/Build/Android)
 - Continuous Integration: Jenkins
-- Testing: [Monster Test Framework](Modules/Monster/Core/MonsterTestReadme.md)
+- Testing: [Monster Test Framework](Modules/MonsterTest/Core/MonsterTestReadme.md)
 - Packaging: [Zip](Modules/Package/Zip), [iOS OTA](Modules/Package/iOSOTA)
 - Distribution: [FTP](Modules/Distribution/IgorFTP), [BitTorrent Sync](Modules/Distribution/BitTorrentSync)
 - 3rd Party SDKs: [(iOS)StoreKit](Modules/3rdParty/StoreKitiOS), [(iOS)Facebook](Modules/3rdParty/FacebookiOSHats), [(Android)Facebook](Modules/3rdParty/FacebookAndroidHats), [(Android)Google Play Game Services](Modules/3rdParty/GooglePlayGameServicesAndroid), [Amplify Texture](Modules/3rdParty/AmplifyTexture)
