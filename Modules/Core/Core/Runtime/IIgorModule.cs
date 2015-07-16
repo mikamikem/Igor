@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 
 namespace Igor
 {
@@ -7,12 +8,15 @@ namespace Igor
 
 		void RegisterModule();
 		void ProcessArgs(IIgorStepHandler StepHandler);
-
+		bool IsDependentOnModule(IIgorModule ModuleInst);
+        
 #if UNITY_EDITOR
 		string DrawJobInspectorAndGetEnabledParams(string CurrentParams);
 		bool ShouldDrawInspectorForParams(string CurrentParams);
 #endif // UNITY_EDITOR
 
-        void PostJobCleanup();
+		void PostJobCleanup();
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

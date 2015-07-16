@@ -68,8 +68,8 @@ namespace Igor
 		    System.IO.Directory.Delete(targetDir, false);
 		}
 
-		public delegate List<Type> TemplatedTypeListOneBoolParam<TemplatedType>(bool bParam1);
-		public List<Type> DoNothingTemplatedTypeListOneBoolParam<TemplatedType>(bool bParam1)
+		public delegate List<Type> TemplatedTypeListNoParams();
+		public List<Type> DoNothingTemplatedTypeListNoParams()
 		{
 			return new List<Type>();
 		}
@@ -96,7 +96,7 @@ namespace Igor
 
 		public VoidOneStringParam DeleteFile;
 		public VoidOneStringParam DeleteDirectory;
-		public TemplatedTypeListOneBoolParam<IIgorEditorCore> GetTypesInheritFromIIgorEditorCore;
+		public TemplatedTypeListNoParams GetTypesInheritFromIIgorEditorCore;
 		public VoidOneBoolParam IgorJobConfig_SetWasMenuTriggered;
 		public BoolNoParams IgorJobConfig_GetWasMenuTriggered;
 		public BoolStringParam IgorJobConfig_IsBoolParamSet;
@@ -106,7 +106,7 @@ namespace Igor
 		{
 			DeleteFile = UpdaterDeleteFile;
 			DeleteDirectory = UpdaterDeleteDirectory;
-			GetTypesInheritFromIIgorEditorCore = DoNothingTemplatedTypeListOneBoolParam<IIgorEditorCore>;
+			GetTypesInheritFromIIgorEditorCore = DoNothingTemplatedTypeListNoParams;
 			IgorJobConfig_SetWasMenuTriggered = DoNothingVoidOneBoolParam;
 			IgorJobConfig_GetWasMenuTriggered = DoNothingBoolNoParams;
 			IgorJobConfig_IsBoolParamSet = DoNothingBoolStringParam;
@@ -433,7 +433,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 30;
+		private const int Version = 31;
 		private const int MajorUpgrade = 2;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
@@ -551,7 +551,7 @@ namespace Igor
 		{
 			if(Core == null)
 			{
-				List<Type> ActiveCores = HelperDelegates.GetTypesInheritFromIIgorEditorCore(true);
+				List<Type> ActiveCores = HelperDelegates.GetTypesInheritFromIIgorEditorCore();
 
 				if(ActiveCores.Count > 0)
 				{

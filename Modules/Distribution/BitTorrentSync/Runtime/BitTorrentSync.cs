@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if IGOR_RUNTIME || UNITY_EDITOR
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -16,7 +17,10 @@ namespace Igor
 		public static string CopyToSyncExpEnabledFlag = "bittorrentsyncexpenabled";
 		public static string CopyToSyncExplicitFlag = "bitttorrentsyncpath";
 		public static string CopyToSyncFilenameFlag = "bittorrentsyncfile";
+		public static string CopyFromSyncFlag = "copyfromsync";
+		public static string CopyToLocalDirFlag = "copytolocaldir";
 
+		public static StepID CopyFromSyncStep = new StepID("Copy From BitTorrent Sync", 200);
 		public static StepID CopyToSyncStep = new StepID("Copy To BitTorrent Sync", 1200);
 
 		public override string GetModuleName()
@@ -38,7 +42,15 @@ namespace Igor
 				GetParamOrConfigString(CopyToSyncFilenameFlag) != "")
 			{
 				IgorCore.SetModuleActiveForJob(this);
-				StepHandler.RegisterJobStep(CopyToSyncStep, this, CopyToSync);
+
+				if(IgorJobConfig.IsBoolParamSet(CopyFromSyncFlag))
+				{
+					StepHandler.RegisterJobStep(CopyFromSyncStep, this, CopyFromSync);
+				}
+				else
+				{
+					StepHandler.RegisterJobStep(CopyToSyncStep, this, CopyToSync);
+				}
 			}
 		}
 
@@ -53,33 +65,55 @@ namespace Igor
 			DrawBoolParam(ref EnabledParams, "Use Environment Variable Base Path", CopyToSyncEnvEnabledFlag);
 			DrawStringConfigParam(ref EnabledParams, "Environment Base Path Variable Name", CopyToSyncEnvFlag);
 
+			if(DrawBoolParam(ref EnabledParams, "Copy from Sync Path", CopyFromSyncFlag))
+			{
+				DrawStringConfigParam(ref EnabledParams, "Copy from Sync Destination Local Directory", CopyToLocalDirFlag);
+			}
+
 			return EnabledParams;
 		}
 #endif // UNITY_EDITOR
 
 		public virtual bool CopyToSync()
 		{
-			List<string> BuiltProducts = IgorCore.GetModuleProducts();
+			return CopyToFromSync(true);
+		}
 
-			IgorAssert.EnsureTrue(this, BuiltProducts.Count == 1, "This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
+		public virtual bool CopyFromSync()
+		{
+			return CopyToFromSync(false);
+		}
 
-			string FileToCopy = "";
+		public virtual bool CopyToFromSync(bool bToSync)
+		{
+			string LocalFile = "";
 
-			if(BuiltProducts.Count > 0)
+			if(bToSync)
 			{
-				FileToCopy = BuiltProducts[0];
+				List<string> BuiltProducts = IgorCore.GetModuleProducts();
+
+				IgorAssert.EnsureTrue(this, BuiltProducts.Count == 1, "This module requires exactly one built file, but we found " + BuiltProducts.Count + " instead.  Please make sure you've enabled a package step prior to this one.");
+
+				if(BuiltProducts.Count > 0)
+				{
+					LocalFile = BuiltProducts[0];
+				}
+			}
+			else
+			{
+				LocalFile = GetParamOrConfigString(CopyToLocalDirFlag, "", Path.GetFullPath("."), false);
 			}
 
-			if(IgorAssert.EnsureTrue(this, File.Exists(FileToCopy), "BitTorrent Sync copy was told to copy file " + FileToCopy + ", but the file doesn't exist!"))
+			if(IgorAssert.EnsureTrue(this, !bToSync || File.Exists(LocalFile), "BitTorrent Sync copy was told to copy file " + LocalFile + ", but the file doesn't exist!"))
 			{
-				string DestinationFile = "";
+				string SyncFile = "";
 
 				if(IgorJobConfig.IsBoolParamSet(CopyToSyncExpEnabledFlag))
 				{
-					DestinationFile = GetParamOrConfigString(CopyToSyncExplicitFlag, "BitTorrent Sync copy to sync explicit is enabled, but the path isn't set.");
+					SyncFile = GetParamOrConfigString(CopyToSyncExplicitFlag, "BitTorrent Sync copy to sync explicit is enabled, but the path isn't set.");
 				}
 
-				if(DestinationFile == "" && IgorJobConfig.IsBoolParamSet(CopyToSyncEnvEnabledFlag))
+				if(SyncFile == "" && IgorJobConfig.IsBoolParamSet(CopyToSyncEnvEnabledFlag))
 				{
 					string EnvVariable = GetParamOrConfigString(CopyToSyncEnvFlag, "BitTorrent Sync copy to sync based on environment variable is enabled, but the env variable name isn't set.");
 
@@ -88,34 +122,59 @@ namespace Igor
 						return true;
 					}
 
-					DestinationFile = IgorRuntimeUtils.GetEnvVariable(EnvVariable);
+					SyncFile = IgorRuntimeUtils.GetEnvVariable(EnvVariable);
 
-					if(!IgorAssert.EnsureTrue(this, DestinationFile != "", "The BitTorrent Sync root path environment variable " + EnvVariable + " isn't set."))
+					if(!IgorAssert.EnsureTrue(this, SyncFile != "", "The BitTorrent Sync root path environment variable " + EnvVariable + " isn't set."))
 					{
 						return true;
 					}
 				}
 
-				string DestinationFilename = GetParamOrConfigString(CopyToSyncFilenameFlag, "BitTorrent Sync copy to sync destination filename isn't set.");
+				string SyncFilename = GetParamOrConfigString(CopyToSyncFilenameFlag, (bToSync ?
+					"BitTorrent Sync copy to sync destination filename isn't set." : "BitTorrent Sync copy from sync source filename isn't set."));
 
-				if(DestinationFilename == "")
+				if(SyncFilename == "")
 				{
 					return true;
 				}
 
-				DestinationFile = Path.Combine(DestinationFile, DestinationFilename);
+				SyncFile = Path.Combine(SyncFile, SyncFilename);
 
-				if(File.Exists(DestinationFile))
+				if(bToSync)
 				{
-					IgorRuntimeUtils.DeleteFile(DestinationFile);
+					if(File.Exists(SyncFile))
+					{
+						IgorRuntimeUtils.DeleteFile(SyncFile);
+					}
+
+					File.Copy(LocalFile, SyncFile);
+
+					Log("File " + LocalFile + " copied to requested location " + SyncFile + " for BitTorrent Sync uploading.");
 				}
+				else
+				{
+					LocalFile = Path.Combine(LocalFile, Path.GetFileName(SyncFile));
 
-				File.Copy(FileToCopy, DestinationFile);
+					if(File.Exists(LocalFile))
+					{
+						IgorRuntimeUtils.DeleteFile(LocalFile);
+					}
 
-				Log("File " + FileToCopy + " copied to requested location " + DestinationFile + " for BitTorrent Sync uploading.");
+					File.Copy(SyncFile, LocalFile);
+
+					Log("File " + SyncFile + " copied from the BitTorrent Sync share to requested location " + LocalFile + ".");
+
+					List<string> NewProducts = new List<string>();
+
+					NewProducts.Add(LocalFile);
+
+					IgorCore.SetNewModuleProducts(NewProducts);
+				}
 			}
 
 			return true;
 		}
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

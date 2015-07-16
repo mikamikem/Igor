@@ -40,3 +40,7 @@ IgorModuleBase is what you should derive all of your module classes from.  This 
 ### IgorUtils.cs
 
 IgorUtils is a general purpose utility class (part of which is implemented in the IgorUpdater.cs file).  This contains useful functions for file operations, string parsing, job configuration, and more!
+
+### IgorUtils.GetLevels()
+
+This gets the list of levels enabled for the build in the Editor Build Settings.

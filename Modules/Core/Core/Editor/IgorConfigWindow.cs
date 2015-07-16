@@ -462,6 +462,11 @@ namespace Igor
 			}
 		}
 
+		public virtual bool IsModuleNeededByOtherModules(IIgorModule Module)
+		{
+			return IgorCore.StaticIsModuleNeededByOtherModules(Module);
+		}
+
 		protected virtual void OnGUI()
 		{
 			try
@@ -1087,6 +1092,12 @@ namespace Igor
 			}
 
 			IgorConfig.GetInstance().JobConfigs = NewJobs;
+
+			if(bModulesChanged)
+			{
+				EnsureDependenciesAreEnabled();
+			}
+
 			IgorConfig.GetInstance().Save();
 
 			GenerateEditorMenuOptions();
@@ -1125,6 +1136,47 @@ namespace Igor
 			}
 
 			AssetDatabase.Refresh();
+		}
+
+		public virtual void EnsureDependenciesAreEnabled()
+		{
+			IgorModuleList ModuleListInst = IgorModuleList.Load(IgorUpdater.InstalledLocalModulesListPath);
+
+			if(ModuleListInst != null)
+			{
+				foreach(IIgorModule CurrentEnabledModule in IgorCore.EnabledModules)
+				{
+					foreach(IgorModuleList.ModuleItem CurrentModule in ModuleListInst.Modules)
+					{
+						if(CurrentModule.ModuleName == CurrentEnabledModule.GetModuleName())
+						{
+							string CurrentModuleDescriptor = Path.Combine(IgorUpdater.LocalModuleRoot, CurrentModule.ModuleDescriptorRelativePath);
+							IgorModuleDescriptor CurrentModuleDescriptorInst = null;
+							
+							if(File.Exists(CurrentModuleDescriptor))
+							{
+								CurrentModuleDescriptorInst = IgorModuleDescriptor.Load(CurrentModuleDescriptor);
+							}
+
+							if(CurrentModuleDescriptorInst != null)
+							{
+						        IgorConfig ConfigInst = IgorConfig.GetInstance();
+
+						        if(ConfigInst != null)
+						        {
+									foreach(string Dependency in CurrentModuleDescriptorInst.ModuleDependencies)
+									{
+										if(!ConfigInst.EnabledModules.Contains(Dependency))
+										{
+											ConfigInst.EnabledModules.Add(Dependency);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		public virtual void DrawJobDropdown()

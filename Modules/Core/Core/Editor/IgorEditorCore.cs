@@ -37,13 +37,18 @@ namespace Igor
 			ValidDelegateStub.bIsValid = true;
 			ValidDelegateStub.DeleteFile = IgorRuntimeUtils.DeleteFile;
 			ValidDelegateStub.DeleteDirectory = IgorRuntimeUtils.DeleteDirectory;
-			ValidDelegateStub.GetTypesInheritFromIIgorEditorCore = IgorRuntimeUtils.GetTypesInheritFrom<IIgorEditorCore>;
+			ValidDelegateStub.GetTypesInheritFromIIgorEditorCore = GetTypesInheritFromIIGorEditorCore;
 			ValidDelegateStub.IgorJobConfig_SetWasMenuTriggered = IgorJobConfig.SetWasMenuTriggered;
 			ValidDelegateStub.IgorJobConfig_GetWasMenuTriggered = IgorJobConfig.GetWasMenuTriggered;
 			ValidDelegateStub.IgorJobConfig_IsBoolParamSet = IgorJobConfig.IsBoolParamSet;
 			ValidDelegateStub.IgorJobConfig_SetBoolParam = IgorJobConfig.SetBoolParam;
 
 			return ValidDelegateStub;
+		}
+
+		public static List<Type> GetTypesInheritFromIIGorEditorCore()
+		{
+			return IgorRuntimeUtils.GetTypesInheritFrom<IIgorEditorCore>();
 		}
 
 		public static void UpdateAndRunJob()

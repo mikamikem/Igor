@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 using System;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -68,3 +69,5 @@ namespace Igor
 		}
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

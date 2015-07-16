@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -25,6 +26,11 @@ namespace Igor
 
 		public virtual void ProcessArgs(IIgorStepHandler StepHandler)
 		{
+		}
+
+		public virtual bool IsDependentOnModule(IIgorModule ModuleInst)
+		{
+			return false;
 		}
 
         public virtual void PostJobCleanup()
@@ -396,6 +402,11 @@ namespace Igor
 				LogWarning(EmptyStringWarningMessage);
 			}
 
+			if(StringValue == "")
+			{
+				StringValue = DefaultValue;
+			}
+
 			return StringValue;
 		}
 
@@ -420,3 +431,5 @@ namespace Igor
 		}
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

@@ -22,5 +22,8 @@
     <Module ModuleName="3rdParty.GooglePlayGameServicesAndroid" ModuleDescriptorRelativePath="3rdParty/GooglePlayGameServicesAndroid/GooglePlayGameServicesAndroid.xml" />
     <Module ModuleName="Distribution.Common" ModuleDescriptorRelativePath="Distribution/Common/Common.xml" />
     <Module ModuleName="Build.Oculus" ModuleDescriptorRelativePath="Build/Oculus/Oculus.xml" />
+    <Module ModuleName="MonsterTest.Core" ModuleDescriptorRelativePath="MonsterTest/Core/Core.xml" />
+    <Module ModuleName="Utilities.NodeGraph" ModuleDescriptorRelativePath="Utilities/NodeGraph/NodeGraph.xml" />
+    <Module ModuleName="Utilities.ListWindow" ModuleDescriptorRelativePath="Utilities/ListWindow/ListWindow.xml" />
   </Modules>
 </IgorModuleList>

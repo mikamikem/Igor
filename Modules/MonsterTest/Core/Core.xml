@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ModuleName>MonsterTest.Core</ModuleName>
+  <ModuleVersion>1</ModuleVersion>
+  <ModuleFiles>
+    <File>Runtime/IMonsterRunner.cs</File>
+    <File>Runtime/MonsterDebug.cs</File>
+    <File>Runtime/MonsterLauncher.cs</File>
+    <File>Runtime/MonsterRun.py</File>
+    <File>Runtime/MonsterStandaloneRunner.cs</File>
+    <File>Runtime/MonsterStarter.cs</File>
+    <File>Runtime/MonsterTestCore.cs</File>
+    <File>Runtime/MonsterTestRunner.cs</File>
+    <File>Runtime/Test/MonsterTest.cs</File>
+    <File>Runtime/Test/MonsterTestBase.cs</File>
+    <File>Runtime/Test/MonsterTestList.cs</File>
+    <File>Runtime/Test/MonsterTestManager.cs</File>
+    <File>Runtime/Test/MonsterTestState.cs</File>
+    <File>Editor/MonsterEditorRunner.cs</File>
+    <File>Editor/Test/MonsterTestBaseBox.cs</File>
+    <File>Editor/Test/MonsterTestInputOutputBox.cs</File>
+    <File>Editor/Test/MonsterTestItem.cs</File>
+    <File>Editor/Test/MonsterTestListWindow.cs</File>
+    <File>Editor/Test/MonsterTestWindow.cs</File>
+    <File>MonsterTestReadme.md</File>
+    <File>Readme.md</File>
+  </ModuleFiles>
+  <ModuleDependencies>
+    <Module>Build.Common</Module>
+    <Module>Configure.SetScriptingDefines</Module>
+    <Module>Package.Zip</Module>
+    <Module>Utilities.ListWindow</Module>
+    <Module>Utilities.NodeGraph</Module>
+  </ModuleDependencies>
+</IgorModuleDescriptor>

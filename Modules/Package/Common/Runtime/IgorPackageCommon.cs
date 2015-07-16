@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if IGOR_RUNTIME || UNITY_EDITOR
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -13,6 +14,7 @@ namespace Igor
 	{
 		public static string RunPackageFromMenuFlag = "runpackagefrommenu";
 
+		public static StepID UnpackageStep = new StepID("Unpackage", 300);
 		public static StepID PackageStep = new StepID("Package", 750);
 
 		public override string GetModuleName()
@@ -58,3 +60,5 @@ namespace Igor
 		}
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

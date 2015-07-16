@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ModuleName>Utilities.ListWindow</ModuleName>
+  <ModuleVersion>1</ModuleVersion>
+  <ModuleFiles>
+    <File>Editor/ListItem.cs</File>
+    <File>Editor/ListWindow.cs</File>
+    <File>Runtime/ManagerList.cs</File>
+    <File>Readme.md</File>
+  </ModuleFiles>
+  <ModuleDependencies>
+    <Module>Utilities.NodeGraph</Module>
+  </ModuleDependencies>
+</IgorModuleDescriptor>

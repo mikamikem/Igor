@@ -23,7 +23,7 @@ except ImportError:
 
 AlwaysUpdate = False
 Local = False
-RunningDirectory = os.path.join('Assets', 'Editor', 'Igor')
+RunningDirectory = os.path.join('Assets', 'Igor')
 CoreDirectory = os.path.join(RunningDirectory, 'Modules', 'Core', 'Core')
 TempLocalXMLFile = os.path.join('Temp', 'Core.xml')
 TempLocalPythonFile = os.path.join('Temp', 'IgorRun.py')
@@ -294,6 +294,8 @@ def CreateJobConfigFile(PassThroughParams):
 	with open(JobConfigFilename, 'wb') as out_file:
 		out_file.write('<?xml version="1.0" encoding="us-ascii"?>\n<IgorJobConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">\n  <Persistent>\n    <JobCommandLineParams>'.encode('utf-8'))
 		out_file.write(PassThroughParams.encode('utf-8'))
+		if not "ExecuteJob" in PassThroughParams:
+			out_file.write(bytes(" --ExecuteJob=\"" + os.environ["JobName"], 'UTF-8'))
 		out_file.write('</JobCommandLineParams>\n  </Persistent>\n</IgorJobConfig>'.encode('utf-8'))
 
 	return
@@ -397,10 +399,12 @@ print("Calling Unity with pass through parameters " + passthroughstring)
 
 CreateJobConfigFile(passthroughstring)
 
-FunctionName = "Igor.IgorEditorCore.UpdateAndRunJob"
+#FunctionName = "Igor.IgorEditorCore.UpdateAndRunJob"
+# Updating on the builder is very rarely a good idea.  We're going to disable it by default now.
+FunctionName = "Igor.IgorEditorCore.CommandLineRunJob"
 
-if testargs.nounityupdate:
-	FunctionName = "Igor.IgorEditorCore.CommandLineRunJob"
+#if testargs.nounityupdate:
+#	FunctionName = "Igor.IgorEditorCore.CommandLineRunJob"
 
 RunUnity(FunctionName)
 

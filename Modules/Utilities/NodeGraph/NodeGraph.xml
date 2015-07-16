@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ModuleName>Utilities.NodeGraph</ModuleName>
+  <ModuleVersion>1</ModuleVersion>
+  <ModuleFiles>
+    <File>Editor/Anchor.cs</File>
+    <File>Editor/BoxLink.cs</File>
+    <File>Editor/EditorTypeUtils.cs</File>
+    <File>Editor/EntityBox.cs</File>
+    <File>Editor/GraphWindow.cs</File>
+    <File>Editor/InputOutputBox.cs</File>
+    <File>Editor/InputState.cs</File>
+    <File>Editor/InspectableObject.cs</File>
+    <File>Editor/InspectableObjectHelper.cs</File>
+    <File>Editor/InspectorContainer.cs</File>
+    <File>Editor/InspectorPicker.cs</File>
+    <File>Editor/VisualScriptingDrawing.cs</File>
+    <File>Editor/XMLParser.cs</File>
+    <File>Runtime/EntityID.cs</File>
+    <File>Runtime/EntityLink.cs</File>
+    <File>Runtime/IGraphEvent.cs</File>
+    <File>Runtime/LinkedEntity.cs</File>
+    <File>Runtime/LinkedEntityManager.cs</File>
+    <File>Runtime/TypeUtils.cs</File>
+    <File>Runtime/XMLSerializable.cs</File>
+    <File>Readme.md</File>
+  </ModuleFiles>
+</IgorModuleDescriptor>

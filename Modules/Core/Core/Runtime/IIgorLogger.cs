@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 
 namespace Igor
 {
@@ -15,3 +16,5 @@ namespace Igor
 		int LoggerPriority(); // Higher has priority
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

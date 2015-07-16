@@ -384,7 +384,7 @@ namespace Igor
 #if !UNITY_4_3
             BuiltName = System.IO.Path.Combine(System.IO.Path.GetFullPath("."), BuiltName);	
 #endif
-            BuildPipeline.BuildPlayer(IgorBuildCommon.GetLevels(), BuiltName, JobBuildTarget, IgorBuildCommon.GetBuildOptions());
+            BuildPipeline.BuildPlayer(IgorUtils.GetLevels(), BuiltName, JobBuildTarget, IgorBuildCommon.GetBuildOptions());
 
             Log("Destination file is: " + BuiltName);
 

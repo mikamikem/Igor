@@ -178,9 +178,9 @@ namespace Igor
 			AllOptions |= GetExternalBuildOptions(JobBuildTarget);
 
 #if UNITY_4_3
-			BuildPipeline.BuildPlayer(IgorBuildCommon.GetLevels(), XCodeProjDirectory, JobBuildTarget, AllOptions);
+			BuildPipeline.BuildPlayer(IgorUtils.GetLevels(), XCodeProjDirectory, JobBuildTarget, AllOptions);
 #else
-			BuildPipeline.BuildPlayer(IgorBuildCommon.GetLevels(), System.IO.Path.Combine(System.IO.Path.GetFullPath("."), XCodeProjDirectory), JobBuildTarget, AllOptions);
+			BuildPipeline.BuildPlayer(IgorUtils.GetLevels(), System.IO.Path.Combine(System.IO.Path.GetFullPath("."), XCodeProjDirectory), JobBuildTarget, AllOptions);
 #endif
 
 			List<string> BuiltFiles = new List<string>();

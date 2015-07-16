@@ -54,22 +54,9 @@ namespace Igor
 			return EnabledParams;
 		}
 
-		public virtual string GetFirstLevelName()
-		{
-			foreach(EditorBuildSettingsScene CurrentScene in EditorBuildSettings.scenes)
-			{
-				if(CurrentScene.enabled)
-				{
-					return CurrentScene.path;
-				}
-			}
-
-			return "";
-		}
-
 		public virtual bool UpdateAmplify()
 		{
-			string FirstLevelName = GetFirstLevelName();
+			string FirstLevelName = IgorUtils.GetFirstLevelName();
 
 			if(FirstLevelName != "")
 			{
@@ -92,7 +79,7 @@ namespace Igor
 
 		public virtual bool RebuildAmplify()
 		{
-			string FirstLevelName = GetFirstLevelName();
+			string FirstLevelName = IgorUtils.GetFirstLevelName();
 
 			if(FirstLevelName != "")
 			{

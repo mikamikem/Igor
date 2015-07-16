@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 using UnityEngine;
 using System;
 using System.Xml.Serialization;
@@ -277,6 +278,45 @@ namespace Igor
 		    System.IO.Directory.Delete(targetDir, false);
 		}
 
+		// Pulled from https://msdn.microsoft.com/en-us/library/bb762914.aspx
+	    public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+	    {
+	        // Get the subdirectories for the specified directory.
+	        DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+	        DirectoryInfo[] dirs = dir.GetDirectories();
+
+	        if (!dir.Exists)
+	        {
+	        	IgorDebug.CoreCriticalError("Source directory does not exist or could not be found: " + sourceDirName);
+
+	        	return;
+	        }
+
+	        // If the destination directory doesn't exist, create it. 
+	        if (!Directory.Exists(destDirName))
+	        {
+	            Directory.CreateDirectory(destDirName);
+	        }
+
+	        // Get the files in the directory and copy them to the new location.
+	        FileInfo[] files = dir.GetFiles();
+	        foreach (FileInfo file in files)
+	        {
+	            string temppath = Path.Combine(destDirName, file.Name);
+	            file.CopyTo(temppath, false);
+	        }
+
+	        // If copying subdirectories, copy them and their contents to new location. 
+	        if (copySubDirs)
+	        {
+	            foreach (DirectoryInfo subdir in dirs)
+	            {
+	                string temppath = Path.Combine(destDirName, subdir.Name);
+	                DirectoryCopy(subdir.FullName, temppath, copySubDirs);
+	            }
+	        }
+	    }
+
         public static string ClearParam(string AllParams, string Param)
         {
             string Query = string.Empty;
@@ -524,6 +564,11 @@ namespace Igor
 			string ProcessOutput = "";
 			string ProcessError = "";
 
+			return RunProcessCrossPlatform(ModuleInst, OSXCommand, WindowsCommand, Parameters, Directory, CommandLogDescription, ref ProcessOutput, ref ProcessError, bUseShell);
+		}
+
+		public static int RunProcessCrossPlatform(IIgorModule ModuleInst, string OSXCommand, string WindowsCommand, string Parameters, string Directory, string CommandLogDescription, ref string ProcessOutput, ref string ProcessError, bool bUseShell = false)
+		{
 			int RunProcessExitCode = RunProcessCrossPlatform(OSXCommand, WindowsCommand, Parameters, Directory, ref ProcessOutput, ref ProcessError, bUseShell);
 
 			if(!IgorAssert.EnsureTrue(ModuleInst, RunProcessExitCode == 0, CommandLogDescription + " failed!\nOutput:\n" + ProcessOutput + "\n\n\nError:\n" + ProcessError))
@@ -599,7 +644,7 @@ namespace Igor
 			return NewProcess.ExitCode;
 		}
 
-		public static List<Type> GetTypesInheritFrom<InheritType>(bool bExcludeTemplateType = true)
+		public static List<Type> GetTypesInheritFrom<InheritType>(bool bExcludeTemplateType = true, bool bExcludeOpenTemplateTypes = true)
 		{
 			List<Type> AllTypes = new List<Type>();
 
@@ -609,7 +654,7 @@ namespace Igor
 			{
 				foreach(Type CurrentType in CurrentAssembly.GetTypes())
 				{
-					if(typeof(InheritType).IsAssignableFrom(CurrentType) && (!bExcludeTemplateType || typeof(InheritType) != CurrentType))
+					if(typeof(InheritType).IsAssignableFrom(CurrentType) && (!bExcludeTemplateType || typeof(InheritType) != CurrentType) && (!bExcludeOpenTemplateTypes || !CurrentType.IsGenericTypeDefinition))
 					{
 						AllTypes.Add(CurrentType);
 					}
@@ -629,6 +674,13 @@ namespace Igor
 			{
 				Value = "";
 			}
+
+#if UNITY_EDITOR
+			if(Value == "" && IgorModuleBase.bIsDrawingInspector)
+			{
+				Value = "TempValueBecauseWeAreDrawingInspector";
+			}
+#endif // UNITY_EDITOR
 
 			return Value;
 		}
@@ -717,3 +769,5 @@ namespace Igor
 	    }
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

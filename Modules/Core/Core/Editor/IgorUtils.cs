@@ -9,6 +9,34 @@ namespace Igor
 {
 	public partial class IgorUtils
 	{
+		public static string GetFirstLevelName()
+		{
+			foreach(EditorBuildSettingsScene CurrentScene in EditorBuildSettings.scenes)
+			{
+				if(CurrentScene.enabled)
+				{
+					return CurrentScene.path;
+				}
+			}
+
+			return "";
+		}
+
+		public static string[] GetLevels()
+		{
+			List<string> LevelNames = new List<string>();
+			
+			foreach(EditorBuildSettingsScene CurrentScene in EditorBuildSettings.scenes)
+			{
+				if(CurrentScene.enabled)
+				{
+					LevelNames.Add(CurrentScene.path);
+				}
+			}
+			
+			return LevelNames.ToArray();
+		}
+
 	    public static float PlayJobsDoneSound()
 	    {
 	        AudioClip Clip = AssetDatabase.LoadAssetAtPath("Assets/Editor/Igor/Modules/Core/Core/jobs_done.wav", typeof(AudioClip)) as AudioClip;

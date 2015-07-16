@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -55,6 +56,13 @@ namespace Igor
         public static IIgorCore RuntimeCore = null;
 
 		protected static List<string> CurrentModuleProducts = new List<string>();
+
+		public static void Initialize()
+		{
+#if !UNITY_EDITOR
+			IgorConfig.DefaultConfigPath = Path.Combine(Application.streamingAssetsPath, Path.Combine("Igor", IgorConfig.IgorConfigFilename));
+#endif // !UNITY_EDITOR
+		}
 
         public static void InitializeRuntimeCoreIfNeeded()
         {
@@ -253,6 +261,33 @@ namespace Igor
 			return NewStatus;
 		}
 
+		public static void HandleJobStatus(IgorCore.JobReturnStatus Status)
+		{
+			if(Status.bDone)
+			{
+				if(IgorAssert.HasJobFailed())
+				{
+					IgorDebug.CoreLogError("Job failed!");
+				}
+				else
+				{
+					IgorDebug.CoreLog("Job's done!");
+				}
+			}
+
+			if(!Status.bWasStartedManually && (Status.bFailed || Status.bDone))
+			{
+				if(Status.bFailed)
+				{
+					Application.Quit();
+				}
+				else
+				{
+					Application.Quit();
+				}
+			}
+		}
+
 		public static void Cleanup()
 		{
             foreach(IIgorModule module in ActiveModulesForJob)
@@ -385,5 +420,25 @@ namespace Igor
 				IgorDebug.CoreLogError("Couldn't find named job " + JobToStart + "!");
 			}
 		}
+
+		public virtual bool IsModuleNeededByOtherModules(IIgorModule Module)
+		{
+			return StaticIsModuleNeededByOtherModules(Module);
+		}
+
+		public static bool StaticIsModuleNeededByOtherModules(IIgorModule Module)
+		{
+			foreach(IIgorModule CurrentModule in EnabledModules)
+			{
+				if(CurrentModule.IsDependentOnModule(Module))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

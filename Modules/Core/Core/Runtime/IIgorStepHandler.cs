@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 using System;
 
 namespace Igor
@@ -22,5 +23,8 @@ namespace Igor
 	public interface IIgorStepHandler
 	{
 		void RegisterJobStep(StepID CurrentStep, IIgorModule Module, IgorRuntimeUtils.JobStepFunc StepFunction);
+		bool IsModuleNeededByOtherModules(IIgorModule Module);
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

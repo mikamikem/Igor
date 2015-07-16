@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if IGOR_RUNTIME || UNITY_EDITOR
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -147,3 +148,5 @@ namespace Igor
 		}
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

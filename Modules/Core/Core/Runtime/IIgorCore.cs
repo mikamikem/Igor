@@ -1,3 +1,4 @@
+#if IGOR_RUNTIME || UNITY_EDITOR
 using System.Collections.Generic;
 
 namespace Igor
@@ -9,3 +10,5 @@ namespace Igor
 //		void RunJobInst();
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR

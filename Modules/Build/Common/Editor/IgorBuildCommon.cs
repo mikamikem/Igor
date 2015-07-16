@@ -18,8 +18,6 @@ namespace Igor
         public static string AppendCommitInfoFlag = "appendcommitinfo";
         public static string BuildOptionsFlag = "buildoptions";
 
-		protected static string ProductsFlag = "buildproducts";
-
 		public static StepID BuildStep = new StepID("Build", 500);
         public static StepID OverridePlayerSettings = new StepID("OverridePlayerSettings", 275);
 		public static StepID SwitchPlatformStep = new StepID("SwitchPlatform", 250);
@@ -134,21 +132,6 @@ namespace Igor
             }
 
 			return EnabledParams;
-		}
-
-		public static string[] GetLevels()
-		{
-			List<string> LevelNames = new List<string>();
-			
-			foreach(EditorBuildSettingsScene CurrentScene in EditorBuildSettings.scenes)
-			{
-				if(CurrentScene.enabled)
-				{
-					LevelNames.Add(CurrentScene.path);
-				}
-			}
-			
-			return LevelNames.ToArray();
 		}
 
         public static BuildOptions GetBuildOptions()

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if IGOR_RUNTIME || UNITY_EDITOR
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -21,6 +22,11 @@ namespace Igor
 
 		public static IgorConfig GetInstance()
 		{
+			if(Instance == null)
+			{
+				IgorCore.Initialize();
+			}
+			
 			if(!File.Exists(DefaultConfigPath))
 			{
 				InitializeStartingConfig();
@@ -317,3 +323,5 @@ namespace Igor
 		}
 	}
 }
+
+#endif // IGOR_RUNTIME || UNITY_EDITOR
