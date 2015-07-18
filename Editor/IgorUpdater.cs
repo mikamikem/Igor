@@ -203,7 +203,7 @@ namespace Igor
 					Directory.CreateDirectory(Path.GetDirectoryName(DestFilePath));
 				}
 
-				if((IgorUpdater.bLocalDownload || IgorUpdater.bDontUpdate) && AbsolutePath == "")
+				if(IgorUpdater.bLocalDownload && AbsolutePath == "")
 				{
 					string ParentDirectory = Directory.GetCurrentDirectory();
 					string NewLocalPrefix = IgorUpdater.LocalPrefix;
@@ -433,7 +433,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 31;
+		private const int Version = 32;
 		private const int MajorUpgrade = 2;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
@@ -699,9 +699,9 @@ namespace Igor
 
 			try
 			{
-				if(File.Exists(LocalModulesList) && HelperDelegates.bIsValid)
+				if(File.Exists(LocalModulesList))
 				{
-					if(File.Exists(InstalledModulesListPath))
+					if(File.Exists(InstalledModulesListPath) && HelperDelegates.bIsValid)
 					{
 						IgorUpdater.HelperDelegates.DeleteFile(InstalledModulesListPath);
 					}
