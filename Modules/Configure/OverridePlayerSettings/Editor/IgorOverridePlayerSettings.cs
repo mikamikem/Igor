@@ -69,7 +69,7 @@ namespace Igor
 		    
             GUILayout.BeginHorizontal();
 		    {
-                string SelectedProjectSettingsAsString = IgorUtils.GetStringParam(EnabledParams, PlayerSettingFilesToOverrideFlag).Trim('"');
+				string SelectedProjectSettingsAsString = IgorRuntimeUtils.GetStringParam(EnabledParams, PlayerSettingFilesToOverrideFlag).Trim('"');
 
                 if(!string.IsNullOrEmpty(SelectedProjectSettingsAsString))
                 {
@@ -87,13 +87,13 @@ namespace Igor
                     SelectedProjectSettingsAsInt = newValue;
                     if(newValue != 0)
                     {
-                        EnabledParams = IgorUtils.SetStringParam(EnabledParams, PlayerSettingFilesToOverrideFlag, SelectedProjectSettingsAsInt.ToString());
-                        EnabledParams = IgorUtils.SetStringParam(EnabledParams, PlayerSettingsPathFlag, '"' + TargetDirectory + '"');
+						EnabledParams = IgorRuntimeUtils.SetStringParam(EnabledParams, PlayerSettingFilesToOverrideFlag, SelectedProjectSettingsAsInt.ToString());
+						EnabledParams = IgorRuntimeUtils.SetStringParam(EnabledParams, PlayerSettingsPathFlag, '"' + TargetDirectory + '"');
                     }
                     else
                     {
-                        EnabledParams = IgorUtils.ClearParam(EnabledParams, PlayerSettingFilesToOverrideFlag);
-                        EnabledParams = IgorUtils.ClearParam(EnabledParams, PlayerSettingsPathFlag);
+						EnabledParams = IgorRuntimeUtils.ClearParam(EnabledParams, PlayerSettingFilesToOverrideFlag);
+						EnabledParams = IgorRuntimeUtils.ClearParam(EnabledParams, PlayerSettingsPathFlag);
                     }
                 }
 		    }
@@ -136,7 +136,7 @@ namespace Igor
 		                Directory.CreateDirectory(kPlayerSettingsFolder);
 		            }
 
-		            IgorUtils.DeleteDirectory(TargetDirectory);
+					IgorRuntimeUtils.DeleteDirectory(TargetDirectory);
 		            Directory.CreateDirectory(TargetDirectory);
 
 		            string[] SourceFilesPaths = Directory.GetFiles("ProjectSettings");

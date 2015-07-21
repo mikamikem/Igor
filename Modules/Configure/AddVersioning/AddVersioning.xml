@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="us-ascii"?>
-<IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <ModuleName>Configure.AddVersioning</ModuleName>
-  <ModuleVersion>2</ModuleVersion>
-  <ModuleFiles>
-    <File>Editor/IgorVersioning.cs</File>
-  </ModuleFiles>
-</IgorModuleDescriptor>
