@@ -7,6 +7,8 @@ namespace Igor
 {
 	public class MonsterEditorRunner : IgorModuleBase, IMonsterRunner
 	{
+		public static string LastDisplayResolutionDialogFlag = "lastdisplayresolutiondialogvalue";
+
 		public virtual int GetRunnerPriority()
 		{
 			return 1;
@@ -61,7 +63,7 @@ namespace Igor
 
 					CurrentTestName = DrawTestDropdown(CurrentTestName);
 
-					IgorRuntimeUtils.SetStringParam(EnabledParams, MonsterTestCore.TestNameFlag, CurrentTestName);
+					EnabledParams = IgorRuntimeUtils.SetStringParam(EnabledParams, MonsterTestCore.TestNameFlag, CurrentTestName);
 
 					DrawStringParam(ref EnabledParams, "Explicit executable path", MonsterTestCore.ExplicitAppPathFlag);
 				}
@@ -77,14 +79,21 @@ namespace Igor
 
 		public virtual bool InternalBuildTestable(bool bRunningTestInEditor = false)
 		{
-			if(!IgorSetScriptingDefines.ExtraModuleParams.Contains("MONSTER_TEST_RUNTIME"))
+			if(!bRunningTestInEditor)
 			{
-				IgorSetScriptingDefines.ExtraModuleParams += ";MONSTER_TEST_RUNTIME";
-			}
+				if(!IgorSetScriptingDefines.ExtraModuleParams.Contains("MONSTER_TEST_RUNTIME"))
+				{
+					IgorSetScriptingDefines.ExtraModuleParams += ";MONSTER_TEST_RUNTIME";
+				}
 
-			if(!IgorSetScriptingDefines.ExtraModuleParams.Contains("IGOR_RUNTIME"))
-			{
-				IgorSetScriptingDefines.ExtraModuleParams += ";IGOR_RUNTIME";
+				if(!IgorSetScriptingDefines.ExtraModuleParams.Contains("IGOR_RUNTIME"))
+				{
+					IgorSetScriptingDefines.ExtraModuleParams += ";IGOR_RUNTIME";
+				}
+
+				IgorJobConfig.SetStringParam(LastDisplayResolutionDialogFlag, PlayerSettings.displayResolutionDialog.ToString());
+
+				PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.Disabled;
 			}
 
 			if(!bRunningTestInEditor || (TestRunnerInst.CurrentTest != null && TestRunnerInst.CurrentTest.bForceLoadToFirstSceneInEditor))
@@ -113,11 +122,15 @@ namespace Igor
 
 			if(!bRunningTestInEditor)
 			{
-				string StreamingAssetsFolder = Path.Combine("Assets", Path.Combine("StreamingAssets", Path.Combine("Monster", "Config")));
+				string StreamingAssetsFolder = Path.Combine("Assets", Path.Combine("StreamingAssets", Path.Combine("Igor", Path.Combine("Monster", "Config"))));
 
 				if(Directory.Exists(StreamingAssetsFolder))
 				{
 					MonsterDebug.LogError("Attempting to overwrite the " + StreamingAssetsFolder + ", but it already exists!");
+
+					IgorRuntimeUtils.DeleteDirectory(StreamingAssetsFolder);
+
+					Directory.CreateDirectory(StreamingAssetsFolder);
 				}
 				else
 				{
@@ -206,11 +219,26 @@ namespace Igor
 
 			if(!bRunningTestInEditor)
 			{
-				string StreamingAssetsFolder = Path.Combine("Assets", Path.Combine("StreamingAssets", Path.Combine("Monster", "Config")));
+				string StreamingAssetsFolder = Path.Combine("Assets", Path.Combine("StreamingAssets", Path.Combine("Igor", Path.Combine("Monster", "Config"))));
 
 				if(Directory.Exists(StreamingAssetsFolder))
 				{
 					IgorRuntimeUtils.DeleteDirectory(StreamingAssetsFolder);
+				}
+
+				string LastValue = IgorJobConfig.GetStringParam(LastDisplayResolutionDialogFlag);
+
+				switch(LastValue)
+				{
+				case "Disabled":
+					PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.Disabled;
+					break;
+				case "Enabled":
+					PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.Enabled;
+					break;
+				case "HiddenByDefault":
+					PlayerSettings.displayResolutionDialog = ResolutionDialogSetting.HiddenByDefault;
+					break;
 				}
 			}
 
@@ -274,7 +302,7 @@ namespace Igor
 		{
 			BuildLauncher(BuildTarget.StandaloneOSXIntel64);
 
-//			BuildLauncher(BuildTarget.StandaloneWindows64);
+			BuildLauncher(BuildTarget.StandaloneWindows64);
 
 			return true;
 		}
@@ -483,7 +511,7 @@ namespace Igor
 #if !UNITY_4_3
             BuiltName = System.IO.Path.Combine(System.IO.Path.GetFullPath("."), BuiltName);	
 #endif
-            BuildPipeline.BuildPlayer(IgorUtils.GetLevels(), BuiltName, Target, BuildOptions.Development);
+            BuildPipeline.BuildPlayer(IgorUtils.GetLevels(), BuiltName, Target, BuildOptions.Development | BuildOptions.AllowDebugging);
 
             EditorApplication.Exit(0);
 		}

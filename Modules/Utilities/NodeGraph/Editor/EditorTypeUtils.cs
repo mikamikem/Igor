@@ -26,13 +26,13 @@ namespace Igor
 
 			foreach(Type CurrentInspectableType in InspectableTypes)
 			{
-				MethodInfo RegisterFunction = CurrentInspectableType.GetMethod("RegisterEditorType", BindingFlags.Static);
+				MethodInfo RegisterFunction = CurrentInspectableType.GetMethod("RegisterEditorType", BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
 				if(RegisterFunction != null)
 				{
 					RegisterFunction.Invoke(null, new object[]{});
 				}
 			}
-		}	
+		}
 	}
 }

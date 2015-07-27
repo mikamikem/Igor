@@ -316,6 +316,9 @@ namespace Igor
 
 						NewConfig.Save(IgorJobConfig.IgorJobConfigPath);
 
+						IgorJobConfig.SetLastPriority(-1);
+						IgorJobConfig.SetLastIndexInPriority(-1);
+
 					    return;
 					}
 				}

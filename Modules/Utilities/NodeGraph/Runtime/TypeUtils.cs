@@ -16,7 +16,7 @@ namespace Igor
 
 			foreach(Type CurrentXMLType in XMLTypes)
 			{
-				MethodInfo RegisterFunction = CurrentXMLType.GetMethod("RegisterType", BindingFlags.Static);
+				MethodInfo RegisterFunction = CurrentXMLType.GetMethod("RegisterType", BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
 				if(RegisterFunction != null)
 				{

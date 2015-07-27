@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections.Generic;
 
 namespace Igor
@@ -154,9 +155,30 @@ public class MonsterTestWindow : GraphWindow<MonsterTestBase> {
 		AddBox(StartBox);
 		AddBox(EndBox);
 	}
+
+	public virtual List<string> GetAllDerivedTestStateTypes()
+	{
+		List<Type> DerivedTypes = IgorRuntimeUtils.GetTypesInheritFrom<MonsterTestState>();
+		List<string> TypeNames = new List<string>();
+
+		foreach(Type CurrentType in DerivedTypes)
+		{
+			MonsterTestState StateInst = (MonsterTestState)Activator.CreateInstance(CurrentType);
+
+			TypeNames.Add(StateInst.GetEntityName());
+		}
+
+		return TypeNames;
+	}
 	
 	public override void AddNoBoxContextMenuEntries(GenericMenu MenuToAddTo)
 	{
+		List<string> TypesToSuggest = GetAllDerivedTestStateTypes();
+
+		foreach(string CurrentType in TypesToSuggest)
+		{
+			MenuToAddTo.AddItem(new GUIContent("Add " + CurrentType), false, AddEntity, CurrentType);
+		}
 //		MenuToAddTo.AddItem(new GUIContent("Add Line"), false, AddLine);
 
 		MenuToAddTo.AddSeparator("");
@@ -170,7 +192,61 @@ public class MonsterTestWindow : GraphWindow<MonsterTestBase> {
 	{
 		base.AddNewBoxContextMenuEntries(MenuToAddTo);
 		
+		List<string> TypesToSuggest = GetAllDerivedTestStateTypes();
+
+		foreach(string CurrentType in TypesToSuggest)
+		{
+			MenuToAddTo.AddItem(new GUIContent("Connect new " + CurrentType), false, ConnectEntity, CurrentType);
+		}
 //		MenuToAddTo.AddItem(new GUIContent("Connect new Line"), false, ConnectLine);
+	}
+
+	public virtual void AddEntity(object EntityTypeName)
+	{
+		AddEntity((string)EntityTypeName);
+	}
+
+	public virtual void AddEntity(string EntityTypeName)
+	{
+		MonsterTestState NewState = (MonsterTestState)TypeUtils.GetNewObjectOfTypeString(EntityTypeName);
+
+		SetupNewBox(EntityTypeName, NewState);
+	}
+
+	public virtual void ConnectEntity(object EntityTypeName)
+	{
+		ConnectEntity((string)EntityTypeName);
+	}
+
+	public virtual void ConnectEntity(string EntityTypeName)
+	{
+		MonsterTestState NewState = (MonsterTestState)TypeUtils.GetNewObjectOfTypeString(EntityTypeName);
+
+		NewState.CreateStaticNodesIfNotPresent();
+
+		MonsterTestBaseBox NewBox = SetupNewBox(EntityTypeName, NewState);
+
+		if(NewBox.GetAllAnchors().Count > 0)
+		{
+			Anchor<MonsterTestBase> NewBoxAnchor = NewBox.GetAllAnchors()[0];
+
+			ConnectInputToOutput(NewBoxAnchor, StartingAnchorForNewBox);
+		}
+	}
+
+	public virtual MonsterTestBaseBox SetupNewBox(string EntityTypeName, MonsterTestState NewEntity)
+	{
+		MonsterTestManager.AddTestState(NewEntity);
+
+		MonsterTestBaseBox NewBox = (MonsterTestBaseBox)TypeUtils.GetEditorBoxForTypeString(EntityTypeName, MonsterTestWindow.WindowInstance, NewEntity);
+
+		NewBox.InitializeNewBox();
+
+		NewBox.MoveBoxTo(InputState.GetLocalMousePosition(this, -GetWindowOffset()));
+
+		MonsterTestWindow.WindowInstance.AddBox(NewBox);
+
+		return NewBox;
 	}
 
 /*	public virtual void AddLine()

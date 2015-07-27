@@ -69,6 +69,8 @@ namespace Igor
 			if(AppPath.EndsWith(".app"))
 			{
 				AppPath = Path.Combine(AppPath, Path.Combine("Contents", Path.Combine("MacOS", AppPath.Substring(AppPath.LastIndexOf('/') + 1, AppPath.Length - AppPath.LastIndexOf('/') - 5))));
+
+				IgorRuntimeUtils.SetFileExecutable(AppPath);
 			}
 
 			string AppOutput = "";

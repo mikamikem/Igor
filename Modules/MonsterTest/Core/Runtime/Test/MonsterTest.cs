@@ -173,6 +173,24 @@ namespace Igor
 			return null;
 		}
 
+		public override void CreateStaticNodesIfNotPresent()
+		{
+			base.CreateStaticNodesIfNotPresent();
+			
+			if(InputEvents.Count == 0)
+			{
+				EntityLink<MonsterTest> InputLink = new EntityLink<MonsterTest>();
+				InputLink.SetOwner(this);
+				InputLink.Name = "Test Started";
+				InputEvents.Add(InputLink);
+
+				InputLink = new EntityLink<MonsterTest>();
+				InputLink.SetOwner(this);
+				InputLink.Name = "Test Failed To Start";
+				InputEvents.Add(InputLink);
+			}
+		}
+
 		public override IGraphEvent GetEventAndTriggerLink(EntityLink<MonsterTest> InputLink)
 		{
 	//		MonsterTestManager.GetActiveInstance().CurrentNode = this;

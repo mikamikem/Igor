@@ -279,7 +279,7 @@ namespace Igor
 		}
 
 		// Pulled from https://msdn.microsoft.com/en-us/library/bb762914.aspx
-	    public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+	    public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, bool bSkipUnityMetaFiles = true)
 	    {
 	        // Get the subdirectories for the specified directory.
 	        DirectoryInfo dir = new DirectoryInfo(sourceDirName);
@@ -302,8 +302,11 @@ namespace Igor
 	        FileInfo[] files = dir.GetFiles();
 	        foreach (FileInfo file in files)
 	        {
-	            string temppath = Path.Combine(destDirName, file.Name);
-	            file.CopyTo(temppath, false);
+	        	if(!file.Name.EndsWith(".meta"))
+	        	{
+		            string temppath = Path.Combine(destDirName, file.Name);
+		            file.CopyTo(temppath, false);
+		        }
 	        }
 
 	        // If copying subdirectories, copy them and their contents to new location. 
@@ -766,6 +769,27 @@ namespace Igor
 			}
 
 	    	return FilesAndDirs;
+	    }
+
+	    public static void SetFileExecutable(string FullPath)
+	    {
+	    	if(File.Exists(FullPath))
+	    	{
+	    		PlatformNames CurrentPlatform = RuntimeOrEditorGetPlatform();
+
+	    		if(CurrentPlatform == PlatformNames.Editor_OSX || CurrentPlatform == PlatformNames.Standalone_OSX)
+	    		{
+	    			string ChmodOutput = "";
+	    			string ChmodError = "";
+
+	    			int ChmodRC = RunProcessCrossPlatform("chmod", "", "+x " + FullPath, Path.GetFullPath("."), ref ChmodOutput, ref ChmodError, true);
+
+	    			if(ChmodRC != 0)
+	    			{
+	    				IgorDebug.CoreLogError("Failed to make file " + FullPath + " executable!\nOutput:\n\n" + ChmodOutput + "\n\nError:\n\n" + ChmodError);
+	    			}
+	    		}
+            }
 	    }
 	}
 }

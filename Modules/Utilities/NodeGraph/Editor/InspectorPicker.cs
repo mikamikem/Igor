@@ -16,7 +16,7 @@ namespace Igor
 		
 		public static void SelectInstance(string Type, object Instance)
 		{
-			InspectorContainer NewContainer = (InspectorContainer)ScriptableObject.CreateInstance("InspectorContainer");
+			InspectorContainer NewContainer = (InspectorContainer)ScriptableObject.CreateInstance(typeof(InspectorContainer));
 			NewContainer.ClassType = Type;
 			NewContainer.Instance = Instance;
 			

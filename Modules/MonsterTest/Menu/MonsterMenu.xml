@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<IgorModuleDescriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ModuleName>MonsterTest.Menu</ModuleName>
+  <ModuleVersion>1</ModuleVersion>
+  <ModuleFiles>
+    <File>Runtime/IMonsterMenuRunner.cs</File>
+    <File>Runtime/MonsterMenuNav.cs</File>
+    <File>Editor/MonsterMenuNavBox.cs</File>
+    <File>Readme.md</File>
+  </ModuleFiles>
+  <ModuleDependencies>
+    <Module>MonsterTest.Core</Module>
+  </ModuleDependencies>
+</IgorModuleDescriptor>

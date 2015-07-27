@@ -240,7 +240,8 @@ namespace Igor
 			}
 			catch(Exception e)
 			{
-				IgorDebug.CoreLogError("Caught exception while running the job.  Exception is " + (e == null ? "NULL exception!" : e.ToString()));
+				IgorDebug.CoreLogError("Caught exception while running the job.  Exception is " + (e == null ? "NULL exception!" : e.ToString() +
+																	(e.InnerException == null ? "\n\nNULL inner exception." : ("\n\nInner: " + e.InnerException.ToString()))));
 
 				bThrewException = true;
 			}
@@ -389,6 +390,7 @@ namespace Igor
 					}
 
 					StartingIndexInPriority = -1;
+					IgorJobConfig.SetLastIndexInPriority(-1);
 				}
 			}
 
