@@ -295,7 +295,7 @@ def CreateJobConfigFile(PassThroughParams):
 		out_file.write('<?xml version="1.0" encoding="us-ascii"?>\n<IgorJobConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">\n  <Persistent>\n    <JobCommandLineParams>'.encode('utf-8'))
 		out_file.write(PassThroughParams.encode('utf-8'))
 		if not "ExecuteJob" in PassThroughParams:
-			out_file.write(bytes(" --ExecuteJob=\"" + os.environ["JobName"], 'UTF-8'))
+			out_file.write(bytes(" --ExecuteJob=\"" + os.environ["JobName"] + "\"", 'UTF-8'))
 		out_file.write('</JobCommandLineParams>\n  </Persistent>\n</IgorJobConfig>'.encode('utf-8'))
 
 	return

@@ -61,7 +61,7 @@ def GetPlayerLogFile():
 	elif _platform == "darwin":
 		return os.path.join(expanduser("~"), 'Library', 'Logs', 'Unity', 'Player.log')
 	elif _platform == "win32":
-		return "Player.log"
+		return os.path.join(LaunchersDir, "MonsterLauncher_Data", "output_log.txt")
 
 	return ""
 
@@ -173,6 +173,8 @@ envvars = dict(os.environ)
 
 if testargs.ExecuteJob != None and testargs.ExecuteJob != "":
 	envvars["MonsterJobName"] = testargs.ExecuteJob
+elif _platform == "win32":
+	envvars["MonsterJobName"] = os.environ["MonsterJobName"]
 
 RunLauncher(envvars)
 

@@ -251,7 +251,45 @@ namespace Igor
 
 		public static void UnzipFileWindows(IIgorModule ModuleInst, string ZipFilename, string DirectoryToUnzipTo, bool bUpdateBuildProducts)
 		{
-			IgorAssert.EnsureTrue(ModuleInst, false, "Unzip is not implemented for Windows yet!");
+			string ZipParams = "/c unzip -o \"" + ZipFilename + "\"";
+
+			if(DirectoryToUnzipTo != "")
+			{
+				ZipParams += " -d \"" + DirectoryToUnzipTo + "\"";
+			}
+
+			string ZipOutput = "";
+			string ZipError = "";
+
+			if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, "", "c:\\windows\\system32\\cmd.exe", ZipParams, Path.GetFullPath("."), "Unzipping the archive " + ZipFilename + " to folder " + DirectoryToUnzipTo, false) == 0)
+			{
+				IgorDebug.Log(ModuleInst, "Zip file " + ZipFilename + " unzipped successfully!\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
+
+				if(bUpdateBuildProducts)
+				{
+					if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, "", "c:\\windows\\system32\\cmd.exe", "/c unzip -v \"" + ZipFilename + "\"", Path.GetFullPath("."), "Listing the contents of " + ZipFilename, ref ZipOutput, ref ZipError, false) == 0)
+					{
+						IgorDebug.Log(ModuleInst, "Zip " + ZipFilename + " contents are:\nOutput:\n" + ZipOutput + "\nError\n" + ZipError);
+
+						List<string> NewProducts = new List<string>();
+
+						string[] Lines = ZipOutput.Split(new char[]{'\n', '\r'});
+
+						foreach(string ZipLine in Lines)
+						{
+							if(ZipLine.Contains("Defl") || ZipLine.Contains("Stored"))
+							{
+								if(!ZipLine.EndsWith("/"))
+								{
+									NewProducts.Add(ZipLine.Substring(ZipLine.LastIndexOf(' ') + 1));
+								}
+							}
+						}
+
+						IgorCore.SetNewModuleProducts(NewProducts);
+					}
+				}
+			}
 		}
 	}
 }
