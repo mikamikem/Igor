@@ -11,7 +11,7 @@ This module requires you to implement the [IMonsterMenuRunner interface](Runtime
 
 ## Jenkins Setup
 
-This module allows you to run Testing jobs directly from Jenkins without running through a Unity Editor window.  Look at the [Monster Test Guide](MonsterTestReadme.md) for more information.
+This module does not require any special Jenkins setup.
 
 ## Project Setup
 
