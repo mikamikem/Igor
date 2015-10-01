@@ -173,7 +173,7 @@ namespace Igor
 
 												NewCapabilitiesSet.AddObject(new NSString(NewRequiredDeviceCapability));
 
-												NSArray NewCapabilitiesArray = new NSArray(NewCapabilitiesSet);
+												NSArray NewCapabilitiesArray = new NSArray(NewCapabilitiesSet.AllObjects());
 
 												RootDictionary["UIRequiredDeviceCapabilities"] = NewCapabilitiesArray;
 

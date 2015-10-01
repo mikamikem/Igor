@@ -49,7 +49,11 @@ namespace Igor
 
 				if(Platform == "iOS")
 				{
+#if UNITY_5
+					JobBuildTarget = BuildTarget.iOS;
+#else
 					JobBuildTarget = BuildTarget.iPhone;
+#endif
 					bIOS = true;
 
 					StepHandler.RegisterJobStep(IgorBuildCommon.SwitchPlatformStep, this, SwitchPlatforms);
@@ -95,7 +99,13 @@ namespace Igor
 			return bBuilding && bRecognizedPlatform;
 		}
 
-		public BuildTarget JobBuildTarget = BuildTarget.iPhone;
+		public BuildTarget JobBuildTarget =
+#if UNITY_5
+											BuildTarget.iOS;
+#else
+											BuildTarget.iPhone;
+#endif
+
 		public List<IgorBuildCommon.GetExtraBuildOptions> BuildOptionsDelegates = new List<IgorBuildCommon.GetExtraBuildOptions>();
 
 		public virtual void AddDelegateCallback(IgorBuildCommon.GetExtraBuildOptions NewDelegate)
@@ -112,7 +122,11 @@ namespace Igor
 
 			bool biOS = false;
 
+#if UNITY_5
+			if(NewTarget == BuildTarget.iOS)
+#else
 			if(NewTarget == BuildTarget.iPhone)
+#endif
 			{
 				BuiltName = GetConfigString("BuiltiOSName");
 				biOS = true;
@@ -258,7 +272,7 @@ namespace Igor
 				string LastBundleIdentifierPart = PlayerSettings.bundleIdentifier.Substring(PlayerSettings.bundleIdentifier.LastIndexOf('.') + 1);
 
 				BuildExitCode = IgorRuntimeUtils.RunProcessCrossPlatform(this, "/usr/bin/xcrun", "",
-					"-sdk iphoneos PackageApplication -v \"build/" + LastBundleIdentifierPart + ".app\" -o \"" + Path.Combine(FullBuildProductPath, BuiltName + ".ipa") +
+					"-sdk iphoneos PackageApplication -v \"build/Release-iphoneos/" + LastBundleIdentifierPart + ".app\" -o \"" + Path.Combine(FullBuildProductPath, BuiltName + ".ipa") +
 					"\" --sign \"" + SigningIdentity + "\" --embed \"../" + ProvisionPath + "\"",
 					FullBuildProductPath, "Packaging the application");
 
