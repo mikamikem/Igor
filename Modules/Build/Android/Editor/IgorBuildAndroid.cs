@@ -208,7 +208,9 @@ namespace Igor
 
 				// These both cryptically set the export to eclipse bool...great labeling.
 				EditorUserBuildSettings.installInBuildFolder = false;
-				EditorUserBuildSettings.appendProject = true;
+				// This was removed somewhere around the 5.2 timeframe so it won't compile anymore.
+				// I still need to double check that this build pipeline actually works without this flag.
+//				EditorUserBuildSettings.appendProject = true;
 
 				EditorUserBuildSettings.SetBuildLocation(BuildTarget.Android, AndroidProjDirectory);
 
