@@ -86,13 +86,12 @@ namespace Igor
 
 			DrawStringConfigParamDifferentOverride(ref EnabledParams, "Built name", IgorBuildCommon.BuiltNameFlag, AndroidBuiltNameFlag);
 
-			if(DrawBoolParam(ref EnabledParams, "Re-sign the APK for release", AndroidResignInReleaseFlag))
-			{
-				DrawStringConfigParam(ref EnabledParams, "Android Keystore Filename", AndroidKeystoreFilenameFlag);
-				DrawStringConfigParam(ref EnabledParams, "Android Key Alias", AndroidKeyAliasFlag);
-				DrawStringConfigParam(ref EnabledParams, "Android Keystore Password", AndroidKeystorePassFlag);
-				DrawStringConfigParam(ref EnabledParams, "Android Key Alias Password", AndroidKeyAliasPassFlag);
-			}
+			DrawStringConfigParam(ref EnabledParams, "Android Keystore Filename", AndroidKeystoreFilenameFlag);
+			DrawStringConfigParam(ref EnabledParams, "Android Key Alias", AndroidKeyAliasFlag);
+			DrawStringConfigParam(ref EnabledParams, "Android Keystore Password", AndroidKeystorePassFlag);
+			DrawStringConfigParam(ref EnabledParams, "Android Key Alias Password", AndroidKeyAliasPassFlag);
+
+			DrawBoolParam(ref EnabledParams, "Re-sign the APK for release", AndroidResignInReleaseFlag);
 
 			return EnabledParams;
 		}
@@ -100,7 +99,6 @@ namespace Igor
 		public BuildTarget JobBuildTarget = BuildTarget.StandaloneOSXIntel;
 		public List<IgorBuildCommon.GetExtraBuildOptions> BuildOptionsDelegates = new List<IgorBuildCommon.GetExtraBuildOptions>();
 		protected static string AndroidProjectUpdateAdditionalArgs = "";
-		public bool bIsWaitingOnExport = false;
 
 		public virtual void AddDelegateCallback(IgorBuildCommon.GetExtraBuildOptions NewDelegate)
 		{
@@ -135,6 +133,11 @@ namespace Igor
 				}
 			}
 
+			if(!BuiltName.EndsWith(".apk"))
+			{
+				BuiltName += ".apk";
+			}
+
 			return BuiltName;
 		}
 
@@ -156,8 +159,6 @@ namespace Igor
 
 			EditorUserBuildSettings.SwitchActiveBuildTarget(JobBuildTarget);
 
-			bIsWaitingOnExport = false;
-
 			AndroidProjectUpdateAdditionalArgs = "";
 
 			return true;
@@ -172,97 +173,65 @@ namespace Igor
 
 		public virtual bool Build(BuildOptions PlatformSpecificOptions)
 		{
-			if(!bIsWaitingOnExport)
+			if(!IgorAssert.EnsureTrue(this, GetAndroidSDKPath(this) != "", "Android SDK path is not set!"))
 			{
-				if(GetAndroidSDKPath(this) == "")
-				{
-					return true;
-				}
+				return true;
+			}
 
-				PlayerSettings.Android.keystorePass = GetParamOrConfigString(AndroidKeystorePassFlag, "Your Android Keystore Password isn't set!  We won't be able to sign your application!");
-				PlayerSettings.Android.keyaliasPass = GetParamOrConfigString(AndroidKeyAliasPassFlag, "Your Android Key Alias Password isn't set!  We won't be able to sign your application!");
+			PlayerSettings.Android.keystorePass = GetParamOrConfigString(AndroidKeystorePassFlag, "Your Android Keystore Password isn't set!  We won't be able to sign your application!");
+			PlayerSettings.Android.keyaliasPass = GetParamOrConfigString(AndroidKeyAliasPassFlag, "Your Android Key Alias Password isn't set!  We won't be able to sign your application!");
 
-				if(PlayerSettings.Android.keystorePass == "" || PlayerSettings.Android.keyaliasPass == "")
-				{
-					return true;
-				}
+			if(PlayerSettings.Android.keystorePass == "" || PlayerSettings.Android.keyaliasPass == "")
+			{
+				return true;
+			}
 
-				string AndroidProjDirectory = Path.Combine(Path.GetFullPath("."), "Android");
-				
-				if(AndroidProjDirectory.Contains(" "))
-				{
-					AndroidProjDirectory = Path.Combine(Path.GetTempPath() + PlayerSettings.productName, "Android");
-				}
-				
-				if(Directory.Exists(AndroidProjDirectory))
-				{
-					IgorRuntimeUtils.DeleteDirectory(AndroidProjDirectory);
-				}
-				
-				// We need to force create the directory before we use it or it will prompt us for a path to build to
-				Directory.CreateDirectory(AndroidProjDirectory);
-				
-				Log("Android project destination directory is: " + AndroidProjDirectory);
+			FixReadOnlyFilesIn3rdPartyLibs();
 
-				EditorUserBuildSettings.symlinkLibraries = true;
-
-				// These both cryptically set the export to eclipse bool...great labeling.
-				EditorUserBuildSettings.installInBuildFolder = false;
-				// This was removed somewhere around the 5.2 timeframe so it won't compile anymore.
-				// I still need to double check that this build pipeline actually works without this flag.
-//				EditorUserBuildSettings.appendProject = true;
-
-				EditorUserBuildSettings.SetBuildLocation(BuildTarget.Android, AndroidProjDirectory);
-
-				BuildOptions AllOptions = PlatformSpecificOptions;
-
-				AllOptions |= GetExternalBuildOptions(JobBuildTarget);
-
-				// TODO: Figure out how to set the extra build options...
-
-				// Then we do some reflection witchcraft and we get an exported eclipse project!
-				Assembly EditorAssembly = typeof(UnityEditor.EditorWindow).Assembly;
-				Type BuildPlayerWindowType = EditorAssembly.GetType("UnityEditor.BuildPlayerWindow");
-				
-				MethodInfo ShowBuildPlayerWindowCall = BuildPlayerWindowType.GetMethod("ShowBuildPlayerWindow", BindingFlags.Static | BindingFlags.NonPublic);
-				
-				if(ShowBuildPlayerWindowCall != null)
-				{
-					object[] Arguments = new object[] { };
-					ShowBuildPlayerWindowCall.Invoke(null, Arguments);
-				}
-				
-				MethodInfo BuildPlayerAndSelectCall = BuildPlayerWindowType.GetMethod("BuildPlayerAndSelect", BindingFlags.Static | BindingFlags.NonPublic);
-				
-				if(BuildPlayerAndSelectCall != null)
-				{
-					object[] Arguments = new object[] { };
-					BuildPlayerAndSelectCall.Invoke(null, Arguments);
-				}
+			string AndroidProjDirectory = Path.Combine(Path.GetFullPath("."), "Android");
 			
-				List<string> BuiltFiles = new List<string>();
-
-				BuiltFiles.Add(AndroidProjDirectory);
-
-				IgorCore.SetNewModuleProducts(BuiltFiles);
-
-				Log("Triggered export of Android Eclipse project.");
-
-				bIsWaitingOnExport = true;
-			}
-			else
+			if(AndroidProjDirectory.Contains(" "))
 			{
-				List<string> BuildProducts = IgorCore.GetModuleProducts();
-
-				if(File.Exists(Path.Combine(BuildProducts[0], Path.Combine(PlayerSettings.productName, "project.properties"))))
-				{
-					Log("Android Eclipse project has been created.");
-
-					return true;
-				}
+				AndroidProjDirectory = Path.Combine(Path.GetTempPath() + PlayerSettings.productName, "Android");
+			}
+			
+			if(Directory.Exists(AndroidProjDirectory))
+			{
+				IgorRuntimeUtils.DeleteDirectory(AndroidProjDirectory);
 			}
 
-			return false;
+			string FullBuiltPath = System.IO.Path.Combine(System.IO.Path.GetFullPath("."), GetBuiltNameForTarget(BuildTarget.Android));
+
+			if(File.Exists(FullBuiltPath))
+			{
+				IgorRuntimeUtils.DeleteFile(FullBuiltPath);
+			}
+			
+			// We need to force create the directory before we use it or it will prompt us for a path to build to
+			Directory.CreateDirectory(AndroidProjDirectory);
+			
+			Log("Android project destination directory is: " + AndroidProjDirectory);
+
+			EditorUserBuildSettings.symlinkLibraries = true;
+			EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
+
+			EditorUserBuildSettings.SetBuildLocation(BuildTarget.Android, AndroidProjDirectory);
+
+			BuildOptions AllOptions = PlatformSpecificOptions | BuildOptions.AcceptExternalModificationsToPlayer;
+
+			AllOptions |= GetExternalBuildOptions(JobBuildTarget);
+
+			BuildPipeline.BuildPlayer(IgorUtils.GetLevels(), AndroidProjDirectory, BuildTarget.Android, AllOptions);
+
+			List<string> BuiltFiles = new List<string>();
+
+			BuiltFiles.Add(AndroidProjDirectory);
+
+			IgorCore.SetNewModuleProducts(BuiltFiles);
+
+			Log("Android Eclipse project has been created.");
+
+			return true;
 		}
 
 		public virtual bool BuildAndroidProj()
@@ -271,11 +240,25 @@ namespace Igor
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Building the Android project, but there were no previous built products."))
 			{
+				Log("Project should be saved to " + EditorUserBuildSettings.GetBuildLocation(BuildTarget.Android));
 				string BuiltProjectDir = Path.Combine(BuildProducts[0], PlayerSettings.productName);
 				if(!RunAndroidCommandLineUtility(this, BuiltProjectDir, "update project --path ." + AndroidProjectUpdateAdditionalArgs))
 				{
 					return true;
 				}
+
+				string BuildXML = Path.Combine(BuiltProjectDir, "build.xml");
+		    	if(!IgorAssert.EnsureTrue(this, File.Exists(BuildXML), "Can't check " + BuildXML + " for APK name because it doesn't exist."))
+		    	{
+		    		return false;
+		    	}
+
+				string BuildXMLFileContents = File.ReadAllText(BuildXML);
+
+				int ProjectNameParamStart = BuildXMLFileContents.IndexOf("<project name=\"") + "<project name=\"".Length;
+				int ProjectNameParamEnd = BuildXMLFileContents.IndexOf("\"", ProjectNameParamStart);
+
+				string APKName = BuildXMLFileContents.Substring(ProjectNameParamStart, ProjectNameParamEnd - ProjectNameParamStart);
 
 				if(!RunAnt(this, BuiltProjectDir, "clean debug"))
 				{
@@ -284,7 +267,7 @@ namespace Igor
 
 				Log("Debug APK built!");
 
-				string DebugSignedAPK = Path.Combine(BuiltProjectDir, Path.Combine("bin", "AndroidUnityActivity-debug.apk"));
+				string DebugSignedAPK = Path.Combine(BuiltProjectDir, Path.Combine("bin", APKName + "-debug.apk"));
 				string AppropriatelySignedAPK = DebugSignedAPK;
 
 				if(IgorJobConfig.IsBoolParamSet(AndroidResignInReleaseFlag))
@@ -306,11 +289,6 @@ namespace Igor
 				}
 
 				string FinalBuildProductName = GetBuiltNameForTarget(BuildTarget.Android);
-
-				if(!FinalBuildProductName.EndsWith(".apk"))
-				{
-					FinalBuildProductName += ".apk";
-				}
 
 				if(File.Exists(FinalBuildProductName))
 				{
@@ -497,6 +475,23 @@ namespace Igor
 					NewFileWriter.Write(NewFile);
 					
 					NewFileWriter.Close();
+				}
+			}
+		}
+
+		// This is necessary as of 5.x  If the 3rd party libraries that you include are marked read only (like when you use Perforce as a version control system)
+		// your build will fail in the built-in Unity postprocess step, so we just set them all to read/write before we build.
+		public static void FixReadOnlyFilesIn3rdPartyLibs()
+		{
+			string AndroidPluginPathRoot = Path.Combine(Path.GetFullPath("."), Path.Combine("Assets", Path.Combine("Plugins", "Android")));
+			List<string> Android3rdPartyLibFiles = IgorRuntimeUtils.GetListOfFilesAndDirectoriesInDirectory(AndroidPluginPathRoot, true, false, true);
+
+			foreach(string CurrentFilePath in Android3rdPartyLibFiles)
+			{
+				string CurrentFullPath = Path.Combine(AndroidPluginPathRoot, CurrentFilePath);
+				if(File.Exists(CurrentFullPath))
+				{
+			        File.SetAttributes(CurrentFullPath, System.IO.FileAttributes.Normal);
 				}
 			}
 		}
