@@ -93,16 +93,19 @@ namespace Igor
                 { }
 			}
 
-			if(!Status.bWasStartedManually && (Status.bFailed || Status.bDone))
+			if(Status.bFailed)
 			{
-				if(Status.bFailed)
+				IgorJobConfig.SetIsRunning(false);
+				
+				if(!Status.bWasStartedManually)
 				{
 					EditorApplication.Exit(-1);
 				}
-				else
-				{
-					EditorApplication.Exit(0);
-				}
+			}
+
+			if(!Status.bWasStartedManually && Status.bDone)
+			{
+				EditorApplication.Exit(0);
 			}
 		}
 

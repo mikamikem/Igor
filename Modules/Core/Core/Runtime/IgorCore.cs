@@ -353,6 +353,8 @@ namespace Igor
 			if(IgorAssert.HasJobFailed())
 			{
 				IgorDebug.CoreLogError("Job failed so we are bailing out early and not finishing the remaining steps!");
+
+				return false;
 			}
 
 			List<StepID> SortedSteps = new List<StepID>(JobSteps.Keys);
