@@ -223,6 +223,8 @@ namespace Igor
 
 			BuildPipeline.BuildPlayer(IgorUtils.GetLevels(), AndroidProjDirectory, BuildTarget.Android, AllOptions);
 
+			CopyActivityOverrideSourceFiles(AndroidProjDirectory);
+
 			List<string> BuiltFiles = new List<string>();
 
 			BuiltFiles.Add(AndroidProjDirectory);
@@ -232,6 +234,11 @@ namespace Igor
 			Log("Android Eclipse project has been created.");
 
 			return true;
+		}
+
+		public virtual void CopyActivityOverrideSourceFiles(string RootDirectory)
+		{
+			IgorRuntimeUtils.DirectoryCopy(Path.Combine(".", Path.Combine("Assets", Path.Combine("Plugins", Path.Combine("Android", "src")))), Path.Combine(RootDirectory, Path.Combine(PlayerSettings.productName, "src")), true);
 		}
 
 		public virtual bool BuildAndroidProj()
@@ -337,7 +344,7 @@ namespace Igor
 //			IgorCore.LogError(ModuleInst, "jarsigner command running from " + Path.GetFullPath(".") + " is\n" + "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword +
 //				" -keypass " + KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias);
 
-			if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, "jarsigner", "jarsigner", "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword + " -keypass " +
+			if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Commands/jarsigner", "jarsigner", "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword + " -keypass " +
 				KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias, Path.GetFullPath("."), "Running jarsigner", true) != 0)
 			{
 				return false;
