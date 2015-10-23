@@ -344,7 +344,7 @@ namespace Igor
 //			IgorCore.LogError(ModuleInst, "jarsigner command running from " + Path.GetFullPath(".") + " is\n" + "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword +
 //				" -keypass " + KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias);
 
-			if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Commands/jarsigner", "jarsigner", "-verbose -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword + " -keypass " +
+			if(IgorRuntimeUtils.RunProcessCrossPlatform(ModuleInst, "jarsigner", "jarsigner", "-verbose -sigalg SHA1withDSA -digestalg SHA1 -keystore \"" + KeystoreFilename + "\" -storepass " + KeystorePassword + " -keypass " +
 				KeyAliasPassword + " -signedjar \"" + SignedAPK + "\" \"" + UnsignedAPK + "\" " + KeyAlias, Path.GetFullPath("."), "Running jarsigner", true) != 0)
 			{
 				return false;
