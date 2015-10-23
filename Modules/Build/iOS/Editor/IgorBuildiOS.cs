@@ -227,11 +227,13 @@ namespace Igor
 
 				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_IDENTITY[sdk=iphoneos*]", SigningIdentity);
 
-				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_RESOURCE_RULES_PATH", "$(SDKROOT)/ResourceRules.plist");
+				// This is now required to not be in your xcodeproj as of iOS 9.0
+//				IgorXCodeProjUtils.AddOrUpdateForAllBuildProducts(this, ProjectPath, "CODE_SIGN_RESOURCE_RULES_PATH", "$(SDKROOT)/ResourceRules.plist");
 
 				string PlistPath = Path.Combine(BuildProducts[0], "Info.plist");
 
 				IgorPlistUtils.SetBoolValue(this, PlistPath, "UIViewControllerBasedStatusBarAppearance", false);
+				IgorPlistUtils.SetBoolValue(this, PlistPath, "UIRequiresFullScreen", true);
 
 				if(bEnableGamekit)
 				{
@@ -240,6 +242,25 @@ namespace Igor
 			}
 
 			return true;
+		}
+
+		public string GenerateExportPlist(string ProjectPath)
+		{
+			string DevTeamID = GetParamOrConfigString(iOSDevTeamIDFlag, "Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
+			string Plist = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n    <key>iCloudContainerEnvironment</key>\n    <string>Production</string>\n    <key>teamID</key>\n    <string>" +
+							 DevTeamID + "</string>\n    <key>method</key>\n    <string>ad-hoc</string>\n</dict>\n</plist>";
+
+			string ProjectRelativePath = "Options.plist";
+			string FullFilePath = Path.Combine(ProjectPath, ProjectRelativePath);
+
+			if(File.Exists(FullFilePath))
+			{
+				IgorRuntimeUtils.DeleteFile(FullFilePath);
+			}
+
+			File.WriteAllText(FullFilePath, Plist);
+
+			return ProjectRelativePath;
 		}
 
 		public virtual bool BuildXCodeProj()
@@ -258,8 +279,10 @@ namespace Igor
 
 				string FullBuildProductPath = Path.Combine(Path.GetFullPath("."), BuildProducts[0]);
 
+				string LastBundleIdentifierPart = PlayerSettings.bundleIdentifier.Substring(PlayerSettings.bundleIdentifier.LastIndexOf('.') + 1);
+
 				int BuildExitCode = IgorRuntimeUtils.RunProcessCrossPlatform(this, "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
-					"-project Unity-iPhone.xcodeproj clean build", FullBuildProductPath, "XCode build");
+					"-project Unity-iPhone.xcodeproj clean archive -archivePath " + LastBundleIdentifierPart + ".xcarchive -scheme Unity-iPhone", FullBuildProductPath, "XCode build");
 
 				if(BuildExitCode != 0)
 				{
@@ -269,11 +292,10 @@ namespace Igor
 				BuildOutput = "";
 				BuildError = "";
 
-				string LastBundleIdentifierPart = PlayerSettings.bundleIdentifier.Substring(PlayerSettings.bundleIdentifier.LastIndexOf('.') + 1);
+				string OptionsPlistFile = GenerateExportPlist(FullBuildProductPath);
 
-				BuildExitCode = IgorRuntimeUtils.RunProcessCrossPlatform(this, "/usr/bin/xcrun", "",
-					"-sdk iphoneos PackageApplication -v \"build/Release-iphoneos/" + LastBundleIdentifierPart + ".app\" -o \"" + Path.Combine(FullBuildProductPath, BuiltName + ".ipa") +
-					"\" --sign \"" + SigningIdentity + "\" --embed \"../" + ProvisionPath + "\"",
+				BuildExitCode = IgorRuntimeUtils.RunProcessCrossPlatform(this, "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", "",
+					"xcodebuild -exportArchive -archivePath " + LastBundleIdentifierPart + ".xcarchive -exportPath . -exportOptionsPlist " + OptionsPlistFile,
 					FullBuildProductPath, "Packaging the application");
 
 				if(BuildExitCode != 0)
@@ -283,7 +305,18 @@ namespace Igor
 
 				List<string> NewBuildProducts = new List<string>();
 
+				string XCodeOutput = Path.Combine(BuildProducts[0], "Unity-iPhone.ipa");
 				string BuiltIPAName = Path.Combine(BuildProducts[0], BuiltName + ".ipa");
+
+				if(IgorAssert.EnsureTrue(this, File.Exists(XCodeOutput), "The built IPA " + XCodeOutput + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
+				{
+					if(File.Exists(BuiltIPAName))
+					{
+						IgorRuntimeUtils.DeleteFile(BuiltIPAName);
+					}
+
+					File.Copy(XCodeOutput, BuiltIPAName);
+				}
 
 				if(IgorAssert.EnsureTrue(this, File.Exists(BuiltIPAName), "The built IPA " + BuiltIPAName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
 				{

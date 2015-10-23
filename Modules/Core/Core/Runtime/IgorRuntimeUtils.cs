@@ -574,7 +574,11 @@ namespace Igor
 		{
 			int RunProcessExitCode = RunProcessCrossPlatform(OSXCommand, WindowsCommand, Parameters, Directory, ref ProcessOutput, ref ProcessError, bUseShell);
 
-			if(!IgorAssert.EnsureTrue(ModuleInst, RunProcessExitCode == 0, CommandLogDescription + " failed!\nOutput:\n" + ProcessOutput + "\n\n\nError:\n" + ProcessError))
+			IgorRuntimeUtils.PlatformNames CurrentPlatform = IgorRuntimeUtils.RuntimeOrEditorGetPlatform();
+			
+			if(!IgorAssert.EnsureTrue(ModuleInst, RunProcessExitCode == 0, CommandLogDescription + " failed!\nCommand: " + (
+				(CurrentPlatform == IgorRuntimeUtils.PlatformNames.Editor_OSX || CurrentPlatform == IgorRuntimeUtils.PlatformNames.Standalone_OSX) ? OSXCommand : WindowsCommand
+				) + " " + Parameters + "\nDirectory: " + Directory + "\nOutput:\n" + ProcessOutput + "\n\n\nError:\n" + ProcessError))
 			{
 				return RunProcessExitCode;
 			}
