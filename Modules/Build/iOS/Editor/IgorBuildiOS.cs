@@ -22,6 +22,7 @@ namespace Igor
 		public static string iOSMobileProvisionFlag = "iOSMobileProvisionFile";
 
 		public static string EnableGameKitFlag = "EnableGamekit";
+		public static string EnableFileSharingFlag = "EnableFileSharing";
 
 		public override string GetModuleName()
 		{
@@ -77,6 +78,8 @@ namespace Igor
 			DrawStringConfigParam(ref EnabledParams, "iOS Mobile Provision Path", iOSMobileProvisionFlag);
 
 			DrawBoolParam(ref EnabledParams, "Enable Gamekit", EnableGameKitFlag);
+
+			DrawBoolParam(ref EnabledParams, "Enable iTunes File Sharing (Documents Folder Access)", EnableFileSharingFlag);
 
 			return EnabledParams;
 		}
@@ -216,6 +219,7 @@ namespace Igor
 			string DevTeamID = GetParamOrConfigString(iOSDevTeamIDFlag, "Your Dev Team ID hasn't been set!  Your build may not sign correctly.");
 			string SigningIdentity = GetParamOrConfigString(iOSProvisionProfileFlag, "Your Signing Identity hasn't been set!  Your build may not sign correctly.");
 			bool bEnableGamekit = IgorJobConfig.IsBoolParamSet(EnableGameKitFlag);
+			bool bEnableFileSharing = IgorJobConfig.IsBoolParamSet(EnableFileSharingFlag);
 
 			if(IgorAssert.EnsureTrue(this, BuildProducts.Count > 0, "Trying to fix up the XCode project, but one was not generated in the build phase!"))
 			{
@@ -238,6 +242,11 @@ namespace Igor
 				if(bEnableGamekit)
 				{
 					IgorPlistUtils.AddRequiredDeviceCapability(this, PlistPath, "gamekit");
+				}
+
+				if(bEnableFileSharing)
+				{
+					IgorPlistUtils.SetBoolValue(this, PlistPath, "UIFileSharingEnabled", true);
 				}
 			}
 
