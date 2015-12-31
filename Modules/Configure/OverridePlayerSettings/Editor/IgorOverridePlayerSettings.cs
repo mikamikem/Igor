@@ -153,7 +153,7 @@ namespace Igor
                                 {
 		                            string DestFilePath = SourceFilePath.Replace("ProjectSettings\\", string.Empty);
 		                            DestFilePath = TargetDirectory + "/" + Path.ChangeExtension(DestFilePath, kIgorProjectSettingExtension);
-		                            File.Copy(SourceFilePath, DestFilePath);
+		                            IgorRuntimeUtils.CopyFile(SourceFilePath, DestFilePath);
                                 }
                             }
 		                }
@@ -188,7 +188,7 @@ namespace Igor
 		        {
 		            string DestFilePath = SourceFilePath.Replace(TargetDirectory, "ProjectSettings");
 		            DestFilePath = Path.ChangeExtension(DestFilePath, ".asset");
-		            File.Copy(SourceFilePath, DestFilePath, true);
+		            IgorRuntimeUtils.CopyFile(SourceFilePath, DestFilePath, true);
 
                     Debug.Log("Replaced " + Path.GetFileName(DestFilePath));
 

@@ -37,6 +37,7 @@ namespace Igor
 			ValidDelegateStub.bIsValid = true;
 			ValidDelegateStub.DeleteFile = IgorRuntimeUtils.DeleteFile;
 			ValidDelegateStub.DeleteDirectory = IgorRuntimeUtils.DeleteDirectory;
+			ValidDelegateStub.CopyFile = IgorRuntimeUtils.CopyFile;
 			ValidDelegateStub.GetTypesInheritFromIIgorEditorCore = GetTypesInheritFromIIGorEditorCore;
 			ValidDelegateStub.IgorJobConfig_SetWasMenuTriggered = IgorJobConfig.SetWasMenuTriggered;
 			ValidDelegateStub.IgorJobConfig_GetWasMenuTriggered = IgorJobConfig.GetWasMenuTriggered;

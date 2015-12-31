@@ -68,6 +68,41 @@ namespace Igor
 		    System.IO.Directory.Delete(targetDir, false);
 		}
 
+		// These are duplicated from IgorRuntimeUtils.cs in the Core module.  This was necessary to
+		// keep the updater working, but they are overridden by the RuntimeUtils version once Core is
+		// installed.  If you have any fixes for these two functions, fix them both here and in
+		// IgorRuntimeUtils.cs.
+		public static bool UpdaterCopyFile(string SourceFile, string TargetFile)
+		{
+			if(File.Exists(SourceFile))
+			{
+				if(File.Exists(TargetFile))
+				{
+					UpdaterDeleteFile(TargetFile);
+				}
+
+				try
+				{
+					File.Copy(SourceFile, TargetFile);
+				}
+				catch(System.IO.IOException IOEx)
+				{
+					if(IOEx.GetHashCode() == 112)
+					{
+						Debug.LogError("Failed to copy file " + SourceFile + " to " + TargetFile + " because there is not enough free space at the target location.");
+					}
+
+					throw IOEx;
+
+					return false;
+				}
+
+			    return true;
+		    }
+
+		    return false;
+		}
+
 		public delegate List<Type> TemplatedTypeListNoParams();
 		public List<Type> DoNothingTemplatedTypeListNoParams()
 		{
@@ -94,8 +129,15 @@ namespace Igor
 		public void DoNothingVoidStringBoolParams(string Param1, bool Param2)
 		{}
 
+		public delegate bool BoolStringStringParams(string Param1, string Param2);
+		public bool DoNothingBoolStringStringParams(string Param1, string Param2)
+		{
+			return false;
+		}
+
 		public VoidOneStringParam DeleteFile;
 		public VoidOneStringParam DeleteDirectory;
+		public BoolStringStringParams CopyFile;
 		public TemplatedTypeListNoParams GetTypesInheritFromIIgorEditorCore;
 		public VoidOneBoolParam IgorJobConfig_SetWasMenuTriggered;
 		public BoolNoParams IgorJobConfig_GetWasMenuTriggered;
@@ -106,6 +148,7 @@ namespace Igor
 		{
 			DeleteFile = UpdaterDeleteFile;
 			DeleteDirectory = UpdaterDeleteDirectory;
+			CopyFile = UpdaterCopyFile;
 			GetTypesInheritFromIIgorEditorCore = DoNothingTemplatedTypeListNoParams;
 			IgorJobConfig_SetWasMenuTriggered = DoNothingVoidOneBoolParam;
 			IgorJobConfig_GetWasMenuTriggered = DoNothingBoolNoParams;
@@ -219,7 +262,9 @@ namespace Igor
                     string LocalFilePath = Path.Combine(NewLocalPrefix, RelativePath);
 
                     if(File.Exists(LocalFilePath))
-					    File.Copy(LocalFilePath, DestFilePath);
+                    {
+					    IgorUpdater.HelperDelegates.CopyFile(LocalFilePath, DestFilePath);
+                    }
 				}
 				else
 				{
@@ -433,7 +478,7 @@ namespace Igor
 			EditorApplication.update += CheckIfResuming;
 		}
 
-		private const int Version = 32;
+		private const int Version = 33;
 		private const int MajorUpgrade = 2;
 
 		private static string OldBaseIgorDirectory = Path.Combine("Assets", Path.Combine("Editor", "Igor"));
@@ -649,7 +694,7 @@ namespace Igor
 							Directory.CreateDirectory(Path.GetDirectoryName(InstalledFilePath));
 						}
 
-						File.Copy(LocalUpdater, InstalledFilePath);
+						IgorUpdater.HelperDelegates.CopyFile(LocalUpdater, InstalledFilePath);
 
 						return true;
 					}
@@ -706,7 +751,7 @@ namespace Igor
 						IgorUpdater.HelperDelegates.DeleteFile(InstalledModulesListPath);
 					}
 
-					File.Copy(LocalModulesList, InstalledModulesListPath);
+					IgorUpdater.HelperDelegates.CopyFile(LocalModulesList, InstalledModulesListPath);
 				}
 
 				UpdatedModules.Clear();
@@ -818,7 +863,7 @@ namespace Igor
 										Directory.CreateDirectory(Path.GetDirectoryName(CurrentModuleDescriptor));
 									}
 
-									File.Copy(ModuleDescriptor, CurrentModuleDescriptor);
+									IgorUpdater.HelperDelegates.CopyFile(ModuleDescriptor, CurrentModuleDescriptor);
 
 									foreach(string ModuleFile in NewModuleDescriptorInst.ModuleFiles)
 									{
@@ -890,7 +935,7 @@ namespace Igor
 
 											if(File.Exists(TempDownloadPath))
 											{
-												File.Copy(TempDownloadPath, FullLocalPath);
+												IgorUpdater.HelperDelegates.CopyFile(TempDownloadPath, FullLocalPath);
 											}
 										}
 									}
@@ -1064,7 +1109,7 @@ namespace Igor
 					Directory.CreateDirectory(Path.GetDirectoryName(DestinationConfigFile));
 				}
 
-				File.Copy(OriginalConfigFile, DestinationConfigFile);
+				IgorUpdater.HelperDelegates.CopyFile(OriginalConfigFile, DestinationConfigFile);
 			}
 		}
 

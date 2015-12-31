@@ -324,7 +324,7 @@ namespace Igor
 						IgorRuntimeUtils.DeleteFile(BuiltIPAName);
 					}
 
-					File.Copy(XCodeOutput, BuiltIPAName);
+					IgorRuntimeUtils.CopyFile(XCodeOutput, BuiltIPAName);
 				}
 
 				if(IgorAssert.EnsureTrue(this, File.Exists(BuiltIPAName), "The built IPA " + BuiltIPAName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))

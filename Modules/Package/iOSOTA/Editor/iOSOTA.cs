@@ -100,8 +100,8 @@ namespace Igor
 				string IPADeployName = Path.Combine(WebDeployTempDir, IPAName);
 				string IconDeployName = Path.Combine(WebDeployTempDir, IconName);
 
-				File.Copy(FileToCopy, IPADeployName);
-				File.Copy(FullIconName, IconDeployName);
+				IgorRuntimeUtils.CopyFile(FileToCopy, IPADeployName);
+				IgorRuntimeUtils.CopyFile(FullIconName, IconDeployName);
 
 				List<string> NewBuiltProducts = new List<string>();
 

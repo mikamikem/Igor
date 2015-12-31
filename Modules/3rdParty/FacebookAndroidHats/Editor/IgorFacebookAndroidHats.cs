@@ -93,7 +93,7 @@ namespace Igor
 					
 					if(!File.Exists(NewDestinationPath))
 					{
-						File.Copy(CurrentFile, NewDestinationPath);
+						IgorRuntimeUtils.CopyFile(CurrentFile, NewDestinationPath);
 
 						IgorUtils.ReplaceStringsInFile(this, NewDestinationPath, "com.facebook.android.R", PlayerSettings.bundleIdentifier + ".R");
 						IgorUtils.ReplaceStringsInFile(this, NewDestinationPath, "import com.facebook.android.*;", "import com.facebook.android.*;\nimport " + PlayerSettings.bundleIdentifier + ".R;");

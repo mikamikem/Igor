@@ -26,5 +26,6 @@
     <Module ModuleName="Utilities.NodeGraph" ModuleDescriptorRelativePath="Utilities/NodeGraph/NodeGraph.xml" />
     <Module ModuleName="Utilities.ListWindow" ModuleDescriptorRelativePath="Utilities/ListWindow/ListWindow.xml" />
     <Module ModuleName="MonsterTest.Menu" ModuleDescriptorRelativePath="MonsterTest/Menu/MonsterMenu.xml" />
+    <Module ModuleName="MonsterTest.Dialogue" ModuleDescriptorRelativePath="MonsterTest/Dialogue/MonsterDialogue.xml" />
   </Modules>
 </IgorModuleList>

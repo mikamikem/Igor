@@ -150,8 +150,22 @@ namespace Igor
 
 		public static MonsterTestRunner TestRunnerInst = null;
 
+		public static bool bWasTestRunningInEditor = false;
+
 		public virtual bool RunTest(string TestName)
 		{
+			if(bWasTestRunningInEditor && !EditorApplication.isPlaying && TestRunnerInst != null && TestRunnerInst.CurrentTest != null && TestRunnerInst.CurrentTest.bStartGameInEditor)
+			{
+				if(InternalCleanupTestable(true))
+				{
+					bWasTestRunningInEditor = false;
+
+					return true;
+				}
+
+				return false;
+			}
+
 			if(MonsterStarter.GetInstance(false) == null || TestRunnerInst == null)
 			{
 				if(TestRunnerInst == null)
@@ -170,6 +184,8 @@ namespace Igor
 				if(TestRunnerInst.CurrentTest != null && TestRunnerInst.CurrentTest.bStartGameInEditor)
 				{
 					EditorApplication.isPlaying = true;
+
+					bWasTestRunningInEditor = true;
 
 					if(MonsterStarter.GetInstance(false) == null)
 					{
@@ -364,7 +380,7 @@ namespace Igor
 
 			if(File.Exists(IgorConfig.DefaultConfigPath))
 			{
-				File.Copy(IgorConfig.DefaultConfigPath, Path.Combine(StreamingAssetsFolder, IgorConfig.IgorConfigFilename));
+				IgorRuntimeUtils.CopyFile(IgorConfig.DefaultConfigPath, Path.Combine(StreamingAssetsFolder, IgorConfig.IgorConfigFilename));
 			}
 
 			string BuildLauncherOutput = "";
@@ -411,7 +427,7 @@ namespace Igor
 			{
 				MonsterDebug.Log("Copying latest MonsterRun.py to the Launchers folder.");
 
-				File.Copy(MonsterRunPyFileLatest, MonsterRunPyFile);
+				IgorRuntimeUtils.CopyFile(MonsterRunPyFileLatest, MonsterRunPyFile);
 			}
 
 			MonsterDebug.Log("Done building launcher for platform " + TargetTestPlatform);
@@ -438,7 +454,7 @@ namespace Igor
 					IgorRuntimeUtils.DeleteFile(ZipLocalPath);
 				}
 
-				File.Copy(ZipPath, ZipLocalPath);
+				IgorRuntimeUtils.CopyFile(ZipPath, ZipLocalPath);
 			}
 			else if(TargetTestPlatform == BuildTarget.StandaloneWindows64)
 			{
@@ -461,7 +477,7 @@ namespace Igor
 					IgorRuntimeUtils.DeleteFile(ZipLocalPath);
 				}
 
-				File.Copy(ZipPath, ZipLocalPath);
+				IgorRuntimeUtils.CopyFile(ZipPath, ZipLocalPath);
 			}
 		}
 

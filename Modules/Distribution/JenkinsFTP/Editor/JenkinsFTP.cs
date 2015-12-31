@@ -97,7 +97,7 @@ namespace Igor
 			{
 				Cleanup();
 
-				File.Copy(FileToCopy, GetParamOrConfigString(UploadToFTPFlag, "Destination file for JenkinsFTP isn't set so we can't copy it to the right location."));
+				IgorRuntimeUtils.CopyFile(FileToCopy, GetParamOrConfigString(UploadToFTPFlag, "Destination file for JenkinsFTP isn't set so we can't copy it to the right location."));
 
 				Log("File copied to requested location for Jenkins post build FTP uploading.");
 			}

@@ -302,7 +302,7 @@ namespace Igor
 					IgorRuntimeUtils.DeleteFile(FinalBuildProductName);
 				}
 
-				File.Copy(AppropriatelySignedAPK, FinalBuildProductName);
+				IgorRuntimeUtils.CopyFile(AppropriatelySignedAPK, FinalBuildProductName);
 
 				List<string> NewBuildProducts = new List<string>();
 

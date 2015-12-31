@@ -278,6 +278,41 @@ namespace Igor
 		    System.IO.Directory.Delete(targetDir, false);
 		}
 
+		// These are duplicated from IgorRuntimeUtils.cs in the Core module.  This was necessary to
+		// keep the updater working, but they are overridden by the RuntimeUtils version once Core is
+		// installed.  If you have any fixes for these two functions, fix them both here and in
+		// IgorRuntimeUtils.cs.
+		public static bool CopyFile(string SourceFile, string TargetFile)
+		{
+			if(File.Exists(SourceFile))
+			{
+				if(File.Exists(TargetFile))
+				{
+					DeleteFile(TargetFile);
+				}
+
+				try
+				{
+					File.Copy(SourceFile, TargetFile);
+				}
+				catch(System.IO.IOException IOEx)
+				{
+					if(IOEx.GetHashCode() == 112)
+					{
+						IgorDebug.CoreCriticalError("Failed to copy file " + SourceFile + " to " + TargetFile + " because there is not enough free space at the target location.");
+					}
+
+					throw IOEx;
+
+					return false;
+				}
+
+			    return true;
+		    }
+
+		    return false;
+		}
+
 		// Pulled from https://msdn.microsoft.com/en-us/library/bb762914.aspx
 	    public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, bool bSkipUnityMetaFiles = true)
 	    {

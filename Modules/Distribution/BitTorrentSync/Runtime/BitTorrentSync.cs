@@ -147,7 +147,7 @@ namespace Igor
 						IgorRuntimeUtils.DeleteFile(SyncFile);
 					}
 
-					File.Copy(LocalFile, SyncFile);
+					IgorRuntimeUtils.CopyFile(LocalFile, SyncFile);
 
 					Log("File " + LocalFile + " copied to requested location " + SyncFile + " for BitTorrent Sync uploading.");
 				}
@@ -160,7 +160,7 @@ namespace Igor
 						IgorRuntimeUtils.DeleteFile(LocalFile);
 					}
 
-					File.Copy(SyncFile, LocalFile);
+					IgorRuntimeUtils.CopyFile(SyncFile, LocalFile);
 
 					Log("File " + SyncFile + " copied from the BitTorrent Sync share to requested location " + LocalFile + ".");
 
