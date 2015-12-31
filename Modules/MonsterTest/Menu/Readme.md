@@ -1,4 +1,4 @@
-Monster Core Module
+Monster Menu Navigation Module
 =============
 
 ## Summary
