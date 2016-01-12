@@ -318,6 +318,8 @@ def RunUnity(Function):
 	else:
 		BuildProc = subprocess.Popen(BuildCommand, shell=True, preexec_fn=os.setpgrp)
 
+	hasRefreshedAssetDB = False
+
 	while BuildProc.poll() is None:
 		if logHandle == None and os.path.exists("Igor.log"):
 			logHandle = open("Igor.log", 'r')
@@ -329,25 +331,29 @@ def RunUnity(Function):
 				time.sleep(10)
 				logHandle.seek(where)
 			else:
-				if "Compilation failed: " in line:
-					print("Igor Error: Killing Unity because script compilation failed and anything beyond this point is undefined behavior.")
+				if "Refresh: " in line:
+					hasRefreshedAssetDB = True
 
-					KillProcess(BuildProc.pid)
-				elif "UnityUpgradable" in line:
-					print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
-
-					KillProcess(BuildProc.pid)
-				elif "Crash!!!" in line:
-					nextline = logHandle.readline()
-
-					if "SymInit" in nextline:
-						print("Igor Error: Killing Unity because the editor crashed!")
+				if hasRefreshedAssetDB:
+					if "Compilation failed: " in line:
+						print("Igor Error: Killing Unity because script compilation failed and anything beyond this point is undefined behavior.")
 
 						KillProcess(BuildProc.pid)
-				elif "compilationIOException" in line:
-					print("Igor Error: Killing Unity because there was a problem attempting to compile scripts.  Possibly the disk is full?")
+					elif "UnityUpgradable" in line:
+						print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
 
-					KillProcess(BuildProc.pid)
+						KillProcess(BuildProc.pid)
+					elif "Crash!!!" in line:
+						nextline = logHandle.readline()
+
+						if "SymInit" in nextline:
+							print("Igor Error: Killing Unity because the editor crashed!")
+
+							KillProcess(BuildProc.pid)
+					elif "compilationIOException" in line:
+						print("Igor Error: Killing Unity because there was a problem attempting to compile scripts.  Possibly the disk is full?")
+
+						KillProcess(BuildProc.pid)
 				sys.stdout.write(line)
 
 	Rest = logHandle.read()
