@@ -319,6 +319,7 @@ def RunUnity(Function):
 		BuildProc = subprocess.Popen(BuildCommand, shell=True, preexec_fn=os.setpgrp)
 
 	hasRefreshedAssetDB = False
+	nextline = None
 
 	while BuildProc.poll() is None:
 		if logHandle == None and os.path.exists("Igor.log"):
@@ -355,6 +356,10 @@ def RunUnity(Function):
 
 						KillProcess(BuildProc.pid)
 				sys.stdout.write(line)
+				
+				if nextline:
+					sys.stdout.write(nextline)
+					nextline = None
 
 	Rest = logHandle.read()
 
