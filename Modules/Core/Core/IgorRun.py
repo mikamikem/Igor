@@ -332,7 +332,7 @@ def RunUnity(Function):
 				time.sleep(10)
 				logHandle.seek(where)
 			else:
-				if "Refresh: " in line:
+				if "Assembly-CSharp-Editor-firstpass.dll into Unity Child Domain" in line:
 					hasRefreshedAssetDB = True
 
 				if hasRefreshedAssetDB:
