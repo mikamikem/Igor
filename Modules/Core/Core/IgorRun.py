@@ -340,21 +340,27 @@ def RunUnity(Function):
 						print("Igor Error: Killing Unity because script compilation failed and anything beyond this point is undefined behavior.")
 
 						KillProcess(BuildProc.pid)
-					elif "UnityUpgradable" in line:
-						print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
+
+				if "UnityUpgradable" in line:
+					print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
+
+					KillProcess(BuildProc.pid)
+				elif "Crash!!!" in line:
+					nextline = logHandle.readline()
+
+					if "SymInit" in nextline:
+						print("Igor Error: Killing Unity because the editor crashed!")
 
 						KillProcess(BuildProc.pid)
-					elif "Crash!!!" in line:
-						nextline = logHandle.readline()
+				elif "Error while reading window layout" in line:
+					print ("Igor Error: Killing Unity because scripts compilation failed and we possibly haven't successfully built the Igor code so nothing will happen.")
 
-						if "SymInit" in nextline:
-							print("Igor Error: Killing Unity because the editor crashed!")
+					KillProcess(BuildProc.pid)
+				elif "compilationIOException" in line:
+					print("Igor Error: Killing Unity because there was a problem attempting to compile scripts.  Possibly the disk is full?")
 
-							KillProcess(BuildProc.pid)
-					elif "compilationIOException" in line:
-						print("Igor Error: Killing Unity because there was a problem attempting to compile scripts.  Possibly the disk is full?")
+					KillProcess(BuildProc.pid)
 
-						KillProcess(BuildProc.pid)
 				sys.stdout.write(line)
 				
 				if nextline:
