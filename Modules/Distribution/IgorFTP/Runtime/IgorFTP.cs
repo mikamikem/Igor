@@ -101,46 +101,53 @@ namespace Igor
 
 				foreach(string CurrentProduct in BuiltProducts)
 				{
-					try
+					for(int CurrentTry = 0; CurrentTry < 5; ++CurrentTry)
 					{
-						string DestinationFilename = FTPRoot + FTPDirectory + Path.GetFileName(CurrentProduct);
-			            // Get the object used to communicate with the server.
-			            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(DestinationFilename);
-			            request.Method = WebRequestMethods.Ftp.UploadFile;
-			            request.UseBinary = true;
-			            request.EnableSsl = true;
-			            request.Timeout = 1800;
+						try
+						{
+							string DestinationFilename = FTPRoot + FTPDirectory + Path.GetFileName(CurrentProduct);
+				            // Get the object used to communicate with the server.
+				            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(DestinationFilename);
+				            request.Method = WebRequestMethods.Ftp.UploadFile;
+				            request.UseBinary = true;
+				            request.EnableSsl = true;
+				            request.Timeout = 1800;
 
-			            request.Credentials = new NetworkCredential (FTPUsername, FTPPassword);
-			            
-			            // Copy the contents of the file to the request stream.
-			            byte [] fileContents = File.ReadAllBytes(CurrentProduct);
-			            request.ContentLength = fileContents.Length;
+				            request.Credentials = new NetworkCredential (FTPUsername, FTPPassword);
+				            
+				            // Copy the contents of the file to the request stream.
+				            byte [] fileContents = File.ReadAllBytes(CurrentProduct);
+				            request.ContentLength = fileContents.Length;
 
-			            Stream requestStream = request.GetRequestStream();
-			            requestStream.Write(fileContents, 0, fileContents.Length);
-			            requestStream.Close();
+				            Stream requestStream = request.GetRequestStream();
+				            requestStream.Write(fileContents, 0, fileContents.Length);
+				            requestStream.Close();
 
-			            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
-			    
-			    		if(response.StatusCode == FtpStatusCode.CommandOK || response.StatusCode == FtpStatusCode.ClosingData ||
-			    		   response.StatusCode == FtpStatusCode.FileActionOK || response.StatusCode == FtpStatusCode.ClosingControl)
-			    		{
-				    		Log("Successfully uploaded file " + CurrentProduct + " to " + DestinationFilename);
-				    	}
-				    	else
-				    	{
-				    		Log("Failed to upload file " + CurrentProduct + " to " + DestinationFilename + " with error code " + response.StatusCode + " and exit message " + response.ExitMessage);
+				            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+				    
+				    		if(response.StatusCode == FtpStatusCode.CommandOK || response.StatusCode == FtpStatusCode.ClosingData ||
+				    		   response.StatusCode == FtpStatusCode.FileActionOK || response.StatusCode == FtpStatusCode.ClosingControl)
+				    		{
+					    		Log("Successfully uploaded file " + CurrentProduct + " to " + DestinationFilename);
+					    	}
+					    	else
+					    	{
+					    		Log("Failed to upload file " + CurrentProduct + " to " + DestinationFilename + " with error code " + response.StatusCode + " and exit message " + response.ExitMessage);
 
-				    		bFailedAtLeastOnce = true;
-				    	}
-			    
-			            response.Close();
-			        }
-			        catch(System.Net.WebException WebExcept)
-			        {
-			        	LogWarning("Web exception thrown.  Depending on your server the file may not have uploaded, but some servers don't behave well with FtpWebRequest.  " + WebExcept.ToString());
-			        }
+					    		bFailedAtLeastOnce = true;
+					    	}
+				    
+				            response.Close();
+				        }
+				        catch(System.Net.WebException WebExcept)
+				        {
+				        	LogWarning("Web exception thrown.  Depending on your server the file may not have uploaded, but some servers don't behave well with FtpWebRequest.  " + WebExcept.ToString());
+
+				        	continue;
+				        }
+
+				        break;
+				    }
 		        }
 
 		        if(!bFailedAtLeastOnce)

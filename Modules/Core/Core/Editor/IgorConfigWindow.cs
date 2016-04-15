@@ -1278,7 +1278,7 @@ namespace Igor
 
 		public virtual string GenerateJenkinsJobForParams(string Params, string JobName)
 		{
-            var path = Path.Combine("Assets", Path.Combine("Igor", IgorRunner));
+            var path = "Assets/Igor/" + IgorRunner;
 
             if(bTriggerJobByName)
             {
