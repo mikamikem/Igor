@@ -145,6 +145,12 @@ namespace Igor
 
 				        	continue;
 				        }
+				        catch(System.Net.ProtocolViolationException ProtoExcept)
+				        {
+				        	LogWarning("ProtocolViolationException thrown.  Depending on your server the file may not have uploaded, but some servers don't behave well with FtpWebRequest.  " + ProtoExcept.ToString());
+
+				        	continue;
+				        }
 
 				        break;
 				    }
