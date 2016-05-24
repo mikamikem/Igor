@@ -956,7 +956,7 @@ namespace Igor
 
 						if(CurrentModule != null)
 						{
-							CurrentJobInst.JobCommandLineParams = CurrentModule.DrawJobInspectorAndGetEnabledParams(CurrentJobInst.JobCommandLineParams);
+							CurrentJobInst.JobCommandLineParams = ((IgorCoreModule)CurrentModule).DrawGlobalOptions(CurrentJobInst.JobCommandLineParams);
 						}
 					}
 
@@ -985,10 +985,10 @@ namespace Igor
 
 					SortedModules.AddRange(AvailableModuleGroupsAndNames[CurrentGroup]);
 
-					if(CurrentGroup == "Core" && SortedModules.Count == 1)
+/*					if(CurrentGroup == "Core" && SortedModules.Count == 1)
 					{
 						continue;
-					}
+					}*/
 
 					SortedModules.Sort();
 
@@ -1263,13 +1263,16 @@ namespace Igor
 		{
 			string NewParams = "";
 
-			bool bSkipUnityUpdate = IgorRuntimeUtils.IsBoolParamSet(OriginalParams, IgorCoreModule.SkipUnityUpdateFlag);
+			// This is no longer necessary since we are parsing the IgorConfig.xml file in the python runner now.
+/*			bool bSkipUnityUpdate = IgorRuntimeUtils.IsBoolParamSet(OriginalParams, IgorCoreModule.SkipUnityUpdateFlag);
 			string MinUnityVersion = IgorRuntimeUtils.GetStringParam(OriginalParams, IgorCoreModule.MinUnityVersionFlag);
 			string MaxUnityVersion = IgorRuntimeUtils.GetStringParam(OriginalParams, IgorCoreModule.MaxUnityVersionFlag);
+			float MaxTimeout = IgorRuntimeUtils.GetFloatParam(OriginalParams, IgorCoreModule.MaxMinutesBeforeBuildIsHungFlag, IgorCoreModule.DefaultMaxMinutesBeforeBuildIsHung);
 
 			NewParams = IgorRuntimeUtils.SetBoolParam(NewParams, IgorCoreModule.SkipUnityUpdateFlag, bSkipUnityUpdate);
 			NewParams = IgorRuntimeUtils.SetStringParam(NewParams, IgorCoreModule.MinUnityVersionFlag, MinUnityVersion);
 			NewParams = IgorRuntimeUtils.SetStringParam(NewParams, IgorCoreModule.MaxUnityVersionFlag, MaxUnityVersion);
+			NewParams = IgorRuntimeUtils.SetFloatParam(NewParams, IgorCoreModule.MaxMinutesBeforeBuildIsHungFlag, MaxTimeout, "F0", IgorCoreModule.DefaultMaxMinutesBeforeBuildIsHung);*/
 
 			return NewParams;
 		}

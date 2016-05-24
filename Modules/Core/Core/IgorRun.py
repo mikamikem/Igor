@@ -31,12 +31,14 @@ RemoteXMLFile = "https://raw.githubusercontent.com/mikamikem/Igor/master/Modules
 RemotePythonFile = "https://raw.githubusercontent.com/mikamikem/Igor/master/Modules/Core/Core/IgorRun.py"
 LocalXMLFile = "TestDeploy/Modules/Core/Core/Core.xml"
 LocalPythonFile = "TestDeploy/Modules/Core/Core/IgorRun.py"
+IgorConfigFilename = "Assets/Igor/IgorConfig.xml"
 JobConfigFilename = "IgorJob.xml"
 MinVersionString = ""
 MaxVersionString = ""
 BatchModeString = ""
 NoGraphicsString = ""
 UnityDirectory = ""
+MaxTimeBetweenLogs = 3600 # Set the default timeout to be an hour in case we're running something like a lightbake that takes forever and doesn't log anything during the process
 
 UnityAutomatorFilename = "IgorRun.py"
 
@@ -300,8 +302,73 @@ def CreateJobConfigFile(PassThroughParams):
 
 	return
 
+def CheckForGlobalConfigKey(Line, Key, FileHandle, CurrentValue):
+	if "<Key>" + Key + "</Key>" in Line:
+		nextLine = FileHandle.readline()
+
+		if nextLine != None and "<Value>" in nextLine:
+			GlobalConfigValue = nextLine.strip().replace("<Value>", "").replace("</Value>", "")
+
+			print("Found Global Config Key " + Key + " with value " + GlobalConfigValue)
+
+			return GlobalConfigValue
+
+	return CurrentValue
+
+def CheckForConfigParam(Line, Flag, CurrentValue):
+	if "--" + Flag + "=" in Line:
+		startPoint = Line.find("--" + Flag + "=") + ("--" + Flag + "=").len + 1
+		endPoint = Line.find("\"", startPoint)
+
+		Value = Line[startPoint:endPoint]
+
+		print("Found flag --" + Flag + " in named job with value " + Value)
+
+		return Value
+
+	return CurrentValue
+
+def ReadPythonValuesFromJobConfig(PassThroughParams):
+	global MinVersionString, MaxVersionString, MaxTimeBetweenLogs, IgorConfigFilename
+
+	NamedJob = ""
+
+	for CurrentParam in PassThroughParams:
+		if CurrentParam.startswith("--ExecuteJob="):
+			NamedJob = CurrentParam.replace("--ExecuteJob=", "").replace("\"", "")
+
+	if NamedJob == "":
+		NamedJob = os.environ["JobName"]
+
+	if NamedJob != "":
+		configHandle = None
+		nextline = None
+
+		if configHandle == None and os.path.exists(IgorConfigFilename):
+			with open(IgorConfigFilename, 'r') as configHandle:
+				if configHandle != None:
+					configLine = configHandle.readline()
+					nextline = configLine
+					while configLine and nextline:
+						MinVersionString = CheckForGlobalConfigKey(configLine, "Core.Core.minunityversion", configHandle, MinVersionString)
+						MaxVersionString = CheckForGlobalConfigKey(configLine, "Core.Core.maxunityversion", configHandle, MaxVersionString)
+
+						if "<JobCommandLineParams>" in configLine:
+							nextline = configHandle.readline()
+
+							if nextline != None and ("<JobName>" + NamedJob + "</JobName>") in nextline:
+								print("Found named job " + NamedJob + " in " + IgorConfigFilename + ".  Parsing for python config values.")
+
+								MinVersionString = CheckForConfigParam(configLine, "minunityversion", MinVersionString)
+								MaxVersionString = CheckForConfigParam(configLine, "maxunityversion", MaxVersionString)
+								MaxTimeBetweenLogs = float(CheckForConfigParam(configLine, "maxminutesbeforebuildishung", str(MaxTimeBetweenLogs)))
+
+						configLine = configHandle.readline()
+
+	return
+
 def RunUnity(Function):
-	global BatchModeString, NoGraphicsString
+	global BatchModeString, NoGraphicsString, MaxTimeBetweenLogs
 	AdditionalUnityArgs = BatchModeString + NoGraphicsString
 
 	BuildCommand = GetUnityPath() + " -projectPath \"" + os.getcwd() + "\" -buildmachine -executeMethod " + Function + " -logfile Igor.log" + AdditionalUnityArgs
@@ -321,11 +388,14 @@ def RunUnity(Function):
 	hasRefreshedAssetDB = False
 	nextline = None
 
+	lastLogTime = time.time()
+
 	while BuildProc.poll() is None:
 		if logHandle == None and os.path.exists("Igor.log"):
 			logHandle = open("Igor.log", 'r')
 
 		if logHandle != None:
+			lastLogTime = time.time()
 			where = logHandle.tell()
 			line = logHandle.readline()
 			if not line:
@@ -366,6 +436,11 @@ def RunUnity(Function):
 				if nextline:
 					sys.stdout.write(nextline)
 					nextline = None
+		else:
+			if (time.time() - lastLogTime) > (MaxTimeBetweenLogs * 60.0):
+				print("Igor Error: The build took too long so we might be stuck on a window prompt or waiting for Unity to crash.")
+
+				KillProcess(BuildProc.pid)
 
 	Rest = logHandle.read()
 
@@ -398,8 +473,16 @@ parser.add_argument('--minunityversion')
 parser.add_argument('--maxunityversion')
 parser.add_argument('--batchmode', action='store_true')
 parser.add_argument('--nographics', action='store_true')
+parser.add_argument('--maxminutesbeforebuildishung')
 
 testargs, passthrough = parser.parse_known_args()
+
+ReadPythonValuesFromJobConfig(passthrough)
+
+passthroughstring = ' '.join(passthrough)
+
+if passthroughstring.find('-'):
+	passthroughstring = passthroughstring[passthroughstring.find('-'):]
 
 if testargs.minunityversion != None and testargs.minunityversion != "":
 	MinVersionString = testargs.minunityversion
@@ -413,13 +496,13 @@ if testargs.batchmode:
 if testargs.nographics:
 	NoGraphicsString = " -nographics"
 
+if testargs.maxminutesbeforebuildishung != None:
+	MaxTimeBetweenLogs = testargs.maxminutesbeforebuildishung
+
+print("After parsing " + IgorConfigFilename + " and command line params, python config values are:\nMinVersionString: " + MinVersionString + "\nMaxVersionString: " + MaxVersionString + "\nMaxTimeBetweenLogs: " + str(MaxTimeBetweenLogs))
+
 #if testargs.noselfupdate == False and testargs.finalbootstrap == None and testargs.bootstrap == None:
 #	SelfUpdate()
-
-passthroughstring = ' '.join(passthrough)
-
-if passthroughstring.find('-'):
-	passthroughstring = passthroughstring[passthroughstring.find('-'):]
 
 print("\n\n-= Igor - The Unity Automator =-\n\n")
 

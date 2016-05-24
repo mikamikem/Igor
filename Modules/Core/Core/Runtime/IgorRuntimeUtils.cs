@@ -547,6 +547,40 @@ namespace Igor
  			return NewParams;
 	 	}
 
+	 	public static bool IsFloatParamSet(string AllParams, string ParamKey)
+	 	{
+	 		return IsStringParamSet(AllParams, ParamKey);
+	 	}
+
+	 	public static float GetFloatParam(string AllParams, string ParamKey, float UnsetValue = float.NegativeInfinity)
+	 	{
+	 		string StringValue = GetStringParam(AllParams, ParamKey);
+	 		float FloatValue = UnsetValue;
+
+	 		if(!string.IsNullOrEmpty(StringValue))
+	 		{
+		 		float.TryParse(StringValue, out FloatValue);
+		 	}
+
+	 		return FloatValue;
+	 	}
+
+	 	public static string SetFloatParam(string AllParams, string ParamKey, float ParamValue, string NumberFormatter = "F0", float UnsetValue = float.NegativeInfinity)
+	 	{
+	 		string StringValue = "";
+
+			if(ParamValue == UnsetValue)
+			{
+				StringValue = "";
+			}
+			else
+			{
+				StringValue = ParamValue.ToString(NumberFormatter);
+			}
+
+			return SetStringParam(AllParams, ParamKey, StringValue);
+	 	}
+
 	 	public class EnvMapping
 		{
 			public string Key;

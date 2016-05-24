@@ -19,6 +19,8 @@ namespace Igor
 		public static string SkipUnityUpdateFlag = "nounityupdate";
 		public static string MinUnityVersionFlag = "minunityversion";
 		public static string MaxUnityVersionFlag = "maxunityversion";
+		public static string MaxMinutesBeforeBuildIsHungFlag = "maxminutesbeforebuildishung";
+		public static float DefaultMaxMinutesBeforeBuildIsHung = 60.0f;
 
 		public override string GetModuleName()
 		{
@@ -31,13 +33,22 @@ namespace Igor
 		}
 
 #if UNITY_EDITOR
-		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
+		public virtual string DrawGlobalOptions(string CurrentParams)
 		{
 			string EnabledParams = CurrentParams;
 
 			DrawBoolParam(ref EnabledParams, "Disable Igor updating when running as a job", SkipUnityUpdateFlag);
 
 			DrawVersionInspector(ref EnabledParams);
+
+			return EnabledParams;
+		}
+
+		public override string DrawJobInspectorAndGetEnabledParams(string CurrentParams)
+		{
+			string EnabledParams = CurrentParams;
+
+			DrawFloatParam(ref EnabledParams, "Max minutes before killing build", MaxMinutesBeforeBuildIsHungFlag, "F0", DefaultMaxMinutesBeforeBuildIsHung);
 
 			return EnabledParams;
 		}

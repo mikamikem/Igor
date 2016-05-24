@@ -70,6 +70,30 @@ namespace Igor
 			CurrentParams = IgorRuntimeUtils.SetStringParam(CurrentParams, StringParam, CurrentStringValue);
 		}
 
+		public virtual void DrawFloatParam(ref string CurrentParams, string FloatLabel, string FloatParam, string NumberFormatter = "F0", float UnsetValue = float.NegativeInfinity)
+		{
+			string CurrentFloatValue = IgorRuntimeUtils.GetStringParam(CurrentParams, FloatParam);
+			float CurrentFloatNum = UnsetValue;
+
+			if(!string.IsNullOrEmpty(CurrentFloatValue))
+			{
+				float.TryParse(CurrentFloatValue, out CurrentFloatNum);
+			}
+
+			CurrentFloatNum = EditorGUILayout.FloatField(new GUIContent(FloatLabel, FloatLabel), CurrentFloatNum);
+
+			if(CurrentFloatNum == UnsetValue)
+			{
+				CurrentFloatValue = "";
+			}
+			else
+			{
+				CurrentFloatValue = CurrentFloatNum.ToString(NumberFormatter);
+			}
+
+			CurrentParams = IgorRuntimeUtils.SetStringParam(CurrentParams, FloatParam, CurrentFloatValue);
+		}
+
 		protected static Texture2D LabelFieldBGGreen = null;
 		protected static Texture2D TextFieldBGGreenNormal = null;
 		protected static Texture2D TextFieldBGGreenActive = null;
