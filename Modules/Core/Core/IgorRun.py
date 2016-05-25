@@ -317,7 +317,7 @@ def CheckForGlobalConfigKey(Line, Key, FileHandle, CurrentValue):
 
 def CheckForConfigParam(Line, Flag, CurrentValue):
 	if "--" + Flag + "=" in Line:
-		startPoint = Line.find("--" + Flag + "=") + ("--" + Flag + "=").len + 1
+		startPoint = Line.find("--" + Flag + "=") + len("--" + Flag + "=") + 1
 		endPoint = Line.find("\"", startPoint)
 
 		Value = Line[startPoint:endPoint]
@@ -395,13 +395,13 @@ def RunUnity(Function):
 			logHandle = open("Igor.log", 'r')
 
 		if logHandle != None:
-			lastLogTime = time.time()
 			where = logHandle.tell()
 			line = logHandle.readline()
 			if not line:
 				time.sleep(10)
 				logHandle.seek(where)
 			else:
+				lastLogTime = time.time()
 				if "Assembly-CSharp-Editor-firstpass.dll into Unity Child Domain" in line:
 					hasRefreshedAssetDB = True
 
@@ -436,22 +436,22 @@ def RunUnity(Function):
 				if nextline:
 					sys.stdout.write(nextline)
 					nextline = None
-		else:
-			if (time.time() - lastLogTime) > (MaxTimeBetweenLogs * 60.0):
-				print("Igor Error: The build took too long so we might be stuck on a window prompt or waiting for Unity to crash.")
+			
+		if (time.time() - lastLogTime) > (MaxTimeBetweenLogs * 60.0):
+			print("Igor Error: The build took too long so we might be stuck on a window prompt or waiting for Unity to crash.")
+			KillProcess(BuildProc.pid)
 
-				KillProcess(BuildProc.pid)
+	if logHandle != None:
+		Rest = logHandle.read()
 
-	Rest = logHandle.read()
+		if "Compilation failed: " in Rest:
+			print("Igor Error: Killing Unity because script compilation failed and anything beyond this point is undefined behavior.")
+		elif "UnityUpgradable" in Rest:
+			print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
 
-	if "Compilation failed: " in Rest:
-		print("Igor Error: Killing Unity because script compilation failed and anything beyond this point is undefined behavior.")
-	elif "UnityUpgradable" in Rest:
-		print("Igor Error: Killing Unity because the editor version is newer then your project version and your project requires an API upgrade.")
+		sys.stdout.write(Rest)
 
-	sys.stdout.write(Rest)
-
-	logHandle.close()
+		logHandle.close()
 
 	BuildRC = BuildProc.returncode
 
