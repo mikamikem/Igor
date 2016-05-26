@@ -38,7 +38,7 @@ MaxVersionString = ""
 BatchModeString = ""
 NoGraphicsString = ""
 UnityDirectory = ""
-MaxTimeBetweenLogs = 3600 # Set the default timeout to be an hour in case we're running something like a lightbake that takes forever and doesn't log anything during the process
+MaxTimeBetweenLogs = 60 # Set the default timeout to be an hour in case we're running something like a lightbake that takes forever and doesn't log anything during the process
 
 UnityAutomatorFilename = "IgorRun.py"
 
