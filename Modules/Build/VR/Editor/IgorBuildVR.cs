@@ -8,7 +8,6 @@ using System;
 using System.Reflection;
 using System.Xml.Serialization;
 using System.Linq;
-using UnityEngine.VR;
 
 namespace Igor
 {
@@ -49,7 +48,7 @@ namespace Igor
 
 		public virtual bool SetVRSettings()
 		{
-			UnityEditorInternal.VR.VREditor.SetVREnabledOnTargetGroup(UnityEditor.BuildTargetGroup.Standalone, IgorJobConfig.IsBoolParamSet(VRSupportedFlag));
+			PlayerSettings.virtualRealitySupported = IgorJobConfig.IsBoolParamSet(EnableVRFlag);
 
 			return true;
 		}
