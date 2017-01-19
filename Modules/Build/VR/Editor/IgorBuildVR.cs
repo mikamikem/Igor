@@ -14,7 +14,7 @@ namespace Igor
 {
 	public class IgorBuildVR : IgorModuleBase
 	{
-		public static string EnableVRFlag = "enablevr";
+		public static string VRSupportedFlag = "vrsupported";
 
 		public static StepID SetVRStep = new StepID("Set VR Settings", 270);
 
@@ -42,15 +42,15 @@ namespace Igor
 		{
 			string EnabledParams = CurrentParams;
 
-			DrawBoolParam(ref EnabledParams, "Enable VR", EnableVRFlag);
+			DrawBoolParam(ref EnabledParams, "VR Supported", VRSupportedFlag);
 
 			return EnabledParams;
 		}
 
 		public virtual bool SetVRSettings()
 		{
-			VRSettings.enabled = IgorJobConfig.IsBoolParamSet(EnableVRFlag);
-			
+			UnityEditorInternal.VR.VREditor.SetVREnabledOnTargetGroup(UnityEditor.BuildTargetGroup.Standalone, IgorJobConfig.IsBoolParamSet(VRSupportedFlag));
+
 			return true;
 		}
 	}
