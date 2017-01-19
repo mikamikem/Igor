@@ -48,7 +48,7 @@ namespace Igor
 
 		public virtual bool SetVRSettings()
 		{
-			PlayerSettings.virtualRealitySupported = IgorJobConfig.IsBoolParamSet(EnableVRFlag);
+			PlayerSettings.virtualRealitySupported = IgorJobConfig.IsBoolParamSet(VRSupportedFlag);
 
 			return true;
 		}
