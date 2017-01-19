@@ -28,5 +28,6 @@
     <Module ModuleName="MonsterTest.Menu" ModuleDescriptorRelativePath="MonsterTest/Menu/MonsterMenu.xml" />
     <Module ModuleName="MonsterTest.Dialogue" ModuleDescriptorRelativePath="MonsterTest/Dialogue/MonsterDialogue.xml" />
     <Module ModuleName="Configure.LightingTimeOfDay" ModuleDescriptorRelativePath="Configure/LightingTimeOfDay/LightingTimeOfDay.xml" />
+    <Module ModuleName="Build.VR" ModuleDescriptorRelativePath="Build/VR/VR.xml" />
   </Modules>
 </IgorModuleList>
