@@ -373,12 +373,9 @@ namespace Igor
 				IgorRuntimeUtils.DeleteFile(BuiltName);
 			}
 
-			if(IsPlatformWindows(JobBuildTarget))
+			if(Directory.Exists(DataFolderName))
 			{
-				if(Directory.Exists(DataFolderName))
-				{
-					IgorRuntimeUtils.DeleteDirectory(DataFolderName);
-				}
+				IgorRuntimeUtils.DeleteDirectory(DataFolderName);
 			}
 
 #if !UNITY_4_3
@@ -390,7 +387,7 @@ namespace Igor
 
 			List<string> BuiltFiles = new List<string>();
 
-			if(IsPlatformWindows(JobBuildTarget))
+			if(Directory.Exists(DataFolderName))
 			{
 				if(IgorAssert.EnsureTrue(this, File.Exists(BuiltName), "The built file " + BuiltName + " doesn't exist.  Something went wrong during the build step.  Please check the logs!"))
 				{
